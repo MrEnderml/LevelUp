@@ -158,8 +158,8 @@ function toggleFormation(index) {
 }
 
 
-\* formation *\
-..formations {
+
+.formations {
   display: flex;
   gap: 0.5rem;
 }
