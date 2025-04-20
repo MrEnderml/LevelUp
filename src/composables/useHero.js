@@ -1,0 +1,91 @@
+// useHero.js
+import { reactive, ref } from 'vue';
+
+// Создаем объект героя один раз
+const hero = ref({
+  hp: 100,
+  maxHp: 100,
+  attack: 10,
+  def: 0,
+  crit: 0,
+  critAttack: 1.5,
+  level: 0,
+  eLevel: 1,
+  maxReachedLevel: 0,
+  divLevel: 0,
+  maxLevel: 30,
+  exp: 0,
+  nextLevelExp: 100,
+  attacksPerSecond: 0.5,
+  resetKilledTime: 0,
+  kills: 0,
+  killsPerZone: 5,
+  zone: 1,
+  stage: 1,
+  maxStage: 1,
+  isStage: true,
+  isBattleActive: true,
+  treeTier: 0,
+  perkPoints: 0,
+  equipmentTiers: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0
+  },
+  eqTierReq: {
+    sword: 3,
+    armor: 3,
+    boots: 3,
+    ring: 0
+  },
+  dropChance: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0
+  },
+  ascensionShards: 0,
+  totalAscensionShards: 0,
+  isAscend: false,
+  ascendShardPerform: 0,
+  ascensionTier: 1,
+  maxBuffs: 1,
+  activeBuffs: [],
+  souls: 0,
+  soulsMax: 0,
+  soulsCap: 20,
+  soulTier: 0,
+  curse: 0,
+  activeCurse: [],
+  activeCurseTier: [],
+  cursedBonus: 0,
+  cursedBonusExp: 0,
+  afkTime: 0,
+  showAfkPopup: false,
+  afkKills: 0,
+  afkMessage: "",
+  showAfkPopupRule: true,
+  rebirthPts: 0,
+  totalRebirthPts: 1,
+  rebirthTier: 0,
+  potential: 0,
+  avoid: 0,
+  activeFormation: null,
+  formationTypes : [
+    { name: 'HP', id: 0, icon: '💚', description: 'HP - x2, ATK - x0.5, DEF - x0.5',status: false },
+    { name: 'Attack', id: 1, icon: '⚔️', description: 'ATK - x2, HP - x0.5, DEF - x0.5' , status: false},
+    { name: 'Defense', id: 2, icon: '🛡️', description: 'DEF - x2, HP - x0.5, ATK - x0.5' , status: false},
+    { name: 'Loot', id: 3, icon: '💎', description: 'DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, WEAPON, ASCENSION SHARDS(Abyss T2), REBIRTH SHARDS(Rebirth T20))' , status: false},
+  ],
+  abyssTier: 0,
+  isAbyss: false,
+  perform: false,
+  isLocking: false,
+  isLocked: false,
+  afkLocked: false,
+});
+
+export function useHero() {
+  return { hero };
+}
