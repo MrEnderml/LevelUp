@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useHero } from './useHero.js';
+import { useEnemy } from './useEnemy.js';
 import { useBuff } from '../data/buffs.js';
 import { perks } from '../data/perks.js';
 import { perks as ascension } from '../data/ascension.js';
@@ -12,9 +13,11 @@ export function useAutoSave() {
   const saveGame = () => {
     const { hero } = useHero();
     const { buffs } = useBuff();
+    const { enemy } = useEnemy();
 
     const data = {
       hero: hero.value,
+      enemy: enemy.value,
       perks: perks,
       ascension: ascension,
       buffs: buffs.value,
@@ -37,9 +40,11 @@ export function useAutoSave() {
 export function saveGame() {
   const { hero } = useHero();
   const { buffs } = useBuff();
+  const { enemy } = useEnemy();
 
   const data = {
     hero: hero.value,
+    enemy: enemy.value,
     perks: perks,
     ascension: ascension,
     buffs: buffs.value,

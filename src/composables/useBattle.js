@@ -76,6 +76,7 @@ export function useBattle(hero, enemy, buffs) {
       rebirthHandle();rebirthPtsHandle();
       rebirthEnemyHandle();
       amuletsHandle();
+      test();
       
       if(hero.value.activeBuffs.includes(8)){
         if(buffs.value[8].tier == 1) buffs.value[8].time = Math.min(buffs.value[8].time + (interval / 1000), 500); 
@@ -692,7 +693,7 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.rebirthEnemy["dmg"] * 
     (hero.value.isAbyss? Math.max(1.055 - 0.01 * hero.value.abyssTier, 1.02) ** hero.value.stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) * 
-    (hero.value.abyssTier >= 2? 1 / (1.04 ** Math.log(hero.value.ascensionShards)): 1) * 
+    (hero.value.abyssTier >= 2? 1 / (1.04 ** Math.log(hero.value.ascensionShards + 1)): 1) * 
     (hero.value.isAbyss && hero.value.rebirthTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1);
 
     enemy.value.maxHp = 40 * ((((1.065 - 0.00075 * Math.floor(hero.value.stage/5))** hero.value.stage) ** (1.3+0.225*Math.sqrt(hero.value.stage/2))) / (2 - (hero.value.stage > 14? 0.5: 0) - (hero.value.stage > 19? 0.5: 0))) * dx * 
@@ -701,7 +702,7 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.rebirthEnemy["hp"] * 
     (hero.value.isAbyss? Math.max(1.085 - 0.02 * hero.value.abyssTier, 1.03) ** hero.value.stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) *
-    (hero.value.abyssTier >= 2? 1 / (1.04 ** Math.log(hero.value.ascensionShards)): 1) *
+    (hero.value.abyssTier >= 2? 1 / (1.04 ** Math.log(hero.value.ascensionShards + 1)): 1) *
     (hero.value.isAbyss && hero.value.rebirthTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
     (1 - ascenPerks[22].level*0.01); 
 
@@ -1215,7 +1216,6 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.formationTypes[1].status = true;
     if(hero.value.rebirthPts >= 80000)
       hero.value.formationTypes[3].status = true;
-
   }
 
   const rebirthEnemyHandle = () => {
@@ -1324,6 +1324,10 @@ export function useBattle(hero, enemy, buffs) {
     return  expCount() * (1 + (perks[3].value * perks[3].level * 0.01)) * equipment[3].tiers[hero.value.equipmentTiers['ring']].bonus.expMult *
     (1 + 0.05 * (hero.value.equipmentTiers['sword'] + hero.value.equipmentTiers['armor'] + hero.value.equipmentTiers['boots'] + hero.value.equipmentTiers['ring']) * ascenPerks[6].level) *
     (1 + hero.value.souls * (0.1 + (hero.value.soulTier >= 3? 0.05: 0))) * (hero.value.rebirthPts >= 5? 2: 1) * (enemy.value.rebirthEnemy["drop"]);
+  }
+
+  const test = () => {
+    let a = hero.value.mutation;
   }
 
   createEnemy();

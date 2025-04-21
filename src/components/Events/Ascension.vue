@@ -118,7 +118,8 @@ function format(value) {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   max-width: 100%;
-  overflow: hidden; /* Прячем скроллинг */
+  overflow: hidden; 
+  margin-left: 50px;
 }
 
 .tabs {

@@ -407,6 +407,7 @@ function format(value) {
 }
 
 .abyss-shadow {
+  top: 180%;
   box-shadow: 0 0 10px rgba(225, 0, 255, 0.8);
 }
 

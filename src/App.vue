@@ -18,6 +18,8 @@
 
       <Rebirth v-if="currentEvent === 'Rebirth'" />
 
+      <Radiation v-if="currentEvent === 'Radiation'" />
+
       <Settings v-if="currentEvent === 'Settings'" />
 
       <Info v-if="currentEvent === 'Info'" />
@@ -53,6 +55,7 @@ import Buff from './components/Events/Buff.vue';
 import Soul from './components/Events/Soul.vue';
 import Amulet from './components/Events/Amulet.vue';
 import Rebirth from './components/Events/Rebirth.vue';
+import Radiation from './components/Events/Radiation.vue';
 import Settings from './components/Events/Settings.vue';
 import Info from './components/Events/Info.vue';
 
@@ -67,6 +70,7 @@ const loadGame = () => {
 
     const data = JSON.parse(save);
     if (data.hero) hero.value = data.hero;
+    if (data.enemy) enemy.value = data.enemy;
     if (data.perks) Object.assign(perks, data.perks);
     if (data.ascension) Object.assign(ascension, data.ascension);
     if (data.buffs) buffs.value = data.buffs;
@@ -114,6 +118,7 @@ const events = [
   {name: 'Soul', minStage: 15},
   {name: 'Amulet', minStage: 20},
   {name: 'Rebirth', minLevel: 100},
+  {name: 'Radiation', minStage: 1},
   {name: 'Settings', minStage: 0},
   {name: 'Info', minStage: 0},
 ]
@@ -175,7 +180,7 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  margin-left: 180px;
+  margin-left: 100px;
 }
 
 .main-panel {

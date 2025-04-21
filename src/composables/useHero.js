@@ -1,7 +1,7 @@
 // useHero.js
 import { reactive, ref } from 'vue';
 
-// Создаем объект героя один раз
+
 const hero = ref({
   hp: 100,
   maxHp: 100,
@@ -84,6 +84,13 @@ const hero = ref({
   isLocking: false,
   isLocked: false,
   afkLocked: false,
+  mutation: [
+    {type: 'Mutagen T[1]', chance: 15 },
+    {type: 'Mutagen T[2]', chance: 2},
+    {type: 'Mutagen T[3]', chance: 0},
+    {type: 'Mutagen T[4]', chance: 0},
+  ],
+  lent: 2
 });
 
 export function useHero() {

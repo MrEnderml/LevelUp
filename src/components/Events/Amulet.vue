@@ -80,6 +80,7 @@ const filterCurses = computed(() =>
   color: #ffe4e6;
   width: 800px;
   font-family: 'Segoe UI', sans-serif;
+  margin-left: 50px;
 }
 
 .amulet-content {

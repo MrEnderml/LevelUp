@@ -77,6 +77,7 @@ const icons = {
   'Amulet': '🔮',
   'Rebirth': '♻️',
   'Space': '✨',
+  'Radiation': '☢️',
   'Settings': '⚙️',
   'Info': '📖'
 }

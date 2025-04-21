@@ -77,18 +77,24 @@ const toggleBuff = (id) => {
 </script>
 
 <style scoped>
+
+
 .buffs-panel {
   background-color: #1a1a1a;
   padding: 1rem;
   border-radius: 1rem;
   color: #fff7db;
   box-shadow: 0 0 10px rgba(255, 191, 0, 0.2);
+  width: 75%;
+  position: fixed;
+  top: 5%;
+  right: 2%;
 }
 
 .buffs-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 15px;
   overflow-y: auto;
   max-height: 500px;
   padding: 2px;
@@ -101,8 +107,6 @@ const toggleBuff = (id) => {
   padding: 1rem;
   cursor: pointer;
   transition: border-color 0.3s ease;
-  max-width: 250px; /* Ограничиваем максимальную ширину */
-  max-height: 350px; /* Ограничиваем максимальную высоту */
   height: auto;
   width: 100%; /* Карточка займет всю доступную ширину до max-width */
   overflow: hidden; /* Если текст выходит за пределы, скрывать */

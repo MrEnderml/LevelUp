@@ -94,6 +94,7 @@ function chanceFormat(value){
   align-items: flex-start;
   color: #f3e8ff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin-left: 200px;
 }
 
 /* Общие стили заголовков */

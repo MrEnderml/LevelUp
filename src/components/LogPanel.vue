@@ -33,7 +33,7 @@ watchEffect(() => {
 
 <style scoped>
 .log-panel {
-  max-width: 250px;
+  max-width: 200px;
   position: fixed;
   right: 0%;
   top: 15%;  

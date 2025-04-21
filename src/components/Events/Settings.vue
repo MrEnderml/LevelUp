@@ -24,6 +24,7 @@
 
 <script setup>
 import { useHero } from '../../composables/useHero.js';
+import { useEnemy } from '../../composables/useEnemy.js';
 import { perks } from '../../data/perks.js';
 import { perks as ascension } from '../../data/ascension.js';
 import { useBuff } from '../../data/buffs.js';
@@ -33,12 +34,14 @@ import { ref, onMounted, onUnmounted  } from 'vue';
 
 const { hero } = useHero();
 const { buffs } = useBuff();
+const { enemy } = useEnemy();
 
 const isDarkTheme = ref(localStorage.getItem('theme') === 'dark');
 
 const saveGame = () => {
   const saveData = {
     hero: hero.value,
+    enemy: enemy.value,
     perks: perks,
     ascension: ascension,
     buffs: buffs.value,
@@ -51,6 +54,7 @@ const saveGame = () => {
 const exportGame = () => {
   const data = {
     hero: hero.value,
+    enemy: enemy.value,
     perks: perks,
     ascension: ascension,
     buffs: buffs.value,
@@ -79,6 +83,8 @@ const triggerFileInput = () => {
       const data = JSON.parse(e.target.result);
       hero.value = data.hero;
       buffs.value = data.buffs;
+      enemy.value = data.enemy;
+
       for (const key in data.perks) {
         if (perks[key]) {
           perks[key].level = data.perks[key].level;

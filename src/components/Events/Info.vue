@@ -1,5 +1,5 @@
 <template>
-<div style="color: white">
+<div style="color: white; margin-left: 200px;">
     <p>Hi. If you are here that means you wanna know something.</p>
     <strong>--- Endless progress?</strong>
     <p>

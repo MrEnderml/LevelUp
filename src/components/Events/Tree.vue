@@ -102,6 +102,8 @@ const calculate = (perk) => {
 
 <style scoped>
 .perk-tree {
+  max-height: 580px;
+  overflow-y: auto;
   position: fixed;
   left: 220px;
   top: 0px;

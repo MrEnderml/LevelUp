@@ -61,6 +61,8 @@ const { enemy } = useEnemy();
   box-shadow: 0 0 25px rgba(0, 255, 128, 0.4);
   position: relative;
   overflow: hidden;
+  max-width: 90%;
+  margin-left: 100px;
 }
 
 /* Светящиеся частицы */
