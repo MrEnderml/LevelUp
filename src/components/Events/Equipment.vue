@@ -1,52 +1,101 @@
 <template>
-  <div class="equipment-panel">
-    <h2> EQUIPMENT 
-      <span class="tooltip-container"> ℹ️
-        <span class="tooltip-text" v-if="heroComputed">
-            Chance to drop equipment:<br>
-            <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['sword']}}]</span><br>
-            <span>Body[T{{heroComputed.equipmentTiers['armor'] + 1}}]: {{ heroComputed.dropChance['armor'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['armor']}}]</span><br>
-            <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['boots']}}]</span><br>
-            <span v-if="heroComputed.eqTierReq['ring'] > 0">Ring[T{{heroComputed.equipmentTiers['ring'] + 1}}]: 
-            {{ heroComputed.dropChance['ring'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['ring']}}]</span><br>
-            <span v-if="hero.rebirthPts >= 35">Gather a complect to gain bonus: </span><br>
-            <span v-if="hero.rebirthPts >= 35">(T3, T3, T3) - +3 Min Level, +3 Max Level</span><br>
-            <span v-if="hero.rebirthPts >= 200">(T4, T4, T4, T4) - +4 Min Level, +4 Max Level</span><br>
-            <span v-if="hero.rebirthPts >= 4000">(T5, T5, T5, T5) - +5 Min Level, +5 Max Level</span><br>
-        </span>        
-      </span>
-    </h2>
-    
-    <div
-      class="equipment-slot"
-      v-for="item in equippedItems"
-      :key="item.type"
-    >
-      <div class="icon">{{ icons[item.type] }}</div>
-      <div class="info">
-        <p class="item-name">{{ item.name }}[T{{item.tier}}]</p>
-        <span class="stat">+{{ item.bonusDisplay }} Max Level</span>
-        <span class="stat">+{{ item.ownProperty }} {{ item.stat }}</span>
+ 
+  <div class="equipment-wrapper">
+    <div class="equipment-panel">
+       <h2>EQUIPMENT
+        <span class="tooltip-container">ℹ️
+          <span class="tooltip-text" v-if="heroComputed">
+              Chance to drop equipment:<br>
+              <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% <span v-if="hero.st < 4">- [MAX - {{heroComputed.eqTierReq['sword']}}]</span></span><br>
+              <span>Body[T{{heroComputed.equipmentTiers['armor'] + 1}}]: {{ heroComputed.dropChance['armor'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['armor']}}]</span><br>
+              <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['boots']}}]</span><br>
+              <span v-if="heroComputed.eqTierReq['ring'] > 0">Ring[T{{heroComputed.equipmentTiers['ring'] + 1}}]: 
+              {{ heroComputed.dropChance['ring'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['ring']}}]</span><br>
+              <span v-if="hero.rebirthPts >= 35">Collect the set to get a bonus: </span><br>
+              <span v-if="hero.rebirthPts >= 35">(T3, T3, T3) - +3 Min Level, +3 Max Level</span><br>
+              <span v-if="hero.rebirthPts >= 200">(T4, T4, T4, T4) - +4 Min Level, +4 Max Level</span><br>
+              <span v-if="hero.rebirthPts >= 4000">(T5, T5, T5, T5) - +5 Min Level, +5 Max Level</span><br>
+          </span>        
+        </span>
+      </h2>
+      
+      <div
+        class="equipment-slot"
+        v-for="item in equippedItems"
+        :key="item.type"
+        @click="setSelectedType(item.type)"
+        :class="{ selected: selectedType === item.type }"
+      >
+        <div class="icon">{{ icons[item.type] }}</div>
+        <div class="info">
+          <p class="item-name" v-if="item.type != 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{Math.min(hero.eqUps[item.type], hero.equipmentTiers[item.type]+(hero.sp >= 55? 3: 0) )}})</span></p>
+          <p class="item-name" v-if="item.type == 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{hero.eqUps[item.type]}})</span></p>
+          <span class="stat">+{{ item.bonusDisplay + Math.floor(hero.eqUpsMult[item.type].cap) }} Max Level</span>
+          <span class="stat">+{{ (item.ownProperty + hero.eqUpsMult[item.type].bonus).toFixed(2) }} {{ item.stat }}</span>
+          <span class="stat" v-if="hero.st >= 3 && item.type == 'sword'">S: +{{(hero.eqUpsMult['sword'].crit).toFixed(2)}} CRIT</span>
+          <span class="stat" v-if="hero.st >= 3 && item.type == 'sword'">P: +{{(hero.eqUpsMult['sword'].critDmg).toFixed(2)}} CRIT DMG</span>
+        </div>
       </div>
     </div>
+
+    <div class="starforge-panel" v-if="hero.sp >= 1">
+      <h3>⭐ Starforge</h3>
+      <p>✨ Stardust: {{ formatNumber(hero.stardust) }} <span v-if="stardustCost > 0">  - {{formatNumber(stardustCost)}}</span></p>
+      <p>Select equipment to enhance its power.</p>
+      <div>{{capitalizeFirst(selectedType)}}</div>
+      <div v-if="selectedType && hero.sp >= hero.eqUpsReq[selectedType]" class="forge-info">
+        <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType]+(hero.sp >= 55? 3: 0)}}</span></p>
+        <div style="display: flex">
+          <span>Upgrade chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
+          <div v-if="upgradeResult" :class="['upgrade-message', upgradeResult]">
+            {{ upgradeResult === 'success' ? '✨ Successful!' : '❌ Failed' }}
+          </div>
+        </div>
+        <button @click="forgeUpgrade">Enhance ✨{{eqUpCost()}}</button>
+        <div class="bonus-buttons">
+        <p>Boost Chance:</p>
+        <button 
+          v-for="val in [0, 10, 25, 50, 100]" 
+          :key="val" 
+          @click="setBonusChance(val)"
+          :class="{ active: bonusChance === val }"
+        >
+          {{ val }}%
+        </button>
+        <button @click="autoEnchance()">Auto</button>
+      </div>
+      </div>
+      <div v-else-if="selectedType">You need {{hero.eqUpsReq[selectedType]}} SP</div>
+    </div>
   </div>
+
 </template>
 
 <script setup>
-import { computed, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { equipment } from '../../data/equipment.js';
 
 const { hero } = useHero();
-
+const upgradeResult = ref('');
+const bonusChance = ref(0);
+const stardustCost = ref(0);
 const heroComputed = computed(() => hero.value);
-console.log(heroComputed.value)
+const selectedType = ref('');
+
+
+const setSelectedType = (type) => {
+  selectedType.value = type;
+  bonusChance.value = 0;
+  stardustCost.value = 0;
+};
 
 const icons = {
   sword: '⚔️',
   armor: '🧥',
   boots: '🥾',
   ring: '💍',
+  spRing: '☄️'
 };
 
 const getStatName = (type) => {
@@ -55,6 +104,7 @@ const getStatName = (type) => {
     case 'armor': return 'HP';
     case 'boots': return 'ATTACK PER SECOND';
     case 'ring': return 'MULT EXP';
+    case 'spRing': return 'Min Level';
     default: return '';
   }
 };
@@ -65,6 +115,7 @@ const bonusType = (type) => {
         case 'armor': return 'hp';
         case 'boots': return 'speed';
         case 'ring': return 'expMult';
+        case 'spRing': return 'minLevel';
         default: return '';
     }
 }
@@ -85,6 +136,113 @@ const equippedItems = computed(() => {
     };
   }).filter(Boolean);
 });
+
+
+function autoEnchance(){
+  const totalUps = hero.value.equipmentTiers[selectedType.value] + (hero.value.sp >= 55? 3: 0);
+  while (hero.value.stardust > 0 && 
+  (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')){
+    setBonusChance(100);
+    if((hero.value.eqUps[selectedType.value]+1) * 10 > hero.value.stardust || bonusChance.value + getUpgradeChance(selectedType.value) < 100)
+      break;
+    hero.value.stardust -= ((hero.value.eqUps[selectedType.value]+1) * 10 + stardustCost.value);
+    hero.value.eqUps[selectedType.value]++;
+  }
+  stardustCost.value = 0;
+  bonusChance.value = 0;
+}
+
+function setBonusChance(value) {
+  let stardustUp = (hero.value.eqUps[selectedType.value]+1) * 10;
+  bonusChance.value = 0;
+  stardustCost.value = 0;
+  if(value == 0)
+    return;
+
+
+  let chance = getUpgradeChance(selectedType.value);
+  let penalty = 1 - 0.04 * Math.max(((hero.value.eqUps['spRing'] - 50) / 10), 0);
+
+  let minD = 0;
+  let maxD = (hero.value.stardust - stardustUp);
+  let resultD = 0;
+
+  let bChance = Math.max(0.01, (1 - (1.035 ** (hero.value.eqUps[selectedType.value]) - 1)));
+
+  while (maxD - minD > 0.001) { 
+    let d = (minD + maxD) / 2;
+    let totalChance = (value == 100? getUpgradeChance(selectedType.value): 0) + ((bChance * d) ** penalty);
+
+    if (totalChance < value) {
+      minD = d;
+    } else if (totalChance > value + 1) {
+      maxD = d;
+    } else {
+      resultD = d;
+      break;
+    }
+    resultD = d;
+  }
+
+
+  stardustCost.value = resultD;
+  bonusChance.value = (bChance * resultD) ** penalty;
+}
+
+function eqUpCost(){
+  return (hero.value.eqUps[selectedType.value]+1) * 10 ;
+}
+
+function getUpgradeChance(type) {
+  const tier = hero.value.eqUps[type];
+  const minBase = 5 + (hero.value.sp >= 70? 5: 0);
+  const base = Math.max(minBase ,50 - tier * 25);
+  return Math.floor(base);
+}
+
+function forgeUpgrade() {
+  const chance = getUpgradeChance(selectedType.value) + bonusChance.value;
+  const success = Math.random() * 100 < chance;
+  const totalUps = hero.value.equipmentTiers[selectedType.value] + (hero.value.sp >= 55? 3: 0);
+  if ((hero.value.eqUps[selectedType.value]+1) * 10 > hero.value.stardust) return;
+
+
+  hero.value.stardust -= (hero.value.eqUps[selectedType.value]+1) * 10;
+  hero.value.stardust -= stardustCost.value;
+  if (success && (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')) {
+    hero.value.eqUps[selectedType.value]++; 
+    upgradeResult.value = 'success';
+  } else {
+    upgradeResult.value = 'fail';
+  }
+  stardustCost.value = 0;
+
+  setTimeout(() => {
+    upgradeResult.value = '';
+  }, 1000);
+  bonusChance.value = 0;
+}
+
+function capitalizeFirst(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatNumber(num) {
+  if (num < 100) return num.toFixed(2);
+  if (num < 1000) return Math.floor(num).toString();
+
+  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+}
+
+
 </script>
 
 <style scoped>
@@ -96,6 +254,9 @@ const equippedItems = computed(() => {
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
   max-width: 400px;
   margin: auto;
+  overflow-y: auto;
+  max-height: 530px;
+  margin-left: 60px;
 }
 
 .equipment-panel h2 {
@@ -164,7 +325,7 @@ const equippedItems = computed(() => {
   position: absolute;
   z-index: 10;
   top: 80%;
-  left: 50%;
+  left: 0%;
   transform: translateX(-50%);
   white-space: nowrap;
   transition: opacity 0.2s ease-in-out, visibility 0.2s;
@@ -175,4 +336,113 @@ const equippedItems = computed(() => {
   visibility: visible;
   opacity: 1;
 }
+
+.equipment-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.equipment-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: nowrap; /* запрет на перенос */
+  margin: 2rem auto;
+  max-width: 1000px;
+}
+
+.equipment-panel {
+  background: #1e1e2f;
+  color: #f0f0f0;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+  width: 400px;
+}
+
+.starforge-panel {
+  background: #292940;
+  border: 2px solid #66ffcc;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  color: #66ffcc;
+  font-family: 'Orbitron', sans-serif;
+  width: 300px;
+  box-shadow: 0 0 12px rgba(255, 255, 0, 0.25);
+  flex-shrink: 0;
+}
+
+
+.starforge-panel h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.starforge-panel select {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.4rem;
+  border-radius: 6px;
+  background: #1e1e2f;
+  color: #66ffcc;
+  border: 1px solid #66ffcc;
+}
+
+.forge-info {
+  margin-top: 0.5rem;
+}
+
+.forge-info button {
+  background: #ffeb3b;
+  color: #000;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px #ffeb3b, 0 0 20px #ffeb3b70;
+}
+
+.upgrade-message {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  animation: fadePop 1s ease forwards;
+}
+
+.upgrade-message.success {
+  color: #66ff66;
+  text-shadow: 0 0 6px #66ff66;
+}
+
+.upgrade-message.fail {
+  color: #ff4444;
+  text-shadow: 0 0 6px #ff4444;
+}
+
+@keyframes fadePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  60% {
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+
 </style>

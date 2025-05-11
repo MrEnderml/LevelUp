@@ -3,18 +3,18 @@
 import { reactive } from 'vue';
 
 
-const logEntries = reactive([]);
+let logs = reactive([]);
 
+export function addLog(message, type = 'All') {
+  logs.push({
+    message,
+    timestamp: new Date().toLocaleTimeString(),
+    type,
+  });
 
-export const addLog = (message) => {
-  const timestamp = new Date().toLocaleTimeString();
-  logEntries.push({ message, timestamp });
+  if (logs.length > 100) logs.shift(); 
+}
 
- 
-  if (logEntries.length > 20) {
-    logEntries.shift();
-  }
-};
-
-
-export const getLogs = () => logEntries;
+export function getLogs() {
+  return logs;
+}

@@ -1,7 +1,9 @@
 <template>
   <div class="hero">
     <div class="hero-header">
-      <h3 style="color: white">🧝 Hero</h3>
+      <Tooltip :text="() => stats()">
+          <h3 style="color: white">🧝 *Hero</h3>
+      </Tooltip>
       <div class="formations">
           <button
             v-for="(formation, index) in filterFormation"
@@ -14,11 +16,11 @@
           </button>
         </div>
     </div>
-    <span style="color: white">⚔️ {{ format(attack) }}  </span>
-    <span style="color: white">  🛡️{{ format(def) }}</span>
+    <span style="color: white">⚔️ {{ formatNumber(attack) }}  </span>
+    <span style="color: white">  🛡️{{ formatNumber(def) }}</span>
     <div class="hp-bar">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
-            <span class="hp-text">{{ format(hp) }} / {{ format(maxHp) }}</span>
+            <span class="hp-text">{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span>
         </div>
     </div>
     <!-- Attack speed bar -->
@@ -63,14 +65,17 @@ const maxHp = computed(() => hero.value.maxHp);
 const attack = computed(() => hero.value.attack);
 const def = computed(() => hero.value.def)
 
-function format(value) {
-  if (value < 10) {
-    return value.toFixed(2);
-  } else if (value < 100) {
-    return value.toFixed(1);
-  } else {
-    return value.toFixed(0);
-  }
+function formatNumber(num) {
+  if (num < 1000) return Math.floor(num).toString();
+
+  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 
 const filterFormation = computed(() => 
@@ -81,6 +86,18 @@ function toggleFormation(index) {
   hero.value.activeFormation = hero.value.activeFormation === index ? null : index;
   console.log( hero.value.activeFormation);
   
+}
+
+function stats(){
+  let str = "";
+
+  str += `💢<span>BASE CRIT: ${(hero.value.crit).toFixed(1)}</span><br>`;
+  str += `🔪<span>BASE CRIT DAMAGE: ${(hero.value.critAttack / 100).toFixed(1)}</span><br>`;
+  str += `🤺<span>BASE DOODGE: ${hero.value.avoid}</span><br>`;
+  str += `💀<span>Overkill: ${Math.floor(hero.value.overkill - 1)}</span><br>`;
+  str += `🥾<span>APS: ${hero.value.attacksPerSecond.toFixed(1)}</span><br>`;
+
+  return str;
 }
 </script>
 

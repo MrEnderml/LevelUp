@@ -2,6 +2,8 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
+      <Tools />
+
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
       <Tree v-if="currentEvent === 'Tree'" />
@@ -18,7 +20,13 @@
 
       <Rebirth v-if="currentEvent === 'Rebirth'" />
 
+      <Space v-if="currentEvent === 'Space'" />
+
       <Radiation v-if="currentEvent === 'Radiation'" />
+
+      <Infinity v-if="currentEvent === 'Infinity'" />
+
+      <DimensionAtlas v-if="currentEvent === 'D-Atlas'" />  
 
       <Settings v-if="currentEvent === 'Settings'" />
 
@@ -27,7 +35,7 @@
   </div>
   <div v-if="hero.showAfkPopup" class="afk-popup">
     <div class="afk-content">
-      <p style="white-space: pre-line;">{{ hero.afkMessage }}</p>
+      <p style="white-space: pre-line" v-html="hero.afkMessage"></p>
       <button @click="hero.showAfkPopup = false">Close</button>
     </div>
   </div>
@@ -45,6 +53,9 @@ import { perks } from './data/perks.js';
 import { perks as ascension } from './data/ascension.js';
 import { amulets } from './data/amulets.js';
 import { cursed } from './data/cursed.js';
+import { perks as radPerks } from './data/radPerks.js'; 
+import { spEnemy as space } from './data/spaceEnemy.js';
+import { goals } from './data/infGoals.js';
 
 import EventPanel from './components/EventPanel.vue';
 import BattleLogic from './components/BattleLogic.vue';
@@ -55,28 +66,123 @@ import Buff from './components/Events/Buff.vue';
 import Soul from './components/Events/Soul.vue';
 import Amulet from './components/Events/Amulet.vue';
 import Rebirth from './components/Events/Rebirth.vue';
+import Space from './components/Events/Space.vue';
 import Radiation from './components/Events/Radiation.vue';
+import Infinity from './components/Events/Infinity.vue';
+import DimensionAtlas from './components/Events/DimensionAtlas.vue';
 import Settings from './components/Events/Settings.vue';
 import Info from './components/Events/Info.vue';
+import Tools from './components/Tools.vue';
 
 const afkStartTime = ref(null);
 const { hero } = useHero();    
 const { buffs } = useBuff();
 const { enemy } = useEnemy();
 
+
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (
+      source[key] !== null &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key])
+    ) {
+      if (
+        !target[key] ||
+        typeof target[key] !== 'object' ||
+        Array.isArray(target[key])
+      ) {
+        target[key] = {};
+      }
+      deepMerge(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+}
+
 const loadGame = () => {
     const save = localStorage.getItem('gameSave');
     if (!save) return;
 
     const data = JSON.parse(save);
-    if (data.hero) hero.value = data.hero;
-    if (data.enemy) enemy.value = data.enemy;
-    if (data.perks) Object.assign(perks, data.perks);
-    if (data.ascension) Object.assign(ascension, data.ascension);
-    if (data.buffs) buffs.value = data.buffs;
-    if (data.amulets) Object.assign(amulets, data.amulets);
-    if (data.cursed) Object.assign(cursed, data.cursed);
-  
+    if (data.hero) deepMerge(hero.value, data.hero);
+    if (data.enemy) deepMerge(enemy.value, data.enemy);
+    if (data.perks) {
+      for (let idx in data.perks) {
+        const perkData = data.perks[idx];
+        const targetPerk = perks.value[idx];
+
+        if (!perkData || !targetPerk) continue;
+        targetPerk.level = perkData.level;
+
+        if ('status' in perkData) {
+          targetPerk.status = perkData.status;
+        }
+
+        if ('infStatus' in perkData) {
+          targetPerk.infStatus = perkData.infStatus;
+        }
+      }
+      
+      if (data.perks[0]?.kills !== undefined) {
+        perks.value[0].kills = data.perks[0].kills;
+      }
+      if (data.perks[1]?.buff !== undefined) {
+        perks.value[1].buff = data.perks[1].buff;
+      }
+    }
+    if (data.ascension) {
+      for(let idx in data.ascension) {
+        ascension[idx].level = data.ascension[idx].level;
+        if(ascension[idx].status !== undefined)
+          ascension[idx].status = data.ascension[idx].status;
+      }
+    }
+    if (data.space) {
+      for(let idx in data.space){
+        space[idx].status = data.space[idx].status;
+      }
+    }
+    if (data.buffs) {
+      for(let idx in data.buffs){
+        buffs.value[idx].exp = data.buffs[idx].exp;
+        buffs.value[idx].tier = data.buffs[idx].tier;
+        buffs.value[idx].active = data.buffs[idx].active;
+      }
+    }
+   
+    if (data.cursed) {
+      for(let idx in data.cursed){
+        if(cursed[idx].status !== 'undefined')
+          cursed[idx].status = data.cursed[idx].status;
+      }
+    };
+    if (data.radPerks) {
+      for(let idx in data.radPerks){
+        radPerks[idx].level = data.radPerks[idx].level;
+        if( idx == 6){
+          radPerks[idx].max = data.radPerks[idx].max;
+          radPerks[idx].status = data.radPerks[idx].status;
+          radPerks[idx].baseCost = data.radPerks[idx].baseCost;
+        }
+        if( idx == 7){
+          radPerks[idx].max = data.radPerks[idx].max;
+          radPerks[idx].perkStatus = data.radPerks[idx].perkStatus;
+        }
+        if( idx == 10){
+          radPerks[idx].max = data.radPerks[idx].max;
+          radPerks[idx].status = data.radPerks[idx].status;
+        }
+      }
+    }
+    if (data.infGoals) {
+      for(let idx in data.infGoals){
+        goals.value[idx].tier = data.infGoals[idx].tier;
+      }
+    }
+
+
     const lastOnline = localStorage.getItem('lastOnline');
     if (lastOnline) {
       if(hero.value.isAbyss){
@@ -89,13 +195,12 @@ const loadGame = () => {
       const seconds = Math.floor(diffMs / 1000);
 
       let time = Math.min(seconds, 26400);
-      let maxKill = hero.value.maxStage * 50;
+      let maxKill = hero.value.maxStage * 75;
 
       let div = enemy.value.maxHp * (time ** 0.1) - hero.value.attack;
       hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (enemy.value.maxHp * (time ** 0.1))) * time: time, maxKill);
       hero.value.afkTime = time;
       hero.value.afkLocked = true;
-      console.log("load", time);
     }
     saveGame();
 };
@@ -110,17 +215,21 @@ window.addEventListener('beforeunload', () => {
 
 
 const events = [
-  {name: 'Combat', minStage: 1}, 
-  {name: 'Tree', minStage: 1},
-  {name: 'Buff', minStage: 5},
-  {name: 'Equipment', minStage: 2},
-  {name: 'Ascension', minStage: 10},
-  {name: 'Soul', minStage: 15},
-  {name: 'Amulet', minStage: 20},
-  {name: 'Rebirth', minLevel: 100},
-  {name: 'Radiation', minStage: 1},
-  {name: 'Settings', minStage: 0},
-  {name: 'Info', minStage: 0},
+  {name: 'Combat'}, 
+  {name: 'Tree'},
+  {name: 'Buff'},
+  {name: 'Equipment'},
+  {name: 'Ascension'},
+  {name: 'Soul'},
+  {name: 'Amulet'},
+  {name: 'Rebirth'},
+  {name: 'Space'},
+  {name: 'Radiation'},
+  {name: 'Infinity'},
+  {name: 'D-Atlas'},
+  {name: 'Settings'},
+  {name: 'Info'},
+  
 ]
 const currentEvent = ref('Combat');
 
@@ -139,13 +248,9 @@ const handleReturn = () => {
   const seconds = Math.floor(afkTime / 1000);
 
   if (seconds > 5) {
-    if(hero.value.isAbyss){
-      hero.value.afkKills = 0;
-      afkStartTime.value = null;
-      return;
-    }
+    
     let time = Math.min(seconds, 26400);
-    let maxKill = hero.value.maxStage * 50;
+    let maxKill = hero.value.maxStage * 75;
 
     let div = enemy.value.maxHp * (time ** 0.1) - hero.value.attack;
     hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (enemy.value.maxHp * (time ** 0.1))) * time: time, maxKill);

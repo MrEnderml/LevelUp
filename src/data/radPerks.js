@@ -2,56 +2,56 @@ export const perks = [
   {
     id: 1,
     name: 'Mutagen [T1]',
-    description: '+2% to Mutagen [T1]',
+    description: '+0.5% to Mutagen [T1]',
+    level: 0,
+    max: 30,
+    baseCost: 1,
+    costPerLevel: 1
+  },
+  {
+    id: 2,
+    name: 'Mutagen [T2]',
+    description: '+1% to Mutagen [T2]',
     level: 0,
     max: 30,
     baseCost: 2,
     costPerLevel: 2
   },
   {
-    id: 2,
-    name: 'Mutagen [T2]',
-    description: '+1.5% to Mutagen [T2]',
+    id: 3,
+    name: 'Mutagen [T3]',
+    description: '+1.5% to Mutagen [T3]',
     level: 0,
     max: 30,
     baseCost: 4,
-    costPerLevel: 4
-  },
-  {
-    id: 3,
-    name: 'Mutagen [T3]',
-    description: '+1% to Mutagen [T3]',
-    level: 0,
-    max: 30,
-    baseCost: 8,
-    costPerLevel: 8
+    costPerLevel: 2
   },
   {
     id: 4,
     name: 'Mutagen [T4]',
-    description: '+0.5% to Mutagen [T4]',
+    description: '+2% to Mutagen [T4]',
     level: 0,
     max: 30,
-    baseCost: 16,
-    costPerLevel: 16
+    baseCost: 8,
+    costPerLevel: 4
   },
   {
     id: 5,
     name: 'Mutation Vortex',
     description: 'Increase mutagen gaining [1]',
     level: 0,
-    max: 25,
-    baseCost: 8,
-    costPerLevel: 12
+    max: 30,
+    baseCost: 2,
+    costPerLevel: 1
   },
   {
     id: 6,
     name: 'Nuclear Resilience',
-    description: '-1 STAGE',
+    description: '-1 STAGE of Radiation Enemies appearance',
     level: 0,
     max: 5,
-    baseCost: 40,
-    costPerLevel: 40
+    baseCost: 50,
+    costPerLevel: 50
   },
   {
     id: 7,
@@ -59,8 +59,9 @@ export const perks = [
     description: 'REBUILD REBIRTH SYSTEM THAT ALLOWS YOU TO SPEND MUTAGEN TO UP YOUR POTENTIAL',
     level: 0,
     max: 1,
-    baseCost: 250,
-    costPerLevel: 0
+    baseCost: 2500,
+    costPerLevel: 2.5,
+    status: false
   },
   {
     id: 8,
@@ -68,25 +69,26 @@ export const perks = [
     description: 'REBUILD ONE OF THE PERK IN TREE [T1]',
     level: 0,
     max: 1,
-    baseCost: 500,
-    costPerLevel: 0
+    baseCost: 1000,
+    costPerLevel: 0,
+    perkStatus: false
   },
   {
     id: 9,
     name: 'Alpha Burst',
-    description: 'UNLOCK 4 SPECIAL PERKS IN ASCENSION',
+    description: 'UNLOCK 5 SPECIAL PERKS IN ASCENSION',
     level: 0,
     max: 1,
-    baseCost: 150,
+    baseCost: 250,
     costPerLevel: 0
   },
   {
     id: 10,
     name: 'Radionite',
-    description: 'SOULS DONT DISAPPEAR WHEN YOU LOSE THE FIGHT BUT YOU CAN LEAVE IT',
+    description: 'SOULS HAVE NO LONGER CAP',
     level: 0,
     max: 1,
-    baseCost: 100,
+    baseCost: 500,
     costPerLevel: 0
   },
   {
@@ -95,17 +97,27 @@ export const perks = [
     description: 'UNLOCK DANGER SYSTEM',
     descriptionNext: '+1 DANGER per Level',
     level: 0,
-    max: 100,
-    baseCost: 10,
-    costPerLevel: 5
+    max: 1,
+    baseCost: 5,
+    costPerLevel: 1,
+    status: false
   },
   {
     id: 12,
     name: 'Crystallized Genome',
-    description: 'CORRUPTION IS WEAKER PER EACH KILLED BOSS',
+    description: 'CORRUPTION IS WEAKER BY 0.01 PER KILLED BOSSES UNTIL YOUR MAX STAGE',
     level: 0,
     max: 1,
-    baseCost: 1000,
+    baseCost: 500,
     costPerLevel: 0
+  },
+  {
+    id: 13,
+    name: 'Genetic Overload',
+    description: '+1 MAX Level',
+    level: 0,
+    max: 100,
+    baseCost: 1,
+    costPerLevel: 1
   },
 ]

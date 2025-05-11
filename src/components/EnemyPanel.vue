@@ -1,21 +1,22 @@
 <template>
   <div class="enemy">
-    <h3 :class="{ 'soul-name': enemy.soulBuff.active || enemy.rebirthSoul, 'boss-name': enemy.boss.isBoss, 'ascension-name': enemy.ascensionSoul.active }">👾 
-      {{ enemy.soulBuff.active ? soulNames[hero.souls] || 'Unknown Soul' : enemy.name }}
+    <h3 :class="{ 'soul-name': enemy.soulBuff.active || enemy.rebirthSoul, 'boss-name': enemy.boss.isBoss, 'ascension-name': enemy.ascensionSoul.active, 'space-name': enemy.isSpaceFight, 
+    'inf-name': enemy.spawnType.slice(0, 3) == 'inf' }">👾 
+      {{ enemy.soulBuff.active ? soulNames[hero.souls%50] || 'Unknown Soul' : enemy.name }}
     </h3>
 
-    <span style="color: white">⚔️ {{ format(attack) }}  </span>
-    <span style="color: white" v-if="def > 0"> 🛡️{{format(def)}}</span>
+    <span style="color: white">⚔️ {{ formatNumber(attack) }}  </span>
+    <span style="color: white" v-if="def > 0"> 🛡️{{formatNumber(def)}}</span>
     <div class="hp-bar">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
-            <span class="hp-text">{{ format(hp) }} / {{ format(maxHp) }}</span>
+            <span class="hp-text">{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span>
         </div>
     </div>
     <div class="attack-bar">
       <div class="attack-progress" :style="{ width: `${attackBarProgress * 100}%` }"></div>
     </div>
-    <div>
-      <span v-for="idx in hero.activeCurse">{{cursed[idx].icon}}</span>
+    <div class="curse-wrapper">
+      <span v-for="idx in hero.activeCurse" class="curseTier" :style="{ border: '2px solid ' + colors[hero.activeCurseTier[idx]] }">{{cursed[idx].icon}}</span>
     </div>
   </div>
 </template>
@@ -39,15 +40,19 @@ const maxHp = computed(() => enemy.value.maxHp);
 const attack = computed(() => enemy.value.attack);
 const def = computed(() => enemy.value.def);
 
+const colors = ['green', 'yellow', 'red', '#c56eff']
 
-function format(value) {
-  if (value < 10) {
-    return value.toFixed(2);
-  } else if (value < 100) {
-    return value.toFixed(1);
-  } else {
-    return value.toFixed(0);
-  }
+function formatNumber(num) {
+  if (num < 1000) return Math.floor(num).toString();
+
+  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 </script>
 
@@ -127,5 +132,25 @@ function format(value) {
   color:rgb(60, 63, 241);
   font-weight: bold;
   text-shadow: 0 0 5px rgb(41, 27, 233);
+}
+
+.space-name {
+  color:rgb(253, 196, 9);
+  font-weight: bold;
+  text-shadow: 0 0 5px rgb(248, 193, 13);
+}
+
+.inf-name {
+  color:rgb(253, 249, 9);
+  font-weight: bold;
+  text-shadow: 0 0 5px rgb(248, 244, 13);
+}
+
+.curse-wrapper {
+  margin-top: 10px;
+}
+
+.curseTier{
+  border-radius: 20px;
 }
 </style>

@@ -19,18 +19,31 @@
         >
           Reach {{ tierUnlockStage(tier) }} stage
         </span>
+        <button style="margin-left: 10px" v-if="radPerks[8].level == 1 && tier >= 3"
+          class="active-r"
+          @click="selectTier(5)"
+        >
+          TIER-R
+        </button>
+        <button style="margin-left: 10px" v-if="hero.infTier >= 2 && tier >= 3"
+          class="active-inf"
+          @click="selectTier(6)"
+        >
+          TIER-INF
+        </button>
       </div>
     </div>
 
-    <p>Shards:🌌 <strong>{{ format(hero.ascensionShards) }}</strong></p>
+    <p>Shards:🌌 <strong>{{ formatNumber(hero.ascensionShards) }}</strong></p>
 
     <div class="perk-container">
       <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
         <h3>{{ perk.name }}</h3>
-        <p>{{ perk.description }}</p>
-        <p>Level: {{ perk.level }} / {{ perk.max }}</p>
+        <p class="perk-description">{{ getPerkDescription(perk) }}</p>
+        <p v-if="currentTier < 5">Level: {{ perk.level }} / {{ perk.max }}</p>
+        <p v-if="currentTier == 6">Level: {{ perk.level }}</p>
         <button :disabled="!canUpgrade(perk)" @click="upgradePerk(perk)">
-          {{ getCost(perk) }} 🌌
+          {{ formatNumber(getCost(perk)) }} 🌌
         </button>
       </div>
     </div>
@@ -41,6 +54,7 @@
 import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/ascension.js';
 import { computed, ref } from 'vue';
+import { perks as radPerks } from '../../data/radPerks.js';
 
 const { hero } = useHero();
 
@@ -56,24 +70,15 @@ const maxTier = computed(() =>
 );
 
 const selectTier = (tier) => {
+  if(tier == 5)
+    currentTier.value = 5;
+  
+  if(tier == 6)
+    currentTier.value = 6;
+
   if (tier <= maxTier.value) {
     currentTier.value = tier;
   }
-};
-
-const performAscension = () => {
-
-  hero.value.level = 1;
-  hero.value.exp = 0;
-  hero.value.stage = 1;
-  hero.value.zone = 1;
-  hero.value.ascensionShards += gainedShards;
-
-  // Сброс дополнительных параметров при необходимости
-  // hero.value.perkPoints = 0;
-  // hero.value.treeTier = 0;
-
-  // Можешь использовать addLog("Ты возвысился и получил " + gainedShards + " осколков!");
 };
 
 const filteredPerks = computed(() =>
@@ -81,6 +86,8 @@ const filteredPerks = computed(() =>
 );
 
 const getCost = (perk) => {
+  if(perk.tier == 6)
+    return Math.floor(perk.baseCost ** perk.level);
   return perk.baseCost + perk.level * perk.costPerLevel;
 };
 
@@ -96,17 +103,34 @@ const upgradePerk = (perk) => {
   if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
     hero.value.ascensionShards -= cost;
     perk.level++;
+
   }
 };
 
-function format(value) {
-  if (value < 10) {
-    return value.toFixed(2);
-  } else if (value < 100) {
-    return value.toFixed(1);
-  } else {
-    return Math.floor(value);
+function getPerkDescription(perk) {
+  if (perk.id === 28) {
+    return `Enemies weakness based on Corruption weakness [${(1- (hero.value.corruption - 0.1) * 0.5).toFixed(2)}]. Also works in The Abyss`
   }
+  if (perk.id === 30) {
+    return `Gain Ascension Shards based on SP - [${(1.025 ** hero.value.sp).toFixed(2)}]. Ascension Affect scales better`
+  }
+  if(perk.id === 37){
+    return `Level Exp Reduction based on Rebirth Pts [${(1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2)).toFixed(2)}]`
+  }
+  return perk.description
+}
+
+function formatNumber(num) {
+  if (num < 1000000) return Math.floor(num).toString();
+
+  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 </script>
 
@@ -149,6 +173,16 @@ button.active {
   color: white;
 }
 
+button.active-r {
+  background-color: #0fe56c;
+  color: white;
+}
+
+button.active-inf {
+  background-color:rgb(215, 229, 15);
+  color: white;
+}
+
 button.locked {
   background-color: rgba(255, 255, 255, 0.04);
   color: #888;
@@ -187,21 +221,24 @@ h2 {
 
 .perk-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Теперь 3 перка в ряд */
-  gap: 10px; /* Уменьшаем расстояние между перками */
-  max-height: calc(100vh - 220px); /* Ограничиваем высоту контейнера, чтобы не было скроллинга */
-  overflow-y: auto; /* Включаем вертикальный скроллинг внутри контейнера */
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 10px; 
+  max-height: calc(100vh - 220px); 
+  overflow-y: auto; 
   padding: 5px;
   max-width: 800px;
 }
 
 .perk {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background-color: #24324f;
   padding: 8px 10px;
   margin-bottom: 10px;
   border-radius: 8px;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-  overflow: hidden; /* Чтобы контент не выходил за пределы */
+  overflow: hidden; 
 }
 
 .perk h3 {
@@ -238,5 +275,12 @@ h2 {
 
 .perk button:active {
   transform: scale(0.98);
+}
+
+.perk-description {
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 </style>

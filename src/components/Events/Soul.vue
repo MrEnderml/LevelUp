@@ -1,31 +1,19 @@
 <template>
   <div class="souls-wrapper">
-    <!-- Левая панель: цель -->
+    
     <div class="soul-target">
       <h3>🎯 Target</h3>
-      <p>[{{hero.souls}}] {{ soulNames[hero.souls] }} {{chanceFormat(enemy.soulBuff.chance)}}%</p>
+      <p>[{{hero.souls}}<span v-if="radPerks[9].level == 0">/{{hero.soulsCap}}</span>] {{ soulNames[hero.souls%50] }} 
+      <span :title="'Soul Chance'">*[{{chanceFormat(enemy.soulBuff.chance)}}%]</span></p>
       <p style="text-align: left">Description:<br>
         <span><strong>DMG MULT:</strong> [{{format(enemy.soulBuff.dmg)}}]</span><br>
         <span><strong>HP MULT:</strong> [{{format(enemy.soulBuff.hp)}}]</span><br>
-        <span :title="'EXP, WEAPON CHANCE, ASCENSION SHARDS'"><strong>LOOT MULT:</strong> [{{format(enemy.soulBuff.drop)}}]</span><br> 
+        <span :title="'EXP, WEAPON CHANCE'"><strong>*LOOT MULT:</strong> [{{format(enemy.soulBuff.drop)}}]</span><br> 
       </p>
     </div>
 
-    <!-- Центральная панель: прогресс -->
     <div class="souls-panel">
-      <h2> 
-        <div class="tooltip-wrapper">
-          <span class="info-button">ℹ️</span>
-          <div class="tooltip">
-            -Souls appear from 15 stage<br>
-            -Each soul gives +1 Max Level and +10% EXP.<br>
-            -Kill soul to gain ascension shards 1 time<br>
-            -Kill 10 to up soul gathering Tier.<br>
-            -As a higher stage, as a higher chance to find a soul<br>
-            -P - Permanent after reaching<br>
-          </div>
-        </div>
-      Souls T[{{hero.soulTier}}]</h2>
+      <h2> Souls T[{{hero.soulTier}}]</h2>
       <div class="progress-container">
         <div class="soul-bar">
           <div
@@ -58,6 +46,7 @@ import { ref, computed } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { rewards, soulNames } from '../../data/souls.js';
+import { perks as radPerks } from '../../data/radPerks.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();

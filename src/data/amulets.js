@@ -48,7 +48,7 @@ export const amulets = [
         status: false
     },
     {
-        name: "Nemesis Сhaos",
+        name: "Star Space",
         tier: 4,
         maxLevel: 16,
         buffSlot: 1,

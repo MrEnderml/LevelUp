@@ -3,8 +3,9 @@
     <div class="left-panel">
       <h2>♻️ Rebirth [T{{hero.rebirthTier}}]</h2>
       
-      <p>Limit: {{ Math.min(100 + hero.rebirthTier * 10, 300) }}</p>
-      <p><strong class="pot"><span style="color: gold">Potential: {{hero.potential}}</span><span>(Increase stats per level)</span></strong><br>
+      <p v-if="hero.infTier < 3">Cap: {{ Math.min(100 + hero.rebirthTier * 10, 300) }}</p>
+      <p><strong class="pot"><span style="color: gold">Potential: {{hero.potential - radPerks[6].level}}</span>
+      <span class="radPot" v-if="radPerks[6].level > 0">(+{{radPerks[6].level}})</span></strong><br>
         <strong><span style="color: lightgreen">+0.5 HP per 10 Potential</span></strong>
         <strong><span style="color: #eb4e4e">+0.2 DMG per 20 Potential</span></strong>
         <strong><span style="color: orange">+0.1 DEF per 30 Potential</span></strong>
@@ -12,14 +13,20 @@
       <p style="font-weight: bold">Enemy EVO<br>
         <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
         <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
-        <span :title="'EXP, WEAPON CHANCE'">LOOT - [{{enemy.rebirthEnemy["drop"]}}] </span>
-        <span style="color: #062e9f" v-if="hero.abyssTier >= 2">ASCENSION AFFECT: {{(1.04 ** Math.log(hero.ascensionShards)).toFixed(2)}}</span>
+        <span :title="'EXP, WEAPON CHANCE'">*LOOT - [{{enemy.rebirthEnemy["drop"]}}] </span>
+        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{(1 / (1.04 + (ascenPerks[29].level? 0.01: 0))** Math.log(hero.ascensionShards)).toFixed(2)}}</span>
       </p>
       <p class="rebirthTiers">
-        <span v-if="hero.rebirthTier >= 5">T[5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1.025 ** hero.rebirthTier).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 5">T[5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
         <span v-if="hero.rebirthTier >= 10">T[10] - 50% curse Bonus. +1 Max Curse</span>
         <span v-if="hero.rebirthTier >= 15">T[15] - +1 max Buff in Abyss</span>
         <span v-if="hero.rebirthTier >= 20">T[20] - Chance the appearance of the lower tier souls. The lower Tier souls drop Rebirth Pts.</span>
+        <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** hero.rebirthTier)}}]</span>
+        <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** hero.rebirthTier)}}]</span>
+        <span v-if="hero.rebirthTier >= 50">T[50] - Equipment Chance based on Rebirth Tier [{{(1.03 ** hero.rebirthTier).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 60">T[60] - Space Boos appearance based on Rebirth Tier [{{(1.02 ** hero.rebirthTier).toFixed()}}]</span>
+        <span v-if="hero.rebirthTier >= 70">T[70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 80">T[80] - Max Level Mult based on Rebirth Tier [1.08]</span>
       </p>
     </div>
 
@@ -44,9 +51,13 @@ import { rewards } from '../../data/rebirth.js'
 import { ref, computed } from 'vue'
 import { useHero } from '../../composables/useHero.js'
 import { useEnemy } from '../../composables/useEnemy.js'
+import { perks as radPerks} from '../../data/radPerks.js';
+import { perks as ascenPerks } from '../../data/ascension.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
+
+
 
 </script>
 
@@ -107,6 +118,12 @@ const { enemy } = useEnemy();
   box-shadow: inset 0 0 8px rgba(0, 255, 128, 0.2);
 }
 
+.left-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 550px;
+}
+
 .left-panel h2,
 .right-panel h2 {
   color: #b9f6ca;
@@ -164,5 +181,10 @@ span {
 .rebirthTiers {
   font-weight: bold;
   text-align: justify;
+}
+
+.radPot {
+  color: "#66ff66";
+  display: block;
 }
 </style>

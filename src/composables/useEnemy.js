@@ -29,7 +29,14 @@ const enemy = ref({
     stats: 1,
     active: false
   },
-  rebirthSoul: false
+  rebirthSoul: false,
+  danger: 0,
+  enemyPower: 1,
+  spaceBossChance: 0,
+  isSpaceFight: 0,
+  dangerEnemyChance: [0, 0, 0, 0, 0, 0],
+  dangerEnemyLoot: [0, 0, 0],
+  spawnType: 'none'
 });
 
 const villainNames = [

@@ -1,17 +1,37 @@
 <template>
   <div class="radiation-panel">
-    <!-- Левая колонка: Шанс выпадения мутагенов -->
     <div class="mutation-chances">
-      <h2>☢️ Mutagens</h2>
+      <h2>
+        Mutagens: {{Math.floor(hero.mutagen)}}
+      </h2>  
       <ul>
         <li
-          v-for="(mutation, idx) in hero.value.mutation"
+          v-for="(mutation, idx) in hero.mutation"
           :key="mutation.type"
           class="mutation"
         >
-          <span class="glow">{{ mutation.type }}</span> — {{ mutation.chance }}%
+          <span class="glow">{{ mutation.type }}</span> — {{ mutation.chance.toFixed(1) }}%
         </li>
       </ul>
+      <div v-if="perks[10].status" class="danger-wrapper">
+        <div>
+          DANGER: [{{perks[10].level}}]
+        </div> 
+        <p>Enemy Power: [{{(enemy.enemyPower).toFixed(2)}}]</p>
+        <span>Space Boss [T{{Math.floor(hero.spCount / 6) + 1}}] - [{{(enemy.spaceBossChance).toFixed(2)}}%]</span><br>
+        <span v-if="perks[10].level >= 10">Souls(%) - [{{enemy.dangerEnemyChance[0].toFixed(2)}}]</span><br>
+        <span v-if="perks[10].level >= 20">Ascension Souls(%) - [{{enemy.dangerEnemyChance[4].toFixed(2)}}]</span><br>
+        <span v-if="perks[10].level >= 40">Rebirth Souls(%) - [{{enemy.dangerEnemyChance[5].toFixed(2)}}]</span><br>
+
+        <span v-if="hero.infTier >= 4">Ω-Infinity(%)  <span v-if="enemy.danger < 100">Reach Danger 100</span> 
+        <span v-if="enemy.danger >= 100">- [{{enemy.dangerEnemyChance[1].toFixed(2)}}]</span></span><br>
+
+        <span v-if="hero.infTier >= 4">Mirror of the Eternal(%)  <span v-if="enemy.danger < 150">Reach Danger 150</span>
+        <span v-if="enemy.danger >= 150">- [{{enemy.dangerEnemyChance[2].toFixed(2)}}]</span></span><br>
+
+        <span v-if="hero.infTier >= 4">The Infinite One(%) <span v-if="enemy.danger < 200">Reach Danger 200</span> 
+        <span v-if="enemy.danger >= 200">- [{{enemy.dangerEnemyChance[3].toFixed(2)}}]</span></span><br>
+      </div>
     </div>
 
     <!-- Правая колонка: Перки -->
@@ -32,12 +52,15 @@
             >
                 <h3>{{ perk.name }}</h3>
                 <p class="perk-description">{{ perk.description }}</p>
-                <small class="perk-level">Уровень: {{ perk.level }} / {{ perk.max }}</small>
+                <small class="perk-level">Lvl: {{ perk.level }} / {{ perk.max }}</small>
                 <button
                     :disabled="perk.level >= perk.max"
                     @click="upgradePerk(perk)"
+                    @mousedown="startAutoUpgrade(perk)"
+                    @mouseup="stopAutoUpgrade"
+                    @mouseleave="stopAutoUpgrade"
                     >
-                    Прокачать ({{ getCost(perk) }})
+                    Upgrade ({{ getCost(perk) }})
                 </button>
             </div>
             </div>
@@ -51,9 +74,11 @@
 import { ref, computed, reactive } from 'vue';
 import { perks as rawPerks } from '../../data/radPerks.js';
 import { useHero } from '../../composables/useHero.js';
+import { useEnemy } from '../../composables/useEnemy.js';
 
 const perks = reactive([...rawPerks]);
 const { hero } = useHero();
+const { enemy } = useEnemy();
 
 console.log(hero.value.lent); //undefined
 
@@ -71,11 +96,9 @@ const groupedPerks = computed(() => {
 })
 
 function upgradePerk(perk) {
-  if (perk.level < perk.max) {
-    const cost = getCost(perk);
+  if (perk.level < perk.max && getCost(perk) <= hero.value.mutagen) {  
     
-    
-
+    hero.value.mutagen -= getCost(perk);
     perk.level++;
     if (perk.id == 11 && perk.level > 0){
         perk.description = perk.descriptionNext;
@@ -83,8 +106,48 @@ function upgradePerk(perk) {
     if (perk.id == 5){
         perk.description = perk.description.replace(/\[\d+(\.\d+)?]/, '') + ` [${(1.025 ** perk.level).toFixed(2)}]`;
     }
+
+    if (perk.id == 7 && !perk.status){
+      perk.level = 0;
+      perk.max = 60;
+      perk.baseCost = 5;
+      perk.description = `[+0] Potential`
+      perk.status = true;
+    }
+    if(perk.id == 7 && perk.status){
+      perk.description = `+[${perk.level}] Potential`
+    }
+
+    if (perk.id == 11 && !perk.status){
+      perk.level = 0;
+      perk.max = 100;
+      perk.baseCost = 1;
+      perk.description = `+1 DANGER per level`;
+      perk.status = true;
+    }
     
   }
+}
+
+let intervalId = null;
+let holdTimeout = null;
+
+function startAutoUpgrade(perk) {
+  
+  holdTimeout = setTimeout(() => {
+    intervalId = setInterval(() => {
+      upgradePerk(perk);
+    }, 75);
+  }, 500);
+}
+
+function stopAutoUpgrade() {
+  clearTimeout(holdTimeout);
+  if (intervalId !== null) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  holdTimeout = null;
 }
 </script>
 
@@ -103,6 +166,7 @@ function upgradePerk(perk) {
   color: #d4ff00;
   box-sizing: border-box;
   overflow: hidden;
+  margin-left: 120px;
 }
 
 @media (min-width: 768px) {
@@ -127,7 +191,7 @@ function upgradePerk(perk) {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .mutation {
@@ -228,4 +292,56 @@ button:hover {
   display: block;
   margin-top: 0.25rem;
 }
+
+
+.tooltip {
+  position: absolute;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1c1917;
+  color: #fef2f2;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  width: 220px;
+  font-size: 0.85rem;
+  text-align: left;
+  z-index: 10000000;
+  box-shadow: 0 0 10px #66ff66;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tooltip-wrapper:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.info-button {
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 50%;
+  color: #fee2e2;
+  transition: transform 0.2s;
+}
+
+.info-button:hover {
+  transform: scale(1.2);
+}
+
+.danger-wrapper {
+  max-width: 250px;
+  overflow: auto;
+  max-height: 400px;
+  overflow-x: hidden;
+}
+
 </style>

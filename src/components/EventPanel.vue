@@ -3,44 +3,51 @@
     <div class="level-bar">
       <div class="tooltip-wrapper-lvl">
           <p>
-            <span class="info-button-lvl">ℹ️</span> 
-            Level: {{ eLevel }}<span v-if="level - eLevel > 0">(+{{hero.divLevel}})</span>/{{ maxLevel }}
+            <span class="info-button-lvl"></span> 
+            <span :class="{ 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
+            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ maxLevel }}<span v-if="hero.trueLevel > 300">[{{hero.trueLevel}}]</span></span>
           </p>
           <div class="tooltip-lvl">
-            Every level gives you {{2 + 0.5 * Math.floor(hero.potential/10)}} HP, {{1 + 0.2 * Math.floor(hero.potential/20)}} DMG, {{0.5 + 0.1 * Math.floor(hero.potential/30)}} DEF
+            Every level gives you {{(2 + 0.5 * Math.floor(hero.potential/10)).toFixed(1)}} HP, {{(1 + 0.2 * Math.floor(hero.potential/20)).toFixed(1)}} DMG, 
+            {{(0.5 + 0.1 * Math.floor(hero.potential/30)).toFixed(1)}} DEF
           </div>
         </div>
       
       <div class="exp-bar-container">
         <div
+          :class="{ 'exp-bar-corrupted': eLevel >= 300 }"
           class="exp-bar"
           :style="{ width: `${Math.min(100, (exp / nextLevelExp) * 100)}%` }"
         ></div>
       </div>
-      <p class="exp-text">{{ exp.toFixed(0) }} / {{ nextLevelExp.toFixed(0) }} EXP</p>
+      <p><span :class="{ 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
     </div>
-
+    <Tooltip style="text-align: center" :text="() => corrList()">
+      <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{(hero.corruption.toFixed(2))}}]</span>
+    </Tooltip>
     <h3>📜 Events</h3>
-
-    <div
-      v-for="event in events"
-      :key="event.name"
-      class="event-wrapper"
-    >
-      <button
-        :class="{ active: modelValue === event.name, locked: hero.maxStage < event.minStage || hero.maxReachedLevel < event.minLevel }"
-        :disabled="hero.maxStage < event.minStage || hero.maxReachedLevel < event.minLevel"
-        @click="emit('update:modelValue', event.name)"
-      >
-        <span class="icon">{{ icons[event.name] || '❔' }}</span>
-        {{ event.name }}
-      </button>
-
+    <div class="wrapper-events">
       <div
-        v-if="hero.maxStage < event.minStage || hero.maxReachedLevel < event.minLevel"
-        class="tooltip"
+        v-for="event in events"
+        :key="event.name"
+        class="event-wrapper"
       >
-        🔒 <span v-if="event.minStage">Stage</span><span v-else>Level</span> {{ event.minStage || event.minLevel }}
+        <button
+          :class="{ active: modelValue === event.name, locked: eventReq(event.name) }"
+          :disabled="eventReq(event.name)"
+          @click="emit('update:modelValue', event.name)"
+        >
+          <span v-if="event.name == 'Infinity'" class="icon infinity-glow">{{ icons[event.name] }}</span>
+          <span v-else class="icon">{{ icons[event.name] || '❔' }}</span>
+          {{ event.name }}
+        </button>
+
+        <div
+          v-if="eventReq(event.name)"
+          class="tooltip"
+        >
+          🔒 <span>{{eventReqD(event.name)}}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -48,14 +55,18 @@
 
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watchEffect } from 'vue';
 import { useHero } from '../composables/useHero.js';
+import { useEnemy } from '../composables/useEnemy.js';
+import { perks as rawPerks } from '../data/radPerks.js';
 
 const props = defineProps({
   hero: Object,
   events: Array, 
   modelValue: String,
 });
+const { enemy } = useEnemy();
+const { hero } = useHero();
 
 const emit = defineEmits(['update:modelValue']);
 
@@ -78,6 +89,8 @@ const icons = {
   'Rebirth': '♻️',
   'Space': '✨',
   'Radiation': '☢️',
+  'Infinity': '∞',
+  'D-Atlas': '🌐',
   'Settings': '⚙️',
   'Info': '📖'
 }
@@ -86,11 +99,86 @@ const extraIcons = [
   '☄️', '👁️‍🗨️', '♊', '🧠', '🌑', '💥', '❄️', '💎', '🍀', '🌫️', '🔪', '🏹', '🩸', '⛓️', '🩹'
 ]
 
+watchEffect(() => {
+  if (enemy.value.isSpaceFight == 1) {
+    emit('update:modelValue', 'Combat')
+  }
+})
+
+function formatNumber(num) {
+  if (num < 1000) return Math.floor(num).toString();
+
+  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+}
+
+const corrListHandle = computed(() => {
+  let space = (hero.value.sp >= 46? 1.002 ** hero.value.sp - 1: 0);
+  let radiation = (rawPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0);
+  let abyssD = (hero.value.sp >= 24 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.1)): 0);
+  let rebirth = (hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0);
+  let inf = (hero.value.infTier >= 5? (1.01 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
+
+  return {
+    space: space,
+    radiation: radiation,
+    abyssD: abyssD,
+    rebirth: rebirth,
+    inf: inf
+  }
+})
+
+function corrList() {
+  let e = corrListHandle.value;
+  
+  let str = ``;
+
+  str += `<span>Space: [${e.space.toFixed(3)}]</span><br>`;
+  str += `<span>Radiation: [${e.radiation.toFixed(3)}]</span><br>`;
+  str += `<span>Abyss D: [${e.abyssD.toFixed(3)}]</span><br>`;
+  str += `<span>Rebirth: [${e.rebirth.toFixed(3)}]</span><br>`;
+  str += `<span>Infinity: [${e.inf.toFixed(3)}]</span><br>`;
+
+  return str;
+}
+
+function eventReq (e){
+  if(e == 'Combat') return hero.value.maxStage < 1;
+  if(e == 'Equipment') return hero.value.maxStage < 2;
+  if(e == 'Buff') return hero.value.maxStage < 5;
+  if(e == 'Tree') return hero.value.maxStage < 1;
+  if(e == 'Ascension') return hero.value.maxStage < 10;
+  if(e == 'Soul') return hero.value.maxStage < 15;
+  if(e == 'Amulet') return hero.value.maxStage < 20;
+  if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
+  if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
+  if(e == 'Radiation') return hero.value.sp < 5;
+  if(e == 'Infinity') return (hero.value.infTier < 1 && hero.value.level < 700);
+  if(e == 'D-Atlas') return true;
+  if(e == 'Info') return hero.value.maxStage < 1;
+  if(e == 'Settings') return hero.value.maxStage < 1;
+}
+
+function eventReqD (e){
+  if(e == 'Equipment') return 'Stage 2';
+  if(e == 'Buff') return 'Stage 5';
+  if(e == 'Ascension') return 'Stage 10';
+  if(e == 'Soul') return 'Stage 15';
+  if(e == 'Amulet') return 'Stage 20';
+  if(e == 'Rebirth') return 'Level 100';
+  if(e == 'Space') return '2 Space Fragments';
+  if(e == 'Radiation') return '5 Space Power';
+  if(e == 'Infinity') return 'Total Level 700';
+  if(e == 'D-Atlas') return 'Closed';
+}
 
 </script>
-
-
-
 
 <style scoped>
 .sidebar {
@@ -194,8 +282,8 @@ const extraIcons = [
 
 .tooltip {
   position: absolute;
-  left: 100%;
-  top: 50%;
+  left: 10%;
+  top: 120%;
   transform: translateY(-50%);
   margin-left: 8px;
   padding: 4px 8px;
@@ -253,6 +341,95 @@ const extraIcons = [
 
 .info-button-lvl:hover {
   transform: scale(1.2);
+}
+
+.wrapper-events {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.corruption-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.15em;
+
+ 
+  background: linear-gradient(90deg, #c084fc, #a855f7, #7e22ce);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Светящееся фиолетовое свечение */
+  text-shadow:
+    0 0 4px #7e22ce,
+    0 0 8px #a855f7,
+    0 0 12px #c084fc;
+
+  animation: corruptionGlow 3.5s ease-in-out infinite;
+}
+
+@keyframes corruptionGlow {
+  0%, 100% {
+    text-shadow:
+      0 0 4px #7e22ce,
+      0 0 8px #a855f7,
+      0 0 12px #c084fc;
+  }
+  50% {
+    text-shadow:
+      0 0 8px #d946ef,
+      0 0 14px #c084fc,
+      0 0 20px #9333ea;
+  }
+}
+
+.exp-bar-corrupted {
+  background: linear-gradient(270deg, #c084fc, #a855f7, #7e22ce, #9333ea);
+  background-size: 400% 400%;
+  animation: corruptionShift 6s ease infinite;
+}
+
+@keyframes corruptionShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.corruption-text-lvl {
+  font-weight: bold;
+  font-size: 14px;
+  background: linear-gradient(90deg, #bb00ff, #7700ff, #bb00ff);
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: corruption-glow 3s linear infinite;
+  text-align: center;
+}
+
+@keyframes corruption-glow {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.infinity-glow {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffd700;
+  background: linear-gradient(45deg, #fff7cc, #ffd700, #ffcc00, #fff7cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  line-height: 20px;
 }
 
 </style>

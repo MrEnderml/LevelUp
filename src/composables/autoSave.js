@@ -6,6 +6,9 @@ import { perks } from '../data/perks.js';
 import { perks as ascension } from '../data/ascension.js';
 import { amulets } from '../data/amulets.js';
 import { cursed} from '../data/cursed.js';
+import { perks as radPerks } from '../data/radPerks.js'; 
+import { spEnemy as space } from '../data/spaceEnemy.js';
+import { goals } from '../data/infGoals.js';
 
 export function useAutoSave() {
   let interval;
@@ -18,11 +21,14 @@ export function useAutoSave() {
     const data = {
       hero: hero.value,
       enemy: enemy.value,
-      perks: perks,
+      perks: perks.value,
       ascension: ascension,
       buffs: buffs.value,
       amulets: amulets,
-      cursed: cursed
+      cursed: cursed,
+      radPerks: radPerks,
+      space: space,
+      infGoals: goals.value
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
     console.log('Game saved');
@@ -45,11 +51,14 @@ export function saveGame() {
   const data = {
     hero: hero.value,
     enemy: enemy.value,
-    perks: perks,
+    perks: perks.value,
     ascension: ascension,
     buffs: buffs.value,
     amulets: amulets,
-    cursed: cursed
+    cursed: cursed,
+    radPerks: radPerks,
+    space: space,
+    infGoals: goals.value
   };
   localStorage.setItem('gameSave', JSON.stringify(data));
   console.log('Game saved');

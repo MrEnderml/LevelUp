@@ -55,13 +55,13 @@ export const soulNames = [
     [
       "Ascend Shards MULT When you Ascend - 1.5",
       "BUFF EXP MULT - 1.5",
-      "BUFF - Bloot Art (P)",
+      "BUFF - Overkill (P)",
       "Weapon Chance per SOUL TIER - +75%"
     ],
     [
       "Ascend Shards MULT When you Ascend - 1.5",
       "BUFF EXP MULT - 1.5",
-      "BUFF - Overkill (P)",
+      "BUFF - Blood Art (P)",,
       "AMULET[T2] SLOT (P)",
       "Stage killing scales better"
     ],
@@ -71,13 +71,13 @@ export const soulNames = [
       "BUFF - Sniper (P)",
       "AMULET[T2] Suffix (P)",
       "+5% extra EXP per found soul",
-      "Your HP is full when soul appears (P)"
+      "Your HP is full when special enemy appears (P)"
     ],
     [
       "Rebirth Pts MULT - 1.5",
       "BUFF - Berserk (P)",
       "AMULET[T2] Prefix (P) ",
-      "1% to level up if you level up recently. Works until 25% Max Level (P)",
+      "Increases your level while your level is below 10% of max level (P)(S)",
       "Unlock Formation[T3] (P)",
       "Strength power scales better per tree tier (P)"
     ]

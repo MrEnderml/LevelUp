@@ -11,9 +11,11 @@ const hero = ref({
   critAttack: 1.5,
   level: 0,
   eLevel: 1,
+  minLevel: 0,
   maxReachedLevel: 0,
   divLevel: 0,
   maxLevel: 30,
+  trueLevel: 0,
   exp: 0,
   nextLevelExp: 100,
   attacksPerSecond: 0.5,
@@ -25,19 +27,60 @@ const hero = ref({
   maxStage: 1,
   isStage: true,
   isBattleActive: true,
+  overkill: 0,
   treeTier: 0,
   perkPoints: 0,
   equipmentTiers: {
     sword: 0,
     armor: 0,
     boots: 0,
-    ring: 0
+    ring: 0,
+    spRing: 0
   },
   eqTierReq: {
     sword: 3,
     armor: 3,
     boots: 3,
-    ring: 0
+    ring: 0,
+    spRing: 0
+  },
+  eqUps: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0,
+    spRing: 0
+  },
+  eqUpsReq: {
+    sword: 1,
+    armor: 7,
+    boots: 15,
+    ring: 42,
+    spRing: 1
+  },
+  eqUpsMult: {
+    sword: {
+      cap: 0,
+      bonus: 0,
+      crit: 0,
+      critDmg: 0
+    },
+    armor: {
+      cap: 0,
+      bonus: 0
+    },
+    boots: {
+      cap: 0,
+      bonus: 0
+    },
+    ring: {
+      cap: 0,
+      bonus: 0
+    },
+    spRing: {
+      cap: 0,
+      bonus: 0
+    }
   },
   dropChance: {
     sword: 0,
@@ -85,12 +128,48 @@ const hero = ref({
   isLocked: false,
   afkLocked: false,
   mutation: [
-    {type: 'Mutagen T[1]', chance: 15 },
-    {type: 'Mutagen T[2]', chance: 2},
-    {type: 'Mutagen T[3]', chance: 0},
-    {type: 'Mutagen T[4]', chance: 0},
+    {type: 'Mutagen [T1]', chance: 25 },
+    {type: 'Mutagen [T2]', chance: 10},
+    {type: 'Mutagen [T3]', chance: 0},
+    {type: 'Mutagen [T4]', chance: 0},
   ],
-  lent: 2
+  mutagen: 0,
+  sp: 0,
+  st: 0,
+  spCount: 0,
+  stardust: 0,
+  corruption: 0.1,
+  spaceFight : false,
+  abyssDStages: 1,
+  infPoints: 0,
+  infPointsGoals: 0,
+  infTier: 0,
+  infTree: false,
+  soulD: false,
+  treeAuto: false,
+  isSpaceBuff: false,
+  spActiveBuffs: [],
+  isSpaceAuto: false,
+  spBossPerk: 0,
+  afkSoulBoost: 1,
+  capInfPerks: 1,
+  mutations: 0,
+  infProgress: false,
+  infoActive: {
+    lore: true,
+    tree: true,
+    equipment: false,
+    buffs: false,
+    souls: false,
+    ascension: false,
+    corruption: false,
+    amulet: false,
+    rebirth: false,
+    abyss: false,
+    space: false,
+    radiation: false,
+    infinity: false,
+  }
 });
 
 export function useHero() {

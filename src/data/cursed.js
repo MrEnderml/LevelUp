@@ -5,16 +5,21 @@ export const cursed = [
         icon: "⚙️",
         tier: [
             {
-                effect: "Penetrate 15% DEF",
+                effect: "Penetrate 10% DEF",
                 bonus: 0.9
             },
             {
-                effect: "Penetrate 30% DEF",
+                effect: "Penetrate 20% DEF",
                 bonus: 1.8
             },
             {
-                effect: "Penetrate 45% DEF",
+                effect: "Penetrate 30% DEF",
                 bonus: 3.6
+            },
+            {
+                effect: "Penetrate 40% DEF",
+                bonus: 7.2,
+                status: false
             }
         ],
         status: true
@@ -33,8 +38,13 @@ export const cursed = [
                 bonus: 2.5
             },
             {
-                effect: "Heal 10% HP",
+                effect: "Heal 9% HP",
                 bonus: 5
+            },
+            {
+                effect: "Heal 12% HP",
+                bonus: 10,
+                status: false
             }
         ],
         time: 0,
@@ -46,16 +56,21 @@ export const cursed = [
         icon: "🛡️",
         tier: [
             {
-                effect: "Block 12% DMG",
+                effect: "Block 10% DMG",
                 bonus: 1.1
             },
             {
-                effect: "Block 25% DMG",
+                effect: "Block 20% DMG",
                 bonus: 2.2
             },
             {
-                effect: "Block 35% DMG",
+                effect: "Block 30% DMG",
                 bonus: 4.4
+            },
+            {
+                effect: "Block 40% DMG",
+                bonus: 8.8,
+                status: false
             }
         ],
         status: true
@@ -74,8 +89,13 @@ export const cursed = [
                 bonus: 5
             },
             {
-                effect: "+0.8 Attack Per Second",
+                effect: "+0.7 Attack Per Second",
                 bonus: 10
+            },
+            {
+                effect: "+0.9 Attack Per Second",
+                bonus: 20,
+                status: false
             }
         ],
         status: true
@@ -86,16 +106,21 @@ export const cursed = [
         icon: "🤺",
         tier: [
             {
-                effect: "8% to avoid attack",
+                effect: "4% to avoid attack",
                 bonus: 1.8
             },
             {
-                effect: "16% to avoid attack",
+                effect: "8% to avoid attack",
                 bonus: 3.6
             },
             {
-                effect: "24% to avoid attack",
+                effect: "12% to avoid attack",
                 bonus: 7.2
+            },
+            {
+                effect: "20% to avoid attack",
+                bonus: 14.4,
+                status: false
             }
         ],
         status: true
@@ -106,16 +131,21 @@ export const cursed = [
         icon: "💫",
         tier: [
             {
-                effect: "10% to STUN for 0.5 seconds",
+                effect: "10% to STUN for 0.4 seconds",
                 bonus: 3.5
             },
             {
-                effect: "15% to STUN for 0.7 seconds",
+                effect: "15% to STUN for 0.6 seconds",
                 bonus: 7
             },
             {
-                effect: "20% to STUN for 0.9 seconds",
+                effect: "20% to STUN for 0.8 seconds",
                 bonus: 14
+            },
+            {
+                effect: "25% to STUN for 1 seconds",
+                bonus: 28,
+                status: false
             }
         ],
         time: 0,
@@ -137,6 +167,11 @@ export const cursed = [
             {
                 effect: "20% to CRIT 250% DMG",
                 bonus: 9.6
+            },
+            {
+                effect: "15% to CRIT 300% DMG",
+                bonus: 19.2,
+                status: false
             }
         ],
         status: true
@@ -157,6 +192,11 @@ export const cursed = [
             {
                 effect: "Each of your attack deals you 4% Max HP",
                 bonus: 20
+            },
+            {
+                effect: "Each of your attack deals you 5% Max HP",
+                bonus: 40,
+                status: false
             }
         ],
         status: false
@@ -177,6 +217,11 @@ export const cursed = [
             {
                 effect: "Enemies gets 6% DEF from Max HP",
                 bonus: 24
+            },
+            {
+                effect: "Enemies gets 8% DEF from Max HP",
+                bonus: 48,
+                status: false
             }
         ],
         status: false
@@ -197,7 +242,12 @@ export const cursed = [
             {
                 effect: "x1.8 Max HP",
                 bonus: 26
-            }
+            },
+            {
+                effect: "x2 Max HP",
+                bonus: 52,
+                status: false
+            },
         ],
         status: false
     },
@@ -217,6 +267,11 @@ export const cursed = [
             {
                 effect: "15% to bleed by 30% from Attack for 4 seconds",
                 bonus: 32
+            },
+            {
+                effect: "20% to bleed by 40% from Attack for 5 seconds",
+                bonus: 64,
+                status: false
             }
         ],
         status: false,
@@ -239,6 +294,11 @@ export const cursed = [
             {
                 effect: "The Hero's Regeneration is weaker by 30%",
                 bonus: 36
+            },
+            {
+                effect: "The Hero's Regeneration is weaker by 40%",
+                bonus: 72,
+                status: false
             }
         ],
         status: false,
@@ -260,6 +320,11 @@ export const cursed = [
             {
                 effect: "x1.75 Attack",
                 bonus: 40
+            },
+            {
+                effect: "x2 Attack",
+                bonus: 80,
+                status: false
             }
         ],
         status: false

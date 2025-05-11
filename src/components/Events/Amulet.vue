@@ -1,15 +1,6 @@
 <template>
   <div class="amulet-panel red-theme">
-    <h2>🔮 Amulets
-      <div class="tooltip-wrapper">
-      <span class="info-button">ℹ️</span>
-      <div class="tooltip">
-        -Bonus gives you EXP and EXP to your BUFFS. <br>
-        -2 and more curses give you extra MULT to bonus. <br>
-        -Higher stages provide you MULT to bonus. <br>
-      </div>
-      </div>
-    </h2>
+    <h2>🔮 Amulets</h2>
     
     <div class="amulet-content">
       <div class="amulet-list">
@@ -28,11 +19,11 @@
                 <span v-else class="closed">Reach {{20 + 10 * (amulet.tier-1)}} stage</span>
               </li>
               <li>Suffix: 
-                <span v-if="amulet.suffix.status === false" class="closed">closed</span>
+                <span v-if="amulet.suffix.status === false" class="closed">{{suff[index]}}</span>
                 <span v-else>{{ amulet.suffix.text }}</span>
               </li>
               <li>Prefix:
-                <span v-if="amulet.prefix.status === false" class="closed">closed</span>
+                <span v-if="amulet.prefix.status === false" class="closed">{{pref[index]}}</span>
                 <span v-else>{{ amulet.prefix.text }}</span>
               </li>
             </ul>
@@ -40,12 +31,19 @@
         </div>
       </div>
       <div class="curse-panel">
-        <h3>☠️ Curses</h3>
+        <Tooltip :text="() => formatCurses()">
+          <h3>☠️ *Curses</h3>
+        </Tooltip>
         <ul>
           <li v-for="(curse, idx) in filterCurses" :key="idx">
             <strong>{{ curse.icon }} {{ curse.name }}</strong>
             <ul>
-              <li v-for="(tier, t) in curse.tier" :key="t">[T{{t+1}}]{{ tier.effect }} (Bonus: {{ (tier.bonus * (hero.rebirthTier >= 10? 1.5: 1)).toFixed(2) }})</li>
+               <template v-for="(tier, tIndex) in curse.tier" :key="tIndex" >
+                <li v-if="tIndex < 3 || tier.status" :class="{ 'tier-four': tIndex === 3 }"> 
+                  [T{{ tIndex + 1 }}] {{ tier.effect }} 
+                  (Bonus: {{ (tier.bonus * (hero.rebirthTier >= 10 ? 1.5 : 1)).toFixed(2) }})
+                </li>
+              </template>
             </ul>
           </li>
         </ul>
@@ -62,6 +60,9 @@ import { useHero } from '../../composables/usehero.js';
 
 const {hero} = useHero();
 
+const suff = ['Ascension [T2]', 'Soul [T3]', '10000 Rebirth Pts', 'Space 18SP']
+const pref = ['Ascension [T3]', 'Soul [T4]', '40000 Rebirth Pts', 'Space 34SP']
+
 const filterAmulets = computed(() => 
     amulets.filter(b => b.status === true)
 )
@@ -69,6 +70,29 @@ const filterAmulets = computed(() =>
 const filterCurses = computed(() => 
     curses.filter(curse => curse.status === true)
 )
+
+const filterCursesTier = computed(() => 
+    curses.filter
+)
+
+const CursesChance = computed(() => {
+  const t3 = Math.min(45, 1.1 * Math.log(hero.value.stage - 17)**1.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.45: 1));
+  const t2 = Math.min(50, 10 * Math.log(hero.value.stage - 17)**0.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.35: 1));
+  const t1 = 100 - t2 - t3;
+
+   return {
+    t1: t1.toFixed(1),
+    t2: t2.toFixed(1),
+    t3: t3.toFixed(1)
+  };
+})
+
+function formatCurses() {
+  let tier = CursesChance.value;
+  if(hero.value.stage < 14)
+    return `Reach Stage 15`;
+  return `<span>[T3(%)] - ${tier.t3}</span><br><span>[T2(%)] - ${tier.t2}</span><br><span>[T1(%)] - ${tier.t1}</span>`;
+}
 </script>
 
 <style scoped>
@@ -207,6 +231,12 @@ const filterCurses = computed(() =>
 .tooltip-wrapper:hover .tooltip {
   opacity: 1;
   pointer-events: auto;
+}
+
+.tier-four {
+  color: #c56eff;
+  font-weight: bold;
+  text-shadow: 0 0 6px #c56eff;
 }
 
 </style>

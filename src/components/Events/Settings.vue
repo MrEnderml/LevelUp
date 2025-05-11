@@ -7,6 +7,7 @@
     <button @click="triggerFileInput">📥 Import</button>
     <input type="file" ref="fileInput" accept=".json" style="display: none" />
     <button @click="resetGame">🧹 Reset</button>
+    <button v-if="hero.infTier  > 0" @click="resetInf"><span class="infinity-glow">∞</span> Reset Infinity</button>
       <div class="settings-panel-popup">
         <div class="setting-item toggle">
           <label class="switch-label">
@@ -29,8 +30,14 @@ import { perks } from '../../data/perks.js';
 import { perks as ascension } from '../../data/ascension.js';
 import { useBuff } from '../../data/buffs.js';
 import { amulets } from '../../data/amulets.js';
-import { cursed } from '../../data/cursed.js'; 
+import { cursed } from '../../data/cursed.js';
+import { perks as radPerks } from '../../data/radPerks.js'; 
+import { spEnemy as space } from '../../data/spaceEnemy.js';
+import { goals } from '../../data/infGoals.js';
 import { ref, onMounted, onUnmounted  } from 'vue';
+import CryptoJS from 'crypto-js';
+
+const D_RULE = 'Only one must exist';
 
 const { hero } = useHero();
 const { buffs } = useBuff();
@@ -38,15 +45,33 @@ const { enemy } = useEnemy();
 
 const isDarkTheme = ref(localStorage.getItem('theme') === 'dark');
 
+function deepMerge(target, source) {
+  for (const key in source) {
+    if (
+      source[key] !== null &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key])
+    ) {
+      if (!target[key]) target[key] = {};
+      deepMerge(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+}
+
 const saveGame = () => {
   const saveData = {
     hero: hero.value,
     enemy: enemy.value,
-    perks: perks,
+    perks: perks.value,
     ascension: ascension,
     buffs: buffs.value,
     amulets: amulets,
     cursed: cursed,
+    radPerks: radPerks,
+    space: space,
+    infGoals: goals.value
   };
   localStorage.setItem('gameSave', JSON.stringify(saveData));
 };
@@ -55,16 +80,22 @@ const exportGame = () => {
   const data = {
     hero: hero.value,
     enemy: enemy.value,
-    perks: perks,
+    perks: perks.value,
     ascension: ascension,
     buffs: buffs.value,
     amulets: amulets,
     cursed: cursed,
+    radPerks: radPerks,
+    space: space,
+    goals: goals.value
   };
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const json = JSON.stringify(data);
+  const encrypted = CryptoJS.AES.encrypt(json, D_RULE).toString();
+
+  const blob = new Blob([encrypted], { type: 'text/plain' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'savegame.json';
+  link.download = 'savegame.enc';
   link.click();
 };
 
@@ -80,26 +111,88 @@ const triggerFileInput = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = JSON.parse(e.target.result);
-      hero.value = data.hero;
-      buffs.value = data.buffs;
-      enemy.value = data.enemy;
+      let raw = e.target.result;
+      let data;
 
-      for (const key in data.perks) {
-        if (perks[key]) {
-          perks[key].level = data.perks[key].level;
+      try {
+        const decrypted = CryptoJS.AES.decrypt(raw, D_RULE).toString(CryptoJS.enc.Utf8);
+        data = JSON.parse(decrypted);
+      } catch (err) {
+        try {
+          data = JSON.parse(raw);
+        } catch (jsonErr) {
+          alert('Unable to load file: corrupted or invalid format');
+          return;
         }
       }
 
-      for (const key in data.ascension) {
-        if (ascension[key]) {
-          ascension[key].level = data.ascension[key].level;
-          }
+      if (data.hero) deepMerge(hero.value, data.hero);
+      if (data.enemy) deepMerge(enemy.value, data.enemy);
+      if (data.perks) {
+        for (let idx in data.perks) {
+          const perkData = data.perks[idx];
+          const targetPerk = perks.value[idx];
+          if (!perkData || !targetPerk) continue;
+          targetPerk.level = perkData.level;
+          if ('status' in perkData) targetPerk.status = perkData.status;
+          if ('infStatus' in perkData) targetPerk.infStatus = perkData.infStatus;
+        }
+        if (data.perks[0]?.kills !== undefined) {
+          perks.value[0].kills = data.perks[0].kills;
+        }
+        if (data.perks[1]?.buff !== undefined) {
+          perks.value[1].buff = data.perks[1].buff;
+        }
       }
-      Object.assign(amulets, data.amulets);
-      Object.assign(cursed, data.cursed);
+      if (data.ascension) {
+        for (let idx in data.ascension) {
+          ascension[idx].level = data.ascension[idx].level;
+          if (ascension[idx].status !== undefined)
+            ascension[idx].status = data.ascension[idx].status;
+        }
+      }
+      if (data.space) {
+        for (let idx in data.space) {
+          space[idx].status = data.space[idx].status;
+        }
+      }
+      if (data.buffs) {
+        for (let idx in data.buffs) {
+          buffs.value[idx].exp = data.buffs[idx].exp;
+          buffs.value[idx].tier = data.buffs[idx].tier;
+          buffs.value[idx].active = data.buffs[idx].active;
+        }
+      }
+      if (data.cursed) {
+        for (let idx in data.cursed) {
+          if (cursed[idx].status !== 'undefined')
+            cursed[idx].status = data.cursed[idx].status;
+        }
+      }
+      if (data.radPerks) {
+        for (let idx in data.radPerks) {
+          radPerks[idx].level = data.radPerks[idx].level;
+          if (idx == 6) {
+            radPerks[idx].max = data.radPerks[idx].max;
+            radPerks[idx].status = data.radPerks[idx].status;
+            radPerks[idx].baseCost = data.radPerks[idx].baseCost;
+          }
+          if (idx == 7) {
+            radPerks[idx].max = data.radPerks[idx].max;
+            radPerks[idx].perkStatus = data.radPerks[idx].perkStatus;
+          }
+          if (idx == 10) {
+            radPerks[idx].max = data.radPerks[idx].max;
+            radPerks[idx].status = data.radPerks[idx].status;
+          }
+        }
+      }
+      if (data.infGoals) {
+        for (let idx in data.infGoals) {
+          goals.value[idx].tier = data.infGoals[idx].tier;
+        }
+      }
     };
-
 
     reader.readAsText(file);
   };
@@ -113,6 +206,14 @@ const resetGame = () => {
     location.reload();
   }
 };
+
+const resetInf = () => {
+  if(hero.value.infProgress == false){
+    hero.value.infProgress = true;
+    hero.value.infTier -= 1;
+  }
+  
+}
 
 const toggleTheme = () => {
   const newTheme = isDarkTheme.value ? 'dark' : 'light';
@@ -230,4 +331,16 @@ input[type="file"] {
   box-shadow: 0 0 10px #64748b;
   font-family: 'Segoe UI', sans-serif;
 }
+
+.infinity-glow {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffd700;
+  background: linear-gradient(45deg, #fff7cc, #ffd700, #ffcc00, #fff7cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  line-height: 20px;
+}
+
 </style>

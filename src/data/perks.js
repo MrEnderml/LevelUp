@@ -1,4 +1,6 @@
-export const perks = [
+import { ref } from 'vue';
+
+export const perks = ref([
     {
         id: 1,
         name: "Strength",
@@ -6,6 +8,10 @@ export const perks = [
         value: 1.01,
         level: 0,
         maxLevel: [20, 40, 60, 80, 100, 120, 140],
+        status: false,
+        kills: 0,
+        baseCost: 7,
+        infStatus: false,
     },
     {
         id: 2,
@@ -14,6 +20,10 @@ export const perks = [
         value: 10,
         level: 0,
         maxLevel: [10, 20, 30, 40, 50, 60, 70],
+        status: false,
+        buff: 1,
+        baseCost: 7,
+        infStatus: false,
     },
     {
         id: 3,
@@ -22,6 +32,9 @@ export const perks = [
         value: 5,
         level: 0,
         maxLevel: [10, 15, 20, 25, 30, 35, 40],
+        status: false,
+        baseCost: 21,
+        infStatus: false,
     },
     {
         id: 4,
@@ -30,14 +43,20 @@ export const perks = [
         value: 2,
         level: 0,
         maxLevel: [20, 40, 60, 80, 100, 120, 140],
+        status: false,
+        baseCost: 7,
+        infStatus: false,
     },
     {
         id: 5,
-        name: "Extra Levels",
+        name: "Extra Level",
         description: "+1 MAX LEVEL",
         value: 1,
         level: 0,
         maxLevel: [10, 15, 20, 25, 30, 35, 40],
+        status: false,
+        baseCost: 10,
+        infStatus: false,
     },
     {
         id: 6,
@@ -46,6 +65,9 @@ export const perks = [
         value: 0.1,
         level: 0,
         maxLevel: [1, 2, 3, 4, 5, 6, 7],
+        status: false,
+        baseCost: 100,
+        infStatus: false,
     },
     {
         id: 7,
@@ -54,6 +76,8 @@ export const perks = [
         value: 0,
         level: 0,
         maxLevel: [1, 1, 1, 1, 1, 1, 1],
+        baseCost: 1,
+        infStatus: false,
     },
     {
         id: 8,
@@ -62,6 +86,8 @@ export const perks = [
         value: 1,
         level: 0,
         maxLevel: [0, 5, 10, 15, 20, 25, 30],
+        baseCost: 40,
+        infStatus: false,
     },
     {
         id: 9,
@@ -70,6 +96,8 @@ export const perks = [
         value: 2.5,
         level: 0,
         maxLevel: [0, 10, 20, 30, 40, 50],
+        baseCost: 18,
+        infStatus: false,
     },
     {
         id: 10,
@@ -78,6 +106,8 @@ export const perks = [
         value: 0,
         level: 0,
         maxLevel: [0, 1, 1, 1, 1, 1, 1],
+        baseCost: 1,
+        infStatus: false,
     },
     {
         id: 11,
@@ -86,6 +116,8 @@ export const perks = [
         value: 0.01,
         level: 0,
         maxLevel: [0, 1, 2, 3, 3, 4, 4, 5],
+        baseCost: 200,
+        infStatus: false,
     },
     {
         id: 12,
@@ -94,6 +126,8 @@ export const perks = [
         value: 1,
         level: 0,
         maxLevel: [0, 1, 2, 3, 3, 3, 3],
+        baseCost: 70,
+        infStatus: false,
     },
     {
         id: 13,
@@ -102,6 +136,8 @@ export const perks = [
         value: 1,
         level: 0,
         maxLevel: [0, 0, 0, 5, 5, 5, 5],
+        baseCost: 35,
+        infStatus: false,
     },
     {
         id: 14,
@@ -110,6 +146,8 @@ export const perks = [
         value: 1,
         level: 0,
         maxLevel: [0, 0, 0, 1, 1, 1, 1],
+        baseCost: 1,
+        infStatus: false,
     },
     {
         id: 15,
@@ -118,7 +156,9 @@ export const perks = [
         value: 1.2,
         level: 0,
         maxLevel: [0, 0, 1, 1, 1, 2, 2],
+        baseCost: 200,
+        infStatus: false,
     },
-  ];
+  ]);
 
   
