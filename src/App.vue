@@ -72,7 +72,6 @@ import Infinity from './components/Events/Infinity.vue';
 import DimensionAtlas from './components/Events/DimensionAtlas.vue';
 import Settings from './components/Events/Settings.vue';
 import Info from './components/Events/Info.vue';
-import Tools from './components/Tools.vue';
 
 const afkStartTime = ref(null);
 const { hero } = useHero();    

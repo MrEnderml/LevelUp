@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "vite build && npx gh-pages -d dist"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
