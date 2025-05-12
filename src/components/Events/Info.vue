@@ -174,8 +174,8 @@ const styledSections = [
       'At the beginning you can only have weapons of tier 3',
       'Minimum Tier adds a Tier to your weapon without affecting the drop chance',
       hero.value.sp >= 1 && `Enchance level depends on Equipment Tier.<br>
-      If the Enchance level is higher than the Equipment Tier, only Enchance up to the current Tier are taken. [Current Stage - (40 - SP Perks)]<br>
-      The amount of stardust dropped depends on the minimum stage before the current one<br>
+      If the Enchance level is higher than the Equipment Tier, only Enchance up to the current Tier are taken. <br>
+      The amount of stardust dropped depends on the minimum stage before the current one [Current Stage - (40 - SP Perks)]<br>
       Boost: Select what percentage you want to add to the chance of Enchance<br>
       Auto - Enchance weapons with 100% chance to max level<br>
       Each Enchance increases the general parameter(Max Level) by 10% of the current one, and the additional parameter(Mult Dmg, HP, ...) by 5%`
