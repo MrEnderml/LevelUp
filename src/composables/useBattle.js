@@ -1049,11 +1049,11 @@ export function useBattle(hero, enemy, buffs) {
   }
   //stats
   const statEnemyCalculate = (dx) => {
-    enemy.value.attack = 10 * ((1.04 ** (hero.value.stage + 1)) ** Math.min((1.15 + 0.12*Math.floor(hero.value.stage/5)), 2.2)) * dx * 
+    enemy.value.attack = 10 * ((1.04 ** (hero.value.stage + 1)) ** Math.min((1.15 + 0.12*Math.floor(hero.value.stage/5)), 2.1)) * dx * 
     (enemy.value.soulBuff.active || enemy.value.rebirthSoul? enemy.value.soulBuff.dmg: 1) * 
     (enemy.value.boss.isBoss? enemy.value.boss.attack: 1) * 
     (hero.value.isAbyss? 1 :enemy.value.rebirthEnemy["dmg"]) * 
-    (hero.value.isAbyss? Math.max(1.045 - 0.01 * hero.value.abyssTier, 1.025) ** hero.value.stage: 1) *
+    (hero.value.isAbyss? Math.max(1.04 - 0.01 * hero.value.abyssTier, 1.02) ** hero.value.stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) * 
     (hero.value.isAbyss? 1: enemy.value.enemyPower) * 
     (!hero.value.infProgress? 1 + 0.1 * hero.value.infTier: 1) *
@@ -1065,11 +1065,11 @@ export function useBattle(hero, enemy, buffs) {
 
     enemy.value.attack = Math.max(enemy.value.attack, 10);
 
-    enemy.value.maxHp = 40 * ((((1.065 - 0.00075 * Math.floor(hero.value.stage/5))** hero.value.stage) ** Math.min((1.3+0.225*Math.sqrt(hero.value.stage/2)), 3)) / (2 - (hero.value.stage > 14? 0.5: 0) - (hero.value.stage > 19? 0.5: 0))) * dx * 
+    enemy.value.maxHp = 40 * ((((1.065 - 0.00075 * Math.floor(hero.value.stage/5))** hero.value.stage) ** Math.min((1.3+0.225*Math.sqrt(hero.value.stage/2)), 2.8)) / (2 - (hero.value.stage > 14? 0.5: 0) - (hero.value.stage > 19? 0.5: 0))) * dx * 
     (enemy.value.soulBuff.active || enemy.value.rebirthSoul? enemy.value.soulBuff.hp: 1) *
     (enemy.value.boss.isBoss? enemy.value.boss.hp: 1) *
     (hero.value.isAbyss? 1 :enemy.value.rebirthEnemy["hp"]) * 
-    (hero.value.isAbyss? Math.max(1.055 - 0.01 * hero.value.abyssTier, 1.035) ** hero.value.stage: 1) *
+    (hero.value.isAbyss? Math.max(1.05 - 0.01 * hero.value.abyssTier, 1.03) ** hero.value.stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) *
     (enemy.value.enemyPower) * 
     (!hero.value.infProgress? 1 + 0.1 * hero.value.infTier: 1) *
@@ -1607,7 +1607,7 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 1){
       totalKills+=1
     }
-    if (hero.value.activeBuffs.includes(7) >= 2 && buffs.value[7].tier >= 2){
+    if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 2){
       totalKills+=Math.floor(hero.value.maxLevel/100);
     }
     if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 3){

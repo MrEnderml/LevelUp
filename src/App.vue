@@ -2,7 +2,6 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
-      <Tools />
 
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
@@ -72,6 +71,7 @@ import Infinity from './components/Events/Infinity.vue';
 import DimensionAtlas from './components/Events/DimensionAtlas.vue';
 import Settings from './components/Events/Settings.vue';
 import Info from './components/Events/Info.vue';
+//import Tools from './components/Tools.vue';
 
 const afkStartTime = ref(null);
 const { hero } = useHero();    

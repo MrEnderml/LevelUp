@@ -5,7 +5,7 @@ export const spEnemy = [
           stats: {
             dmg: 600,
             hp: 40000,
-            def: 3100,
+            def: 2800,
             AS: 1.3,
           },
           reward: "1SP",
@@ -140,7 +140,7 @@ export const spEnemy = [
             dmg: 1900,
             hp: 211000,
             def: 34500,
-            AS: 2.1,
+            AS: 1.9,
             curses: ["💫T4", "🌪️T4", "💢T3", "🔪T2", "💉T2"]
           },
           reward: "1ST - +50 Max Level",
