@@ -118,7 +118,7 @@ export const cursed = [
                 bonus: 7.2
             },
             {
-                effect: "20% to avoid attack",
+                effect: "16% to avoid attack",
                 bonus: 14.4,
                 status: false
             }

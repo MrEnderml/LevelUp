@@ -1005,8 +1005,8 @@ export function useBattle(hero, enemy, buffs) {
 
   const createAscensionSouls = () => {
     if(hero.value.stage >= 20 && hero.value.abyssTier >= 2){
-      let chance = Math.min(4 ** (1.03 + 0.015 * (hero.value.stage - 20)) * (enemy.value.danger >= 20? enemy.value.dangerEnemyChance[4]: 1), 20);
-      let dx = 2 ** (1.01 + 0.01 * (hero.value.stage - 20));
+      let chance = Math.min(4 ** (1.03 + 0.0175 * (hero.value.stage - 20)) * (enemy.value.danger >= 20? enemy.value.dangerEnemyChance[4]: 1), 20);
+      let dx = 1.5 ** (1.01 + 0.01 * (hero.value.stage - 20));
 
       enemy.value.ascensionSoul.active = (Math.random() * 100 + chance >= 100 && enemy.value.spawnType == 'none'? true: false);
       enemy.value.spawnType = enemy.value.ascensionSoul.active? 'a-soul': enemy.value.spawnType;
@@ -1114,7 +1114,7 @@ export function useBattle(hero, enemy, buffs) {
   const statCalculate = () => {
     hero.value.attack = 10 + (((1 + 0.2 * Math.floor(hero.value.potential/20)) * (Math.min(hero.value.maxLevel, hero.value.eLevel-1) + hero.value.minLevel))) * 
     (perks.value[0].infStatus? (perks.value[0].value ** Math.min(perks.value[0].level, 100) + 1.0075 ** Math.min(Math.max(perks.value[0].level - 100, 0), 100)): 1) *
-    (perks.value[0].status? (1.01 ** Math.min(perks.value[0].kills,140) + (perks.value[0].kills ** 0.04)): 1) * 
+    (perks.value[0].status? (1.01 ** Math.min(perks.value[0].kills,140) + (perks.value[0].kills >= 140? perks.value[0].kills ** 0.09 - 1: 0)): 1) * 
     (!perks.value[0].infStatus && !perks.value[0].status? perks.value[0].value ** perks.value[0].level: 1) * 
     (equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.multDmg + hero.value.eqUpsMult['sword'].bonus) * 
     (hero.value.infTier >= 1 || hero.value.level >= 700? (1.05 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))) : 1) *
@@ -1512,13 +1512,12 @@ export function useBattle(hero, enemy, buffs) {
     if(ascenPerks[30].level){
       buffs.value[0].maxTier = 4;
     }
-
-
+    
 
   }
 
   const ascensionShardsProgress = (stage) => {
-    var x = Math.sqrt(Math.log(stage) ** (stage/7)) * (1 + hero.value.maxLevel / 100);
+    var x = Math.sqrt(Math.log(stage+2) ** (stage/7)) * (1 + hero.value.maxLevel / 100);
     x *= hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 3? 1.5: 1;
     x *= enemy.value.soulBuff.active? enemy.value.soulBuff.drop: 1;
     x *= (enemy.value.boss.isBoss? enemy.value.boss.drop: 1);
@@ -1811,7 +1810,7 @@ export function useBattle(hero, enemy, buffs) {
     amulets[3].prefix.status = (hero.value.sp >= 34? true: false);
 
 
-    if (hero.value.spCount/6 > hero.value.spBossPerk){
+    if (hero.value.spCount/6 >= hero.value.spBossPerk){
       hero.value.spBossPerk++;
       hero.value.equipmentTiers['sword']++;
     }
@@ -1871,13 +1870,13 @@ export function useBattle(hero, enemy, buffs) {
       let radiation = 0;
       hero.value.afkSoulBoost = 1.05 ** Math.sqrt(hero.value.afkKills);
       if(perks.value[0].status)
-        perks.value[0].kills += hero.value.afkKills * overkillHandle();
+        perks.value[0].kills += hero.value.afkKills * (overkillHandle()+1);
 
       if(hero.value.stage > 19){
         buffExp = (hero.value.afkKills * (hero.value.curse * 0.05) * hero.value.stage) * (hero.value.soulTier < 4? 1.5 ** hero.value.soulTier: 1.5 ** 3) * 
         (hero.value.rebirthPts >= 10? 2: 1) * (hero.value.rebirthPts >= 50000? enemy.value.rebirthEnemy["drop"]: 1) * (hero.value.isAbyss? 0: 1) * 
         (hero.value.infTier >= 4? (1.065 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
-        hero.value.cursedBonus = buffExp;
+        hero.value.cursedBonus = buffExp ** 1.2;
         expBuffGrant();
       }
 

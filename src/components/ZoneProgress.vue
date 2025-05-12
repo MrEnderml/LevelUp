@@ -154,18 +154,18 @@ function abyssRwrd(tier) {
   let str = `<span>Reach 20 stage: High Tier Curses appear more often </span><br/>`;
 
   if (hero.value.abyssDStages >= 20)
-    str += `<span>Reach 30 stage: Level scale better based on Max Stage in Abyss D</span>`; 
+    str += `<span>Reach 30 stage: Level scales based on Max Stage in Abyss D</span>`; 
   if (hero.value.abyssDStages >= 30){
     str += `<span>[*${Math.max(2 - (1.015 ** (hero.value.abyssDStages - 29)), 0.02).toFixed(2)}]</span> </span><br/>`;
-    str += `<span>Reach 40 stage: Corruption weakness is better based on Max Stage in Abyss D</span>`;
+    str += `<span>Reach 40 stage: Corruption weakness is based on Max Stage in Abyss D</span>`;
   }
   if (hero.value.abyssDStages >= 40){
     str += `<span>[+${(1 - (1 / (Math.sqrt(Math.max(1, hero.value.abyssDStages - 39)) ** 0.1))).toFixed(2)}]</span></span><br/>`;
-    str += `<span>Reach 50 stage: Curse Bonus gain is better based on Max Stage in Abyss D</span>`;  
+    str += `<span>Reach 50 stage: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
   }
   if (hero.value.abyssDStages >= 50){
     str += `<span>[*${((1.04 ** (hero.value.abyssDStages - 49))).toFixed(2)}]</span><br/>`;
-    str += `<span>Reach 60 stage: Stardust gain is better based on Max Stage in Abyss D</span>`; 
+    str += `<span>Reach 60 stage: Stardust drop is better based on Max Stage in Abyss D</span>`; 
   }
   if (hero.value.abyssDStages >= 60){
     str += `<span >[*${((1.02 ** (hero.value.abyssDStages - 59))).toFixed(2)}]</span></span><br/>`;

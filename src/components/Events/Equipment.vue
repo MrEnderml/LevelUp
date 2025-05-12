@@ -39,14 +39,14 @@
     </div>
 
     <div class="starforge-panel" v-if="hero.sp >= 1">
-      <h3>⭐ Starforge</h3>
+      <h3>⭐ Star Forge</h3>
       <p>✨ Stardust: {{ formatNumber(hero.stardust) }} <span v-if="stardustCost > 0">  - {{formatNumber(stardustCost)}}</span></p>
       <p>Select equipment to enhance its power.</p>
       <div>{{capitalizeFirst(selectedType)}}</div>
       <div v-if="selectedType && hero.sp >= hero.eqUpsReq[selectedType]" class="forge-info">
         <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType]+(hero.sp >= 55? 3: 0)}}</span></p>
         <div style="display: flex">
-          <span>Upgrade chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
+          <span>Enchance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
           <div v-if="upgradeResult" :class="['upgrade-message', upgradeResult]">
             {{ upgradeResult === 'success' ? '✨ Successful!' : '❌ Failed' }}
           </div>

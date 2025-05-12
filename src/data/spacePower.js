@@ -2,7 +2,7 @@ export const spacePower = [
     {
         id: 1,
         sp: 1,
-        d: "Open the Starforge. You can Enchance The Sword by Star Dust "
+        d: "Open the Star Forge. You can Enchance The Sword by Star Dust "
     },
     {
         id: 2,
@@ -85,7 +85,7 @@ export const spacePower = [
     {
         id: 17,
         sp: 30,
-        d: "Open newe BUFF: Jaggernaut"
+        d: "Open new BUFF: Jaggernaut"
     },
     {
         id: 18,
@@ -106,7 +106,7 @@ export const spacePower = [
     {
         id: 21,
         sp: 42,
-        d: "You can upgrade Rings"
+        d: "You can upgrade Ring"
     },
     {
         id: 22,
@@ -142,7 +142,7 @@ export const spacePower = [
     {
         id: 28,
         sp: 70,
-        d: "Equipment Chance Enchance - 10%"
+        d: "MIN Chance Enchance - 10%"
     },
     {
         id: 29,

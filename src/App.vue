@@ -3,6 +3,7 @@
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
 
+
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
       <Tree v-if="currentEvent === 'Tree'" />

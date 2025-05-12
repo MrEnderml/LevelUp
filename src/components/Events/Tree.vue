@@ -40,7 +40,7 @@
         <span class="perk-desc">{{ descriptionPerks(perk) }}</span>
         <span class="perk-desc" v-if="!perk.status"><span v-if="perk.level > 0">{{calculate(perk)}}</span></span>
         <span class="perk-desc" v-if="perk.status && perk.id == 1"><span>Total: 
-        [{{(1.01 ** Math.min(perk.kills,140) + (perk.kills ** 0.04)).toFixed(2)}}]</span></span>
+        [{{(1.01 ** Math.min(perk.kills,140) + (perk.kills >= 140? (perk.kills ** 0.09 - 1): 0)).toFixed(2)}}]</span></span>
         <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(0.1 * (Math.floor(hero.stage / 5 - 1))).toFixed(1)}}</span></span>
 
         <div class="perk-footer">
