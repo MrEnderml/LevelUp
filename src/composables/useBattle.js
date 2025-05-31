@@ -2742,7 +2742,7 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.mainInfTier = 11;
     //hero.value.infTier = 20;
     //enemy.value.dangerEnemyLoot[1] = 500;
-    hero.value.singularity = 5; 
+    //hero.value.singularity = 0; 
     //ascenPerks[31].level = 20;
     //hero.value.mutagen = 1e5;
     //hero.value.kills = 9990;
