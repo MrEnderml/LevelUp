@@ -142,7 +142,7 @@ export const spacePower = [
     {
         id: 28,
         sp: 70,
-        d: "MIN Chance Enchance - 10%"
+        d: "MIN Chance Enchance - +5%"
     },
     {
         id: 29,
@@ -153,6 +153,37 @@ export const spacePower = [
         id: 30,
         st: 5,
         d: "+1 Space Ring Tier per each Star(ST)",
+        boss: true
+    },
+    {
+        id: 31,
+        sp: 81,
+        d: "Open Combo [T4]"
+    },
+    {
+        id: 32,
+        sp: 87,
+        d: "After 32 Stage Enemies drop Star Dust"
+    },
+    {
+        id: 33,
+        sp: 93,
+        d: "+1% Avoid DMG per Space Tier"
+    },
+    {
+        id: 34,
+        sp: 99,
+        d: "Double Amulet Prefix Effect"
+    },
+    {
+        id: 35,
+        sp: 105,
+        d: "-1 Equipment Tier Required to Awaken"
+    },
+    {
+        id: 36,
+        st: 6,
+        d: "Body has Suffix and Prefix",
         boss: true
     },
 ]

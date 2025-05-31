@@ -13,61 +13,59 @@
           <span class="glow">{{ mutation.type }}</span> — {{ mutation.chance.toFixed(1) }}%
         </li>
       </ul>
-      <div v-if="perks[10].status" class="danger-wrapper">
+      <div v-if="perks[10].level > 0" class="danger-wrapper">
         <div>
           DANGER: [{{perks[10].level}}]
         </div> 
         <p>Enemy Power: [{{(enemy.enemyPower).toFixed(2)}}]</p>
         <span>Space Boss [T{{Math.floor(hero.spCount / 6) + 1}}] - [{{(enemy.spaceBossChance).toFixed(2)}}%]</span><br>
-        <span v-if="perks[10].level >= 10">Souls(%) - [{{enemy.dangerEnemyChance[0].toFixed(2)}}]</span><br>
-        <span v-if="perks[10].level >= 20">Ascension Souls(%) - [{{enemy.dangerEnemyChance[4].toFixed(2)}}]</span><br>
-        <span v-if="perks[10].level >= 40">Rebirth Souls(%) - [{{enemy.dangerEnemyChance[5].toFixed(2)}}]</span><br>
+        <span v-if="perks[10].level >= 10">Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[0])}}]</span><br>
+        <span v-if="perks[10].level >= 20">Ascension Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[4], true)}}]</span><br>
+        <span v-if="perks[10].level >= 40">Rebirth Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[5])}}]</span><br>
 
-        <span v-if="hero.infTier >= 4">Ω-Infinity(%)  <span v-if="enemy.danger < 100">Reach Danger 100</span> 
+        <span v-if="hero.infTier >= 4">Ω-Infinity(%)  <span v-if="enemy.danger < 100"> - [Reach Danger 100]</span> 
         <span v-if="enemy.danger >= 100">- [{{enemy.dangerEnemyChance[1].toFixed(2)}}]</span></span><br>
 
-        <span v-if="hero.infTier >= 4">Mirror of the Eternal(%)  <span v-if="enemy.danger < 150">Reach Danger 150</span>
+        <span v-if="hero.infTier >= 4">Mirror of the Infinity(%)  <span v-if="enemy.danger < 150"> - [Reach Danger 150]</span>
         <span v-if="enemy.danger >= 150">- [{{enemy.dangerEnemyChance[2].toFixed(2)}}]</span></span><br>
 
-        <span v-if="hero.infTier >= 4">The Infinite One(%) <span v-if="enemy.danger < 200">Reach Danger 200</span> 
+        <span v-if="hero.infTier >= 4">The Infinite One(%) <span v-if="enemy.danger < 200"> - [Reach Danger 200]</span> 
         <span v-if="enemy.danger >= 200">- [{{enemy.dangerEnemyChance[3].toFixed(2)}}]</span></span><br>
       </div>
     </div>
 
-    <!-- Правая колонка: Перки -->
     <div class="radiation-perks">
-      <h2>🧬 Radiation Perks</h2>
+      <h2>🧬 Radiation Perks
+        <button v-if="hero.mainInfTier >= 4" @click="upAll">
+        Upgrade All
+        </button>
+      </h2>
       <div class="perks-scroll">
-        <div class="perks">
-            <div
-            class="perk-group"
-            v-for="(group, index) in groupedPerks"
-            :key="index"
+        <div class="perks-grid">
+          <div
+            v-for="perk in perks"
+            :key="perk.id"
+            class="perk"
+            :style="{ animationDelay: `${perk.id * 0.1}s` }"
+          >
+            <h3>{{ perk.name }}</h3>
+            <p class="perk-description">{{ perk.description }}</p>
+            <small class="perk-level">Lvl: {{ perk.level }} / {{ perk.max }}</small>
+            <button
+              :disabled="perk.level >= perk.max"
+              @click="upgradePerk(perk)"
+              @mousedown="startAutoUpgrade(perk)"
+              @mouseup="stopAutoUpgrade"
+              @mouseleave="stopAutoUpgrade"
             >
-            <div
-                v-for="perk in group"
-                :key="perk.id"
-                class="perk"
-                :style="{ animationDelay: `${perk.id * 0.1}s` }"
-            >
-                <h3>{{ perk.name }}</h3>
-                <p class="perk-description">{{ perk.description }}</p>
-                <small class="perk-level">Lvl: {{ perk.level }} / {{ perk.max }}</small>
-                <button
-                    :disabled="perk.level >= perk.max"
-                    @click="upgradePerk(perk)"
-                    @mousedown="startAutoUpgrade(perk)"
-                    @mouseup="stopAutoUpgrade"
-                    @mouseleave="stopAutoUpgrade"
-                    >
-                    Upgrade ({{ getCost(perk) }})
-                </button>
-            </div>
-            </div>
+              Upgrade ({{ getCost(perk) }})
+            </button>
+          </div>
         </div>
-        </div>
+      </div>
     </div>
   </div>
+
 </template>
 
 <script setup>
@@ -87,45 +85,35 @@ const getCost = (perk) => {
   return perk.baseCost + (perk.level * perk.costPerLevel);
 };
 
-const groupedPerks = computed(() => {
-  const chunks = []
-  for (let i = 0; i < perks.length; i += 2) {
-    chunks.push(perks.slice(i, i + 2))
+function upAll(){
+  for(let perk of perks){
+    while(perk.level < perk.max && getCost(perk) <= hero.value.mutagen){
+      hero.value.mutagen -= getCost(perk);
+      perk.level++;
+
+      if (perk.id == 7 && !perk.status){
+          perk.level = 0;
+          perk.max = 30;
+          perk.baseCost = 10;
+          perk.status = true;
+      }    
+    }
   }
-  return chunks
-})
+}
+
 
 function upgradePerk(perk) {
   if (perk.level < perk.max && getCost(perk) <= hero.value.mutagen) {  
     
     hero.value.mutagen -= getCost(perk);
     perk.level++;
-    if (perk.id == 11 && perk.level > 0){
-        perk.description = perk.descriptionNext;
-    }
-    if (perk.id == 5){
-        perk.description = perk.description.replace(/\[\d+(\.\d+)?]/, '') + ` [${(1.025 ** perk.level).toFixed(2)}]`;
-    }
 
     if (perk.id == 7 && !perk.status){
       perk.level = 0;
-      perk.max = 60;
-      perk.baseCost = 5;
-      perk.description = `[+0] Potential`
+      perk.max = 30;
+      perk.baseCost = 10;
       perk.status = true;
-    }
-    if(perk.id == 7 && perk.status){
-      perk.description = `+[${perk.level}] Potential`
-    }
-
-    if (perk.id == 11 && !perk.status){
-      perk.level = 0;
-      perk.max = 100;
-      perk.baseCost = 1;
-      perk.description = `+1 DANGER per level`;
-      perk.status = true;
-    }
-    
+    }    
   }
 }
 
@@ -149,6 +137,20 @@ function stopAutoUpgrade() {
   }
   holdTimeout = null;
 }
+
+const  formatNumber = (num, f = false) => {
+    if(f && num < 100) return num.toFixed(2);
+    if (num < 1000) return Math.floor(num).toString();
+  
+    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+    const tier = Math.floor(Math.log10(num) / 3);
+  
+    const suffix = units[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = num / scale;
+  
+    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+  }
 </script>
 
 <style scoped>
@@ -159,6 +161,7 @@ function stopAutoUpgrade() {
   flex-direction: column;
   height: 100%;
   max-height: 100%;
+  width: 900px;
   gap: 1rem;
   font-family: 'Share Tech Mono', monospace;
   background: radial-gradient(circle at center, #0a0f0a, #0b0b12);
@@ -191,7 +194,6 @@ function stopAutoUpgrade() {
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  max-width: 500px;
 }
 
 .mutation {
@@ -213,10 +215,15 @@ function stopAutoUpgrade() {
 }
 
 .perks-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  padding-bottom: 0.5rem;
+  max-height: 66vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.perks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
 }
 
 .perks {
@@ -342,6 +349,7 @@ button:hover {
   overflow: auto;
   max-height: 400px;
   overflow-x: hidden;
+  font-size: 14px;
 }
 
 </style>

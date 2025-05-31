@@ -38,10 +38,10 @@
         <transition name="fade" mode="out-in">
         <div :key="buff.tier" class="buff-description">
             <p>
-              <strong>T[{{ buff.tier }}] - {{ buff.description[buff.tier-1] }}</strong>
+              <strong>T[{{ buff.tier }}] - {{ buffD(buff)}}</strong>
             </p>
             <p>
-              T[{{ buff.tier + 1 }}] - {{ buff.description[buff.tier] }}
+              T[{{ buff.tier + 1 }}] - {{ buffCharge(buff, 1) }}
             </p>
         </div>
         </transition>
@@ -55,6 +55,7 @@ import { reactive, computed, ref } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { useBuff } from '../../data/buffs.js';
+import { dimensions } from '../../data/dimensions.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
@@ -68,12 +69,28 @@ const getActiveDescriptions = (buff) => {
   return buff.description.slice(0, buff.tier); 
 };
 
+function buffD(buff){
+  if(buff.id == 6)
+    return buffCharge(buff)
+  if(buff.id == 10 && buff.tier == 1)
+    buff.description[0] = `${35 + 4 * dimensions.value[4].infTier}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`
+  return buff.description[buff.tier-1];
+}
+
+function buffCharge(buff, tier = 0){
+  if(buff.id != 6)
+    return buff.description[buff.tier];
+  let str = `[Charges Info in Info->Buff Section] ${25 + 1 * (buff.tier - 1 + tier)}% to gain random Charge, when you hit. ${50 - 2*(buff.tier - 1 + tier)}% to lost random Charge when you were hit; Max Charges: ${buff.tier + tier};`
+  
+  return str;
+}
+
 const toggleBuff = (id) => {
   if(hero.value.isSpaceBuff && enemy.value.isSpaceFight == 0){
     const index = hero.value.spActiveBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.spActiveBuffs.splice(index, 1);
-    } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.rebirthTier >= 15 && hero.value.isAbyss? 1: 0)) {
+    } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.value.rebirthTier >= 15 && hero.value.isAbyss? 1: 0)) {
       hero.value.spActiveBuffs.push(id);
     }
   } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier){

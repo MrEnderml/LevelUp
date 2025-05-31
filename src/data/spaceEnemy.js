@@ -377,14 +377,94 @@ export const spEnemy = [
         },
         {
           id: 31,
-          name: "Omnimind",
+          name: "Voidling Scout",
           stats: {
-            dmg: 1000000,
-            hp: 100000000,
-            def: 2000000,
-            AS: 20,
+            dmg: 12100,
+            hp: 2285000,
+            def: 265700,
+            AS: 2.8,
+            curses: [],
           },
           reward: "6SP",
-          status: false,
+          status: true
+        },
+        {
+          id: 32,
+          name: "Nebula Howler",
+          stats: {
+            dmg: 14300,
+            hp: 3105000,
+            def: 377500,
+            AS: 2.6,
+            curses: [],
+          },
+          reward: "6SP",
+          status: true
+        },
+        {
+          id: 33,
+          name: "Crystar Drone",
+          stats: {
+            dmg: 16500,
+            hp: 4135000,
+            def: 391700,
+            AS: 3.2,
+            curses: [],
+          },
+          reward: "6SP",
+          status: true
+        },
+        {
+          id: 34,
+          name: "Gravemind Fragment",
+          stats: {
+            dmg: 18700,
+            hp: 5340000,
+            def: 493600,
+            AS: 3.3,
+            curses: [],
+          },
+          reward: "6SP",
+          status: true
+        },
+        {
+          id: 35,
+          name: "Darkflare Wyrm",
+          stats: {
+            dmg: 20300,
+            hp: 6387000,
+            def: 595000,
+            AS: 3.4,
+            curses: [],
+          },
+          reward: "6SP",
+          status: true
+        },
+        {
+          id: 36,
+          name: "Boss - Eclipse Sovereign",
+          stats: {
+            dmg: 35000,
+            hp: 1e7,
+            def: 8e5,
+            AS: 3.8,
+            curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
+          },
+          reward: "1ST - +200 Max Level",
+          status: true,
+          type: "boss"
+        },
+        {
+          id: 37,
+          name: "Omnipotent",
+          stats: {
+            dmg: 1e100,
+            hp: 1e200,
+            def: 1e200,
+            AS: 200,
+            curses: [],
+          },
+          reward: "?SP",
+          status: true
         },
 ]

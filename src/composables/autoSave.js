@@ -9,6 +9,8 @@ import { cursed} from '../data/cursed.js';
 import { perks as radPerks } from '../data/radPerks.js'; 
 import { spEnemy as space } from '../data/spaceEnemy.js';
 import { goals } from '../data/infGoals.js';
+import { auto } from "../composables/autoProgression.js";
+import { dimensions } from "../data/dimensions.js";
 
 export function useAutoSave() {
   let interval;
@@ -28,7 +30,9 @@ export function useAutoSave() {
       cursed: cursed,
       radPerks: radPerks,
       space: space,
-      infGoals: goals.value
+      infGoals: goals.value,
+      auto: auto.value,
+      dimensions: dimensions.value,
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
     console.log('Game saved');
@@ -58,7 +62,9 @@ export function saveGame() {
     cursed: cursed,
     radPerks: radPerks,
     space: space,
-    infGoals: goals.value
+    infGoals: goals.value,
+    auto: auto.value,
+    dimensions: dimensions.value
   };
   localStorage.setItem('gameSave', JSON.stringify(data));
   console.log('Game saved');

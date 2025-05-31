@@ -4,23 +4,24 @@
       <div class="tooltip-wrapper-lvl">
           <p>
             <span class="info-button-lvl"></span> 
-            <span :class="{ 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
-            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ maxLevel }}<span v-if="hero.trueLevel > 300">[{{hero.trueLevel}}]</span></span>
+            <span style="font-size: 12px" :class="{'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
+            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel) }}<span v-if="hero.trueLevel > 300">[{{formatNumber(hero.trueLevel)}}]</span></span>
           </p>
           <div class="tooltip-lvl">
             Every level gives you {{(2 + 0.5 * Math.floor(hero.potential/10)).toFixed(1)}} HP, {{(1 + 0.2 * Math.floor(hero.potential/20)).toFixed(1)}} DMG, 
-            {{(0.5 + 0.1 * Math.floor(hero.potential/30)).toFixed(1)}} DEF
+            {{(0.5 + 0.1 * Math.floor(hero.potential/30)).toFixed(1)}} DEF<br>
+            <span v-if="hero.eLevel > 700">Getting Double Stats After Level 700</span>
           </div>
         </div>
       
       <div class="exp-bar-container">
         <div
-          :class="{ 'exp-bar-corrupted': eLevel >= 300 }"
+          :class="{ 'exp-bar-singularity': eLevel > 700, 'exp-bar-corrupted': eLevel >= 300 }"
           class="exp-bar"
           :style="{ width: `${Math.min(100, (exp / nextLevelExp) * 100)}%` }"
         ></div>
       </div>
-      <p><span :class="{ 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
+      <p><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
     </div>
     <Tooltip style="text-align: center" :text="() => corrList()">
       <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{(hero.corruption.toFixed(2))}}]</span>
@@ -103,6 +104,11 @@ watchEffect(() => {
   if (enemy.value.isSpaceFight == 1) {
     emit('update:modelValue', 'Combat')
   }
+  if(hero.value.windowUpdate){
+    emit('update:modelValue', 'Combat')
+    hero.value.windowUpdate = false;
+  }
+
 })
 
 function formatNumber(num) {
@@ -121,9 +127,9 @@ function formatNumber(num) {
 const corrListHandle = computed(() => {
   let space = (hero.value.sp >= 46? 1.002 ** hero.value.sp - 1: 0);
   let radiation = (rawPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0);
-  let abyssD = (hero.value.sp >= 24 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.1)): 0);
+  let abyssD = (hero.value.sp >= 24 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15)): 0);
   let rebirth = (hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0);
-  let inf = (hero.value.infTier >= 5? (1.01 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
+  let inf = (hero.value.mainInfTier >= 5? (1.01 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
 
   return {
     space: space,
@@ -144,11 +150,25 @@ function corrList() {
   str += `<span>Abyss D: [${e.abyssD.toFixed(3)}]</span><br>`;
   str += `<span>Rebirth: [${e.rebirth.toFixed(3)}]</span><br>`;
   str += `<span>Infinity: [${e.inf.toFixed(3)}]</span><br>`;
+  str += `<span>Total: [${(e.space + e.radiation + e.abyssD + e.rebirth + e.inf + 0.1).toFixed(3)}]</span><br>`
 
   return str;
 }
 
 function eventReq (e){
+  if(hero.value.isSingularity){
+    if(hero.value.singularity >= 2 && e == 'Tree') return true;
+    if(hero.value.singularity >= 3 && e == 'Ascension') return true;
+    if(hero.value.singularity >= 4 && e == 'Space') return true;
+    if(hero.value.singularity >= 5 && e == 'Buff') return true;
+    if(hero.value.singularity >= 6 && e == 'Equipment') return true;
+    if(hero.value.singularity >= 7 && e == 'Rebirth') return true;
+  }
+  if(hero.value.dId == 'noTree' && e == 'Tree') return true;
+  if(hero.value.dId == 'ascension' && e == 'Ascension')  return true;
+  if(hero.value.dId == 'noEq' && e == 'Equipment') return true;
+  
+
   if(e == 'Combat') return hero.value.maxStage < 1;
   if(e == 'Equipment') return hero.value.maxStage < 2;
   if(e == 'Buff') return hero.value.maxStage < 5;
@@ -159,13 +179,31 @@ function eventReq (e){
   if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
   if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
   if(e == 'Radiation') return hero.value.sp < 5;
-  if(e == 'Infinity') return (hero.value.infTier < 1 && hero.value.level < 700);
-  if(e == 'D-Atlas') return true;
+  if(e == 'Infinity') return (hero.value.dId == 'main' && hero.value.infTier < 1 && hero.value.level < 700);
+  if(e == 'D-Atlas') return hero.value.abyssDStages < 80;
   if(e == 'Info') return hero.value.maxStage < 1;
   if(e == 'Settings') return hero.value.maxStage < 1;
 }
 
 function eventReqD (e){
+  if(hero.value.isSingularity){
+    if(hero.value.singularity >= 2 && e == 'Tree') return 'Singularity Conflict';
+    if(hero.value.singularity >= 3 && e == 'Ascension') return 'Singularity Conflict';
+    if(hero.value.singularity >= 4 && e == 'Space') return 'Singularity Conflict';
+    if(hero.value.singularity >= 5 && e == 'Buff') return 'Singularity Conflict';
+    if(hero.value.singularity >= 6 && e == 'Equipment') return 'Singularity Conflict';
+    if(hero.value.singularity >= 7 && e == 'Rebirth') return 'Singularity Conflict';
+  }
+  if(hero.value.dId == 'noTree' && e == 'Tree'){
+    return 'The Unknown';
+  }
+  if(hero.value.dId == 'ascension' && e == 'Ascension'){
+   return 'The Unknown';
+  }
+  if(hero.value.dId == 'noEq' && e == 'Equipment'){
+   return 'The Unknown';
+  }
+
   if(e == 'Equipment') return 'Stage 2';
   if(e == 'Buff') return 'Stage 5';
   if(e == 'Ascension') return 'Stage 10';
@@ -175,7 +213,7 @@ function eventReqD (e){
   if(e == 'Space') return '2 Space Fragments';
   if(e == 'Radiation') return '5 Space Power';
   if(e == 'Infinity') return 'Total Level 700';
-  if(e == 'D-Atlas') return 'Closed';
+  if(e == 'D-Atlas') return 'AbyssD Stage 80';
 }
 
 </script>
@@ -358,7 +396,6 @@ function eventReqD (e){
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  /* Светящееся фиолетовое свечение */
   text-shadow:
     0 0 4px #7e22ce,
     0 0 8px #a855f7,
@@ -388,6 +425,10 @@ function eventReqD (e){
   animation: corruptionShift 6s ease infinite;
 }
 
+.exp-bar-singularity {
+  background: linear-gradient(270deg,rgb(128, 250, 209),rgb(80, 236, 184),rgb(62, 224, 170),rgb(39, 248, 178));
+}
+
 @keyframes corruptionShift {
   0% {
     background-position: 0% 50%;
@@ -410,6 +451,10 @@ function eventReqD (e){
   -webkit-background-clip: text;
   animation: corruption-glow 3s linear infinite;
   text-align: center;
+}
+
+.singularity-text-lvl {
+  color: #66ffcc
 }
 
 @keyframes corruption-glow {

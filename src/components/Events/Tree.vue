@@ -1,9 +1,9 @@
 <template>
   <div class="perk-tree">
     <h2>TIER[{{hero.treeTier+1}}]</h2>
-    <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points: {{ hero.perkPoints }}</p>
+    <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ hero.perkPoints }}</p>
 
-    <div class="auto-buttons" v-if="hero.infTier >= 1">
+    <div class="auto-buttons" v-if="hero.infTier >= 1 || hero.singularity >= 3">
       <button
         @click="toggleAuto"
         :class="['btn', 'btn-auto', { active: hero.treeAuto }]"
@@ -86,9 +86,10 @@ import { computed } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/perks.js';
 import { perks as radPerks} from '../../data/radPerks.js';
+import {dimensions} from '../../data/dimensions.js';
 
 const { hero } = useHero();
-
+const MULT = (dimensions.value[6].infTier == dimensions.value[6].maxInfTier? 0.9: 1);
 
 
 function toggleAuto() {
@@ -115,27 +116,29 @@ const infPerk = (perk) => {
 
   if(perk.infStatus || hero.value.capInfPerks > perks.value.filter(p => p.infStatus).length){
     perk.infStatus = !perk.infStatus? true: false;
-    hero.value.perkPoints += (perk.infStatus? perk.level: perk.baseCost * perk.level)
+    hero.value.perkPoints += (perk.infStatus? perk.level: Math.floor(perk.baseCost * MULT) * perk.level)
     perk.level = 0;
   }
   
 }
 
 const infCost = (perk) => {
-  return `${perk.baseCost}P`
+  let cost = Math.floor(perk.baseCost * MULT);
+  //cost = Math.floor(cost * 0.9);
+  return `${cost}P`
 }
 
 const infUpgrade = (perk) => {
   if (hero.value.perkPoints >= perk.baseCost) {
     perk.level++;
-    hero.value.perkPoints -= perk.baseCost;
+    hero.value.perkPoints -= Math.floor(perk.baseCost * MULT);
   }
 }
 
 const infMaxUpgrade = (perk) => {
-  let count = Math.floor(hero.value.perkPoints / perk.baseCost);
+  let count = Math.floor(hero.value.perkPoints / Math.floor(perk.baseCost * MULT));
   perk.level += count;
-  hero.value.perkPoints -= perk.baseCost * count;
+  hero.value.perkPoints -= Math.floor(perk.baseCost * MULT) * count;
 }
 
 const maxUpgrade = (perk) => {
@@ -157,7 +160,7 @@ const resetPerks = () => {
     }
   }
 
-  hero.value.perkPoints = hero.value.eLevel * (hero.value.infTier >= 1? 2: 1);
+  hero.value.perkPoints = hero.value.freeTreePoints + hero.value.eLevel * (hero.value.infTier >= 1? 2: 1);
 };
 
 
@@ -166,7 +169,7 @@ const calculate = (perk) => {
     return "TOTAL: " + (perk.value ** perk.level).toFixed(2);
 
   if(perk.id == 1 && perk.infStatus)
-    return "TOTAL: " + (perk.value ** Math.min(perk.level, 100) + 1.0075 ** Math.min(Math.max(perk.level - 100, 0), 100)).toFixed(2);  
+    return "TOTAL: " + ((perk.value - 0.001) ** perk.level).toFixed(2);  
 
   if(perk.id == 4)
     return "TOTAL: " + (1 + perk.value * perk.level * 0.01).toFixed(2);
@@ -174,8 +177,14 @@ const calculate = (perk) => {
   if(perk.id == 6)
     return "TOTAL: " + (perk.value * perk.level).toFixed(1);  
 
-  if(perk.id == 7 || perk.id == 10 || perk.id == 11 || perk.id == 12 || perk.id == 14 || perk.id == 15)
+  if(perk.id == 7 || perk.id == 10 || perk.id == 11 || perk.id == 12 || perk.id == 14 || perk.id == 15 || perk.id == 17)
     return "";
+
+  if(perk.id == 16)
+    return "TOTAL: " + (perk.value ** perk.level).toFixed(2);
+
+  if(perk.id == 20)
+    return "TOTAL: " + (2 - 1.04 ** hero.value.treeTier).toFixed(2);
 
   return "TOTAL: " + (perk.value * perk.level);
 }
@@ -211,7 +220,7 @@ const radiationPerks = (perk) => {
 
 <style scoped>
 .perk-tree {
-  max-height: 580px;
+  max-height: 670px;
   overflow-y: auto;
   overflow-x: hidden;
   position: fixed;

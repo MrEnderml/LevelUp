@@ -1,12 +1,13 @@
 <template>
   <div class="enemy">
-    <h3 :class="{ 'soul-name': enemy.soulBuff.active || enemy.rebirthSoul, 'boss-name': enemy.boss.isBoss, 'ascension-name': enemy.ascensionSoul.active, 'space-name': enemy.isSpaceFight, 
-    'inf-name': enemy.spawnType.slice(0, 3) == 'inf' }">👾 
+    <h3 :class="{ 'soul-name': enemy.soulBuff.active || enemy.rebirthSoul, 'boss-name': enemy.boss.isBoss, 'ascension-name': enemy.ascensionSoul.active,
+     'space-name': enemy.isSpaceFight, 'inf-name': enemy.spawnType.slice(0, 3) == 'inf', 'singularity-name': hero.isSingularity }">👾 
       {{ enemy.soulBuff.active ? soulNames[hero.souls%50] || 'Unknown Soul' : enemy.name }}
     </h3>
 
     <span style="color: white">⚔️ {{ formatNumber(attack) }}  </span>
     <span style="color: white" v-if="def > 0"> 🛡️{{formatNumber(def)}}</span>
+    <span style="color: #e711e7" v-if="enemy.weakStack >= 1"> 👁️[{{Math.floor(enemy.weakStack)}}]</span>
     <div class="hp-bar">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
             <span class="hp-text">{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span>
@@ -45,7 +46,41 @@ const colors = ['green', 'yellow', 'red', '#c56eff']
 function formatNumber(num) {
   if (num < 1000) return Math.floor(num).toString();
 
-  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const units = [
+  "",  // 10^0
+  "k", // 10^3
+  "m", // 10^6
+  "b", // 10^9
+  "t", // 10^12
+  "q", // 10^15 (quadrillion)
+  "Q", // 10^18 (quintillion)
+  "s", // 10^21 (sextillion)
+  "S", // 10^24 (septillion)
+  "o", // 10^27 (octillion)
+  "n", // 10^30 (nonillion)
+  "d", // 10^33 (decillion)
+  "u", // 10^36 (undecillion)
+  "D", // 10^39 (duodecillion)
+  "T", // 10^42 (tredecillion)
+  "qt", // 10^45 (quattuordecillion)
+  "Qd", // 10^48 (quindecillion)
+  "sd", // 10^51 (sexdecillion)
+  "St", // 10^54 (septendecillion)
+  "Od", // 10^57 (octodecillion)
+  "Nd", // 10^60 (novemdecillion)
+  "vg", // 10^63 (vigintillion)
+  "Uv", // 10^66 (unvigintillion)
+  "Dv", // 10^69 (duovigintillion)
+  "Tv", // 10^72 (tresvigintillion)
+  "qtv", // 10^75 (quattuorvigintillion)
+  "Qtv", // 10^78 (quinvigintillion)
+  "sdv", // 10^81 (sexvigintillion)
+  "Stv", // 10^84 (septenvigintillion)
+  "Odv", // 10^87 (octovigintillion)
+  "Ndv", // 10^90 (novemvigintillion)
+  "Tg", // 10^93 (trigintillion)
+  "∞",  // 10^96+
+];
   const tier = Math.floor(Math.log10(num) / 3);
 
   const suffix = units[tier];
@@ -144,6 +179,12 @@ function formatNumber(num) {
   color:rgb(253, 249, 9);
   font-weight: bold;
   text-shadow: 0 0 5px rgb(248, 244, 13);
+}
+
+.singularity-name {
+  color: rgba(136, 132, 255, 0.6);
+  font-weight: bold;
+  text-shadow: 0 0 5px rgb(136, 132, 255);
 }
 
 .curse-wrapper {

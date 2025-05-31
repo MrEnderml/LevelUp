@@ -4,10 +4,13 @@
 <button class="btn" @click="tool('afk')">1 HOURS</button>
 <button class="btn" @click="tool('ShardsPlus')">+10k Shards</button>
 <button class="btn" @click="tool('RebirthPtsMore')">+1k Pts</button>
+<button class="btn" @click="tool('abyss')">Abyss</button>
+<button class="btn" @click="tool('mutagen')">+mutagen</button>
+<button class="btn" @click="tool('RebirthTier')">+10 Rebirth Tier</button>
 <div style="display: none">
 <button class="btn" @click="tool('levelPlus')">+1 Level</button>
-    <button class="btn" @click="tool('levelPlusTen')">+10 Levels</button>
-    <button class="btn" @click="tool('levelPlusFifty')">+50 Levels</button>
+    
+    <button class="btn" @click="tool('mutagen')">+mutagen</button>
     <button class="btn" @click="tool('Shards')">+100 Ascension Shards</button>
     
     <button class="btn" @click="tool('RebirthTier')">+1 Rebirth Tier</button>
@@ -38,13 +41,14 @@ function tool(str) {
         hero.value.afkTime = time;
         hero.value.afkLocked = true;
     }
-    if(str == "levelPlus"){
-        hero.value.eLevel++;
-        hero.value.perkPoints += 1;
+    if(str == "abyss"){
+        hero.value.soulsMax = 40;
+        hero.value.soulsCap = 40;
+        hero.value.souls = 40;
+        hero.value.abyssTier = 3;
     }
-     if(str == "levelPlusTen"){
-        hero.value.eLevel+=10;
-        hero.value.perkPoints += 10;
+     if(str == "mutagen"){
+        hero.value.mutagen += 1e6
     }
      if(str == "levelPlusFifty"){
         hero.value.eLevel+=50;
@@ -57,13 +61,13 @@ function tool(str) {
         hero.value.ascensionShards += 10000;
     }
      if(str == "RebirthTier"){
-        hero.value.rebirthTier++;
+        hero.value.rebirthTier+=10;
     }
      if(str == "RebirthPts"){
         hero.value.rebirthPts+= 10;
     }
      if(str == "RebirthPtsMore"){
-         hero.value.rebirthPts+= 1000;
+         hero.value.rebirthPts+= 10000;
     }
      if(str == "ClearStage"){
         hero.value.stage++;

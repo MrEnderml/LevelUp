@@ -1,12 +1,13 @@
 import { reactive, ref } from 'vue';
+import { dimensions } from './dimensions';
 
 const buffs = ref([
     {
       id: 0,
       name: 'Invisible',
       description: [
-        "33% that your DEF will be double when enemy hits you",
-        "35% to block the enemy attack to 1 DMG",
+        "33% that your DEF doubles when an enemy hits you",
+        "35% to block an enemy attack to 1 DMG",
         "Your DEF has immunity to penetration",
         "You are immune to stunning",
         "Max Tier"
@@ -23,9 +24,9 @@ const buffs = ref([
       id: 1,
       name: 'First Strike',
       description: [
-        "Deal double DMG by First attack",
+        "First attack deals double DMG",
         "First attack is always critical",
-        "First attack can STUN Enemy for 1 second",
+        "First attack will STUN Enemy for 1 second",
         "Max Tier"
       ],
       tier: 1,
@@ -56,16 +57,16 @@ const buffs = ref([
         id: 3,
         name: 'Combo',
         description: [
-          "+1% DMG per COMBO [MAX- 30]; +1 COMBO per hit; COMBO Resets if you was hit by enemy",
-          "+1.25% DMG per COMBO [MAX- 40]; +1 COMBO per hit[50% to get additional COMBO]; COMBO Resets 75% if you was hit by enemy",
-          "+1.5% DMG per COMBO [MAX- 50]; +1.5 COMBO per hit; COMBO Resets 50% if you was hit by enemy",
-          "+1.75% DMG per COMBO [MAX- 100]; +2 COMBO per hit; COMBO Resets if you was killed by enemy; +0.3 Attack per Second when COMBO is MAX",
+          "+1% DMG per COMBO [MAX- 30]; +1 COMBO per hit; COMBO Resets if you get hit by an enemy",
+          "+1.25% DMG per COMBO [MAX- 40]; +1 COMBO per hit[50% to get additional COMBO]; COMBO Resets 75% if you get hit by an enemy",
+          "+1.5% DMG per COMBO [MAX- 50]; +1.5 COMBO per hit; COMBO Resets 50% if you get hit by an enemy",
+          "+1.75% DMG per COMBO [MAX- 100]; +2 COMBO per hit; COMBO Resets get killed by an enemy; +0.3 Attack per Second when COMBO is MAX",
           "Max Tier"
         ],
         tier: 1,
         maxTier: 3,
         exp: 0,
-        maxExp: [12000, 60000, 500000, 2e6],
+        maxExp: [12000, 60000, 5e7, 1e9],
         active: false,
         combo: 0,
         hit: false
@@ -74,10 +75,10 @@ const buffs = ref([
         id: 4,
         name: 'Blood Art',
         description: [
-          "Heal HP equals to stage passed per second",
-          "Heal 5% HP when you kill enemy",
+          "Heal HP equal to current stage per second",
+          "Heal 5% HP when you kill an enemy",
           "Heal 5% HP per second",
-          "Heal 2% from Max HP + [Stages Passed] after each Attack",
+          "Heal 2% of Max HP + [current stage] after each Attack",
           "Max Tier"
         ],
         tier: 1,
@@ -91,9 +92,9 @@ const buffs = ref([
         id: 5,
         name: 'Fast Slash',
         description: [
-          "You can hit additional time; -0.8 Attack per Second",
-          "45% to hit extra time; -0.7 Attack per Second",
-          "25% to hit another extra time; -0.6 Attack per Second",
+          "Hit an additional time; -0.8 Attack per Second",
+          "25% to hit another extra additional time; -0.7 Attack per Second",
+          "A separate 25% to hit an extra additional time; -0.6 Attack per Second",
           "Max Tier"
         ],
         tier: 1,
@@ -106,18 +107,24 @@ const buffs = ref([
     },
     {
         id: 6,
-        name: 'Void',
+        name: 'Charges',
         description: [
-          "",
-          "",
-          "",
-          "Max Tier"
+          `+1 Max Tier per Singularity Tier;
+          25% (+1% to gain random Charge per Tier) to gain random Charge, when you hit;
+          50% (-2% to lost random Charge per Tier) to lost random Charge when you were hit; 
+          Max Charges: 1 (+1 Max Charges per Tier);
+          Power Charge: +5% DMG, +0.1 APS; Energy Charge: +1 CRIT, +5 CRIT DMG; Life Charge: +5% HP, +5% DEF.`
         ],
         tier: 1,
-        maxTier: 3,
+        maxTier: 1,
         exp: 0,
-        maxExp: [8000, 320000, 3.6e6],
-        active: false
+        maxExp: [1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20],
+        active: false,
+        charges: {
+          power: 0,
+          energy: 0,
+          life: 0,
+        }
       },
       {
         id: 7,
@@ -126,7 +133,7 @@ const buffs = ref([
           "Note: You gain the loot from only first killed enemy; 100% to kill next enemy;",
           "+1 extra kill per each 100 max level;",
           "+1 extra kill per each 50 level;",
-          "You gain EXP && WEAPON CHANCE for each Overkilled Enemy",
+          "10% to gain EXP && WEAPON CHANCE for each overkilled Enemy",
           "Max Tier"
         ],
         tier: 1,
@@ -142,12 +149,13 @@ const buffs = ref([
           "+0.1% HP per second [MAX - 500s]",
           "+0.1% DMG per second [MAX - 750s]",
           "+0.1 ATTACK SPEED per 250 seconds [MAX - 1000s]",
+          "1% of enemy weakness per 100 seconds [MAX - 1250]; Start with 250 seconds",
           "Max Tier"
         ],
         tier: 1,
         maxTier: 3,
         exp: 0,
-        maxExp: [250000, 2.5e6, 1e6],
+        maxExp: [250000, 2.5e6, 1e10, 1e11, 1e12],
         active: false,
         time: 0
       },
@@ -170,7 +178,7 @@ const buffs = ref([
       id: 10,
       name: 'Extra life',
       description: [
-        "35% to RISE UP after death with 50% HP. Does not work on the same enemy twice.",
+        `${35}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`,
         "+50% DMG and 25% DEF after RISING for 8 seconds",
         "After RISING become immune to any damage for 4 seconds",
         "Max Tier"
@@ -190,15 +198,17 @@ const buffs = ref([
       name: 'Sniper',
       description: [
         "+15% CRIT, +75% CRIT DMG",
-        "IF CRIT HIGHER 100% DEAL EXTRA DOUBLE DAMAGE",
-        "CRIT CHANCE CHECKS DOUBLE",
+        "If your Base Crit chance is above 100%, you deal an additional Double DMG",
+        "Crit chance is checked twice",
+        "When your Hit is Critical, you ignore the Enemy's Avoid",
         "Max Tier"
       ],
       tier: 1,
       maxTier: 3,
       exp: 0,
-      maxExp: [2e6, 1e7, 1e8],
+      maxExp: [2e6, 1e7, 1e10, 1e11],
       active: false,
+      hit: false,
     },
     {
       id: 12,
@@ -206,7 +216,7 @@ const buffs = ref([
       description: [
         `Low HP, High DMG -> 1 : 2`,
         "+15% CRIT, +75 CRIT DMG WHEN HP is low",
-        "WHEN YOUR HP lower 30% HEAL 1% PER 10% LOST HP",
+        "WHEN YOUR HP is lower than 30% HEAL 1% PER 10% LOST HP",
         "Max Tier"
       ],
       tier: 1,
@@ -224,7 +234,7 @@ const buffs = ref([
       description: [
         `x1.5 DEF, x1.5 HP, x0.75 DMG`,
         "+10% DEF PER 10% Lost HP",
-        "+10% DEF From Max HP",
+        "+5% DEF From Max HP",
         "Max Tier"
       ],
       tier: 1,

@@ -17,6 +17,7 @@ const hero = ref({
   maxLevel: 30,
   trueLevel: 0,
   exp: 0,
+  totalExp: 0,
   nextLevelExp: 100,
   attacksPerSecond: 0.5,
   resetKilledTime: 0,
@@ -30,6 +31,7 @@ const hero = ref({
   overkill: 0,
   treeTier: 0,
   perkPoints: 0,
+  eqTotalDrop: 0,
   equipmentTiers: {
     sword: 0,
     armor: 0,
@@ -43,6 +45,19 @@ const hero = ref({
     boots: 3,
     ring: 0,
     spRing: 0
+  },
+  eqMin: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0,
+    spRing: 0
+  },
+  eqDrop: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0,
   },
   eqUps: {
     sword: 0,
@@ -67,7 +82,9 @@ const hero = ref({
     },
     armor: {
       cap: 0,
-      bonus: 0
+      bonus: 0,
+      def: 0,
+      heal: 0,
     },
     boots: {
       cap: 0,
@@ -82,12 +99,20 @@ const hero = ref({
       bonus: 0
     }
   },
+  awakened: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0
+  },
   dropChance: {
     sword: 0,
     armor: 0,
     boots: 0,
     ring: 0
   },
+  shardsMult: 0,
+  shardsPerformMult: 0,
   ascensionShards: 0,
   totalAscensionShards: 0,
   isAscend: false,
@@ -109,9 +134,11 @@ const hero = ref({
   afkKills: 0,
   afkMessage: "",
   showAfkPopupRule: true,
+  isRebirth: false,
   rebirthPts: 0,
   totalRebirthPts: 1,
   rebirthTier: 0,
+  totalPtsMult: 0,
   potential: 0,
   avoid: 0,
   activeFormation: null,
@@ -144,6 +171,7 @@ const hero = ref({
   infPoints: 0,
   infPointsGoals: 0,
   infTier: 0,
+  maxInfTier: 0,
   infTree: false,
   soulD: false,
   treeAuto: false,
@@ -169,7 +197,39 @@ const hero = ref({
     space: false,
     radiation: false,
     infinity: false,
-  }
+    singularity: false,
+    dimensions: false,
+    stats: true
+  },
+  singularity: 0,
+  isSingularity: false,
+  overcorruption: 0,
+  freeEnchances: 0,
+  isDimension: false,
+  dId: 'main',
+  mainInfTier: 0,
+  survivalLevel: 0,
+  windowUpdate: false,
+  freeTreePoints: 0,
+  unlimitLevel: 0,
+  gcnpSetting: false,
+  singularityAscension: [],
+  singularitySpace: {
+    sp: 0,
+    st: 0,
+    spCount: 0,
+  },
+  singularityRingUp: 0, 
+  singularityRebirthTier: 0,
+  afkTimer: 0,
+  afkMaxTimer: 14400,
+  afkSpendPercent: 0,
+  enemyAfkHp: 1,
+  travellPenalty: 1,
+  isTravell: false,
+  ascensionAuto: false,
+  ascensionAutoUnlock: false,
+  afkTimeHandle: 1,
 });
 
 export function useHero() {

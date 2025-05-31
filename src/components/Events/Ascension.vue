@@ -25,22 +25,30 @@
         >
           TIER-R
         </button>
-        <button style="margin-left: 10px" v-if="hero.infTier >= 2 && tier >= 3"
+        <button style="margin-left: 10px" v-if="hero.mainInfTier >= 2 && tier >= 3"
           class="active-inf"
           @click="selectTier(6)"
         >
           TIER-INF
         </button>
+        <button style="margin-left: 10px" v-if="hero.singularity >= 4 && tier >= 3"
+          class="active-s"
+          @click="selectTier(7)"
+        >
+          TIER-S
+        </button>
       </div>
     </div>
 
-    <p>Shards:🌌 <strong>{{ formatNumber(hero.ascensionShards) }}</strong></p>
+    <p>Shards:🌌 <strong>{{ formatNumber(hero.ascensionShards) }}</strong> 
+    <span v-if="dimensions[1].infTier == dimensions[1].maxInfTier"> (+{{formatNumber(hero.totalAscensionShards * 0.1)}})</span>
+    </p>
 
     <div class="perk-container">
       <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
         <h3>{{ perk.name }}</h3>
         <p class="perk-description">{{ getPerkDescription(perk) }}</p>
-        <p v-if="currentTier < 5">Level: {{ perk.level }} / {{ perk.max }}</p>
+        <p v-if="currentTier != 6">Level: {{ perk.level }} / {{ perk.max }}</p>
         <p v-if="currentTier == 6">Level: {{ perk.level }}</p>
         <button :disabled="!canUpgrade(perk)" @click="upgradePerk(perk)">
           {{ formatNumber(getCost(perk)) }} 🌌
@@ -55,7 +63,7 @@ import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/ascension.js';
 import { computed, ref } from 'vue';
 import { perks as radPerks } from '../../data/radPerks.js';
-
+import { dimensions } from '../../data/dimensions.js';
 const { hero } = useHero();
 
 
@@ -76,18 +84,27 @@ const selectTier = (tier) => {
   if(tier == 6)
     currentTier.value = 6;
 
+  if(tier == 7)
+    currentTier.value = 7;
+
   if (tier <= maxTier.value) {
     currentTier.value = tier;
   }
 };
 
 const filteredPerks = computed(() =>
-  perks.filter(p => p.tier === currentTier.value)
+  currentTier.value === 7
+    ? perks.filter(p => p.tier === currentTier.value && 38 + hero.value.singularity > p.id)
+    : perks.filter(p => p.tier === currentTier.value)
 );
 
 const getCost = (perk) => {
+  let penaltyI = 1 - 0.0075 * dimensions.value[1].infTier;
+  let penaltyS = 1 - 0.01 * dimensions.value[1].infTier;
   if(perk.tier == 6)
-    return Math.floor(perk.baseCost ** perk.level);
+    return Math.floor((perk.baseCost ** perk.level) ** penaltyI);
+  if(perk.tier == 7)
+    return perk.baseCost ** penaltyS
   return perk.baseCost + perk.level * perk.costPerLevel;
 };
 
@@ -95,6 +112,7 @@ const canUpgrade = (perk) => {
   return (
     perk.level < perk.max &&
     hero.value.ascensionShards >= getCost(perk)
+
   );
 };
 
@@ -103,7 +121,6 @@ const upgradePerk = (perk) => {
   if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
     hero.value.ascensionShards -= cost;
     perk.level++;
-
   }
 };
 
@@ -112,10 +129,13 @@ function getPerkDescription(perk) {
     return `Enemies weakness based on Corruption weakness [${(1- (hero.value.corruption - 0.1) * 0.5).toFixed(2)}]. Also works in The Abyss`
   }
   if (perk.id === 30) {
-    return `Gain Ascension Shards based on SP - [${(1.025 ** hero.value.sp).toFixed(2)}]. Ascension Affect scales better`
+    return `Gain Ascension Shards based on SP - [${(1 + 0.04 * hero.value.sp).toFixed(2)}]. Ascension Affect scales better`
   }
   if(perk.id === 37){
     return `Level Exp Reduction based on Rebirth Pts [${(1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2)).toFixed(2)}]`
+  }
+  if(perk.id === 42){
+    return `Max Level MULT based on overcap corruption [${(1 + hero.value.overcorruption / 4).toFixed(2) }]`
   }
   return perk.description
 }
@@ -180,6 +200,11 @@ button.active-r {
 
 button.active-inf {
   background-color:rgb(215, 229, 15);
+  color: white;
+}
+
+button.active-s {
+  background-color: #66ffcc;
   color: white;
 }
 

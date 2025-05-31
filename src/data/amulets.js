@@ -11,6 +11,7 @@ export const amulets = [
       },
       prefix: {
         text: "Max Level MULT - 1.02",
+        value: 0.02,
         status: false 
       },
       status: false
@@ -27,6 +28,7 @@ export const amulets = [
       },
       prefix: {
         text: "Max Level MULT - 1.04", 
+        value: 0.04,
         status: false
       },
       status: false
@@ -43,6 +45,7 @@ export const amulets = [
         },
         prefix: {
           text: "Max Level MULT - 1.06", 
+          value: 0.06,
           status: false
         },
         status: false
@@ -58,7 +61,8 @@ export const amulets = [
           status: false
         },
         prefix: {
-          text: "Max Level MULT - 1.08", 
+          text: "Max Level MULT - 1.08",
+          value: 0.08, 
           status: false
         },
         status: false

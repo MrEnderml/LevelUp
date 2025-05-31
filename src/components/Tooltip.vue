@@ -34,7 +34,6 @@ onMounted(() => {
     const wrapperRect = wrapper.value?.getBoundingClientRect();
     const bottomSpace = window.innerHeight - wrapperRect.bottom;
 
-    // Если не влезает снизу — показывать сверху
     showAbove.value = tooltipRect && bottomSpace < tooltipRect.height + 12;
   });
 });

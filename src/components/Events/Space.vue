@@ -14,8 +14,8 @@
       <div class="enemy-info" v-if="spEnemy[hero.spCount].status">
         <h2>{{ spEnemy[hero.spCount].name }}</h2>
         <p class="boss-reward-sp"> Reward: {{spEnemy[hero.spCount].reward}}</p>
-        <p>HP: {{ Math.floor(spEnemy[hero.spCount].stats.hp * (1 + hero.infTier * 0.1)) }} | ATK: {{ Math.floor(spEnemy[hero.spCount].stats.dmg * (1 + hero.infTier * 0.1)) }} 
-        | DEF: {{ Math.floor(spEnemy[hero.spCount].stats.def * (1 + hero.infTier * 0.1)) }} | ApS: {{ (spEnemy[hero.spCount].stats.AS * (1 + hero.infTier * 0.02)).toFixed(2) }}</p>
+        <p>HP: {{ stats(1) }} | ATK: {{ stats(2) }} 
+        | DEF: {{ stats(3) }} | ApS: {{ stats(4) }}</p>
         <p v-if="spEnemy[hero.spCount].type == 'boss' || hero.spCount > 23">{{spEnemy[hero.spCount].stats.curses.join(' ')}}</p>
       </div>
       <div v-else style="text-align: center">Celestials dont see you</div>
@@ -23,7 +23,7 @@
       <div class="bottom-bar" v-if="spEnemy[hero.spCount].status">
         <button v-if="enemy.isSpaceFight == 0" class="attack-button" @click="attackEnemy">⚔️ Attack</button>
         <button v-if="enemy.isSpaceFight == 2" class="attack-button" @click="LeaveEnemy">Leave</button>
-        <button v-if="hero.infTier >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
+        <button v-if="hero.infTier >= 5 || hero.singularity >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
       </div>
     </div>
 
@@ -48,6 +48,7 @@ import { spacePower as sp } from '../../data/spacePower.js';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { spEnemy } from '../../data/spaceEnemy.js';
+import { perks as ascension } from '../../data/ascension.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
@@ -55,6 +56,20 @@ const currentTab = ref('battle')
 
 function switchTab(tab) {
   currentTab.value = tab
+}
+
+function stats(id){
+  let penalty = hero.value.infTier - (ascension[42].level?1:0);
+  switch(id){
+    case 1: return lastEnemy(spEnemy[hero.value.spCount].stats.hp * (1 + penalty * 0.1));
+    case 2: return lastEnemy(spEnemy[hero.value.spCount].stats.dmg * (1 + penalty * 0.1));
+    case 3: return lastEnemy(spEnemy[hero.value.spCount].stats.def * (1 + penalty * 0.1));
+    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + penalty * 0.02) * (1 - 0.02 * hero.value.survivalLevel)).toFixed(2);
+  }
+}
+
+function lastEnemy(value){
+  return hero.value.spCount == 36? 'E': Math.floor(value);
 }
 
 function formatReward(reward) {
@@ -67,12 +82,14 @@ function formatReward(reward) {
 }
 
 const sortedRewards = computed(() => {
-    return sp.filter(reward => reward.id <= Math.min(hero.value.spCount + 1, 24 + (hero.value.infTier >= 5? 6: 0)));
+    return sp.filter(reward => reward.id <= Math.min(hero.value.spCount + 1, 24 + (hero.value.infTier >= 5? 6: 0) + (hero.value.singularity >= 5? 6: 0) ));
 });
 
 const progressPercent = computed(() => ((hero.value.spCount%6) / 6) * 100)
 
 function attackEnemy() {
+  if(hero.value.spCount == 36)
+    return;
   enemy.value.isSpaceFight = 1;
 }
 

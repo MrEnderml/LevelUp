@@ -24,7 +24,7 @@ export const perks = [
     level: 0,
     max: 30,
     baseCost: 4,
-    costPerLevel: 2
+    costPerLevel: 4
   },
   {
     id: 4,
@@ -33,7 +33,7 @@ export const perks = [
     level: 0,
     max: 30,
     baseCost: 8,
-    costPerLevel: 4
+    costPerLevel: 8
   },
   {
     id: 5,
@@ -42,7 +42,7 @@ export const perks = [
     level: 0,
     max: 30,
     baseCost: 2,
-    costPerLevel: 1
+    costPerLevel: 2
   },
   {
     id: 6,
@@ -60,7 +60,7 @@ export const perks = [
     level: 0,
     max: 1,
     baseCost: 2500,
-    costPerLevel: 2.5,
+    costPerLevel: 10,
     status: false
   },
   {
@@ -94,11 +94,10 @@ export const perks = [
   {
     id: 11,
     name: 'Irradiated Presence',
-    description: 'UNLOCK DANGER SYSTEM',
-    descriptionNext: '+1 DANGER per Level',
+    description: '+1 DANGER per Level',
     level: 0,
-    max: 1,
-    baseCost: 5,
+    max: 100,
+    baseCost: 1,
     costPerLevel: 1,
     status: false
   },

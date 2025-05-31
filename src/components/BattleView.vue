@@ -3,6 +3,7 @@
     <HeroPanel  :attackBarProgress="heroAttackBarProgress" />
     <EnemyPanel :attackBarProgress="enemyAttackBarProgress" />
   </div>
+  
 </template>
 
 <script setup>

@@ -36,7 +36,8 @@ const enemy = ref({
   isSpaceFight: 0,
   dangerEnemyChance: [0, 0, 0, 0, 0, 0],
   dangerEnemyLoot: [0, 0, 0],
-  spawnType: 'none'
+  spawnType: 'none',
+  weakStack: 0,
 });
 
 const villainNames = [

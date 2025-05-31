@@ -2,8 +2,7 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
-
-
+      
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
       <Tree v-if="currentEvent === 'Tree'" />
@@ -56,6 +55,8 @@ import { cursed } from './data/cursed.js';
 import { perks as radPerks } from './data/radPerks.js'; 
 import { spEnemy as space } from './data/spaceEnemy.js';
 import { goals } from './data/infGoals.js';
+import { auto } from "./composables/autoProgression.js";
+import { dimensions } from "./data/dimensions.js";
 
 import EventPanel from './components/EventPanel.vue';
 import BattleLogic from './components/BattleLogic.vue';
@@ -72,7 +73,7 @@ import Infinity from './components/Events/Infinity.vue';
 import DimensionAtlas from './components/Events/DimensionAtlas.vue';
 import Settings from './components/Events/Settings.vue';
 import Info from './components/Events/Info.vue';
-//import Tools from './components/Tools.vue';
+import Tools from './components/Tools.vue';
 
 const afkStartTime = ref(null);
 const { hero } = useHero();    
@@ -107,6 +108,10 @@ const loadGame = () => {
 
     const data = JSON.parse(save);
     if (data.hero) deepMerge(hero.value, data.hero);
+
+    if(hero.value.mainInfTier == 0)
+      hero.value.mainInfTier = hero.value.infTier
+      
     if (data.enemy) deepMerge(enemy.value, data.enemy);
     if (data.perks) {
       for (let idx in data.perks) {
@@ -178,27 +183,33 @@ const loadGame = () => {
     }
     if (data.infGoals) {
       for(let idx in data.infGoals){
-        goals.value[idx].tier = data.infGoals[idx].tier;
+        goals.value[idx].tier = Math.min(data.infGoals[idx].tier, data.infGoals[idx].maxTier);
       }
+    }
+
+    if(data.auto) deepMerge(auto.value, data.auto);
+
+    if(data.dimensions) {
+        for (let idx in data.dimensions){
+          dimensions.value[idx].infTier = data.dimensions[idx].infTier;
+          if(idx == 1)
+            dimensions.value[idx].ascension = data.dimensions[idx].ascension;
+        }
     }
 
 
     const lastOnline = localStorage.getItem('lastOnline');
     if (lastOnline) {
-      if(hero.value.isAbyss){
-        hero.value.afkKills = 0;
-        saveGame();
-        return;
-      }
 
       const diffMs = Date.now() - Number(lastOnline);
+      hero.value.afkTimeHandle = (diffMs >= 0? 1: -1);
       const seconds = Math.floor(diffMs / 1000);
 
-      let time = Math.min(seconds, 26400);
+      let time = Math.abs(Math.min(seconds, 26400));
       let maxKill = hero.value.maxStage * 75;
 
-      let div = enemy.value.maxHp * (time ** 0.1) - hero.value.attack;
-      hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (enemy.value.maxHp * (time ** 0.1))) * time: time, maxKill);
+      let div = hero.value.enemyAfkHp * (time ** 0.1) - hero.value.attack;
+      hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (hero.value.enemyAfkHp * (time ** 0.1))) * time: time, maxKill);
       hero.value.afkTime = time;
       hero.value.afkLocked = true;
     }
@@ -246,19 +257,23 @@ const handleReturn = () => {
   const now = Date.now();
   const afkTime = now - afkStartTime.value;
   const seconds = Math.floor(afkTime / 1000);
+  const lastOnline = localStorage.getItem('lastOnline');
+  hero.value.afkTimeHandle = (now - lastOnline >= 0? 1: -1);
 
   if (seconds > 5) {
     
-    let time = Math.min(seconds, 26400);
+    let time = Math.abs(Math.min(seconds, 26400));
     let maxKill = hero.value.maxStage * 75;
 
     let div = enemy.value.maxHp * (time ** 0.1) - hero.value.attack;
-    hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (enemy.value.maxHp * (time ** 0.1))) * time: time, maxKill);
+    hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (hero.value.enemyAfkHp * (time ** 0.1))) * time: time, maxKill);
     hero.value.afkTime = time;
     hero.value.afkLocked = true;
+
+    hero.value.afkTimer = Math.min(hero.value.afkTimer + time, hero.value.afkMaxTimer);
   }
 
-  afkStartTime.value = null;
+  //afkStartTime.value = null;
 };
 
 

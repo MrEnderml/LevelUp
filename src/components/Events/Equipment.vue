@@ -2,11 +2,11 @@
  
   <div class="equipment-wrapper">
     <div class="equipment-panel">
-       <h2>EQUIPMENT
+       <h2>*EQUIPMENT
         <span class="tooltip-container">ℹ️
           <span class="tooltip-text" v-if="heroComputed">
               Chance to drop equipment:<br>
-              <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% <span v-if="hero.st < 4">- [MAX - {{heroComputed.eqTierReq['sword']}}]</span></span><br>
+              <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% <span v-if="hero.spCount/6 < 4">- [MAX - {{heroComputed.eqTierReq['sword']}}]</span></span><br>
               <span>Body[T{{heroComputed.equipmentTiers['armor'] + 1}}]: {{ heroComputed.dropChance['armor'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['armor']}}]</span><br>
               <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['boots']}}]</span><br>
               <span v-if="heroComputed.eqTierReq['ring'] > 0">Ring[T{{heroComputed.equipmentTiers['ring'] + 1}}]: 
@@ -28,12 +28,15 @@
       >
         <div class="icon">{{ icons[item.type] }}</div>
         <div class="info">
-          <p class="item-name" v-if="item.type != 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{Math.min(hero.eqUps[item.type], hero.equipmentTiers[item.type]+(hero.sp >= 55? 3: 0) )}})</span></p>
+          <p class="item-name" v-if="item.type != 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{Math.min(hero.eqUps[item.type], hero.equipmentTiers[item.type] + hero.freeEnchances )}})</span>
+          <span v-if="hero.awakened[item.type] > 0" class="awakened-txt">[{{hero.awakened[item.type]}}]</span><button v-if="awakenedTierReq(item.type)" @click="awakened(item.type)" class="awakened-button">⚡</button></p>
           <p class="item-name" v-if="item.type == 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{hero.eqUps[item.type]}})</span></p>
           <span class="stat">+{{ item.bonusDisplay + Math.floor(hero.eqUpsMult[item.type].cap) }} Max Level</span>
           <span class="stat">+{{ (item.ownProperty + hero.eqUpsMult[item.type].bonus).toFixed(2) }} {{ item.stat }}</span>
-          <span class="stat" v-if="hero.st >= 3 && item.type == 'sword'">S: +{{(hero.eqUpsMult['sword'].crit).toFixed(2)}} CRIT</span>
-          <span class="stat" v-if="hero.st >= 3 && item.type == 'sword'">P: +{{(hero.eqUpsMult['sword'].critDmg).toFixed(2)}} CRIT DMG</span>
+          <span class="stat" v-if="hero.spCount/6 >= 3 && item.type == 'sword'">S: +{{(hero.eqUpsMult['sword'].crit).toFixed(2)}} CRIT</span>
+          <span class="stat" v-if="hero.spCount/6 >= 3 && item.type == 'sword'">P: +{{(hero.eqUpsMult['sword'].critDmg).toFixed(2)}} CRIT DMG</span>
+          <span class="stat" v-if="hero.spCount/6 >= 6 && item.type == 'armor'">S: +{{(hero.eqUpsMult['armor'].def).toFixed(2)}} DEF</span>
+          <span class="stat" v-if="hero.spCount/6 >= 6 && item.type == 'armor'">P: +{{(hero.eqUpsMult['armor'].heal).toFixed(2)}}% HEALING EFFECT</span>
         </div>
       </div>
     </div>
@@ -44,7 +47,7 @@
       <p>Select equipment to enhance its power.</p>
       <div>{{capitalizeFirst(selectedType)}}</div>
       <div v-if="selectedType && hero.sp >= hero.eqUpsReq[selectedType]" class="forge-info">
-        <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType]+(hero.sp >= 55? 3: 0)}}</span></p>
+        <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType] + hero.freeEnchances}}</span></p>
         <div style="display: flex">
           <span>Enchance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
           <div v-if="upgradeResult" :class="['upgrade-message', upgradeResult]">
@@ -75,6 +78,8 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { equipment } from '../../data/equipment.js';
+import { perks } from '../../data/ascension.js';
+import { dimensions } from '../../data/dimensions.js';
 
 const { hero } = useHero();
 const upgradeResult = ref('');
@@ -137,15 +142,25 @@ const equippedItems = computed(() => {
   }).filter(Boolean);
 });
 
+function awakened(type){
+  hero.value.awakened[type]++;
+  hero.value.eqDrop[type] = 0;
+  hero.value.eqUps[type] = 0;
+}
+
+function awakenedTierReq(type){
+  let tier = 20 + 10 * hero.value.awakened[type] - (hero.value.sp >= 105? 1: 0) - (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0);
+  return hero.value.singularity >= 7 && hero.value.equipmentTiers[type] >= tier;
+}
 
 function autoEnchance(){
-  const totalUps = hero.value.equipmentTiers[selectedType.value] + (hero.value.sp >= 55? 3: 0);
+  const totalUps = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
   while (hero.value.stardust > 0 && 
   (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')){
     setBonusChance(100);
-    if((hero.value.eqUps[selectedType.value]+1) * 10 > hero.value.stardust || bonusChance.value + getUpgradeChance(selectedType.value) < 100)
+    if(eqUpCost() > hero.value.stardust || bonusChance.value + getUpgradeChance(selectedType.value) < 100)
       break;
-    hero.value.stardust -= ((hero.value.eqUps[selectedType.value]+1) * 10 + stardustCost.value);
+    hero.value.stardust -= (eqUpCost() + stardustCost.value);
     hero.value.eqUps[selectedType.value]++;
   }
   stardustCost.value = 0;
@@ -153,7 +168,7 @@ function autoEnchance(){
 }
 
 function setBonusChance(value) {
-  let stardustUp = (hero.value.eqUps[selectedType.value]+1) * 10;
+  let stardustUp = eqUpCost();
   bonusChance.value = 0;
   stardustCost.value = 0;
   if(value == 0)
@@ -161,7 +176,7 @@ function setBonusChance(value) {
 
 
   let chance = getUpgradeChance(selectedType.value);
-  let penalty = 1 - 0.04 * Math.max(((hero.value.eqUps['spRing'] - 50) / 10), 0);
+  let penalty = 1 - 0.04 * Math.max(((hero.value.eqUps[selectedType.value] - 50) / 10), 0);
 
   let minD = 0;
   let maxD = (hero.value.stardust - stardustUp);
@@ -190,12 +205,12 @@ function setBonusChance(value) {
 }
 
 function eqUpCost(){
-  return (hero.value.eqUps[selectedType.value]+1) * 10 ;
+  return (hero.value.eqUps[selectedType.value]+1) * 10 * (1 + 2 * Math.floor(hero.value.eqUps[selectedType.value]/100)) ;
 }
 
 function getUpgradeChance(type) {
   const tier = hero.value.eqUps[type];
-  const minBase = 5 + (hero.value.sp >= 70? 5: 0);
+  const minBase = 5 + (hero.value.sp >= 70? 5: 0) + (perks[44].level? 5: 0);
   const base = Math.max(minBase ,50 - tier * 25);
   return Math.floor(base);
 }
@@ -203,11 +218,11 @@ function getUpgradeChance(type) {
 function forgeUpgrade() {
   const chance = getUpgradeChance(selectedType.value) + bonusChance.value;
   const success = Math.random() * 100 < chance;
-  const totalUps = hero.value.equipmentTiers[selectedType.value] + (hero.value.sp >= 55? 3: 0);
-  if ((hero.value.eqUps[selectedType.value]+1) * 10 > hero.value.stardust) return;
+  const totalUps = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
+  if (eqUpCost() > hero.value.stardust) return;
 
 
-  hero.value.stardust -= (hero.value.eqUps[selectedType.value]+1) * 10;
+  hero.value.stardust -= eqUpCost();
   hero.value.stardust -= stardustCost.value;
   if (success && (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')) {
     hero.value.eqUps[selectedType.value]++; 
@@ -444,5 +459,26 @@ function formatNumber(num) {
   }
 }
 
+.awakened-button {
+  background: linear-gradient(145deg, #66ffcc, #33ccaa);
+  color: #000;
+  font-weight: bold;
+  padding: 3px;
+  border: none;
+  box-shadow: 0 0 8px #66ffcc88, 0 0 2px #000;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  cursor: pointer;
+  text-shadow: 0 0 2px #fff;
+}
 
+.awakened-button:hover {
+  background: linear-gradient(145deg, #33ccaa, #66ffcc);
+  box-shadow: 0 0 12px #66ffccaa, 0 0 4px #000;
+  transform: scale(1.05);
+}
+
+.awakened-txt{
+  color: #66ffcc;
+}
 </style>

@@ -24,7 +24,7 @@
               </li>
               <li>Prefix:
                 <span v-if="amulet.prefix.status === false" class="closed">{{pref[index]}}</span>
-                <span v-else>{{ amulet.prefix.text }}</span>
+                <span v-else>{{ prefixHandle(amulet.tier) }}</span>
               </li>
             </ul>
           </div>
@@ -74,6 +74,10 @@ const filterCurses = computed(() =>
 const filterCursesTier = computed(() => 
     curses.filter
 )
+
+function prefixHandle(t){
+  return `Max Level MULT - ${1 + t * 0.02 * (hero.value.sp >= 99? 2: 1)}`
+}
 
 const CursesChance = computed(() => {
   const t3 = Math.min(45, 1.1 * Math.log(hero.value.stage - 17)**1.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.45: 1));

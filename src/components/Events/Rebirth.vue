@@ -21,12 +21,12 @@
         <span v-if="hero.rebirthTier >= 10">T[10] - 50% curse Bonus. +1 Max Curse</span>
         <span v-if="hero.rebirthTier >= 15">T[15] - +1 max Buff in Abyss</span>
         <span v-if="hero.rebirthTier >= 20">T[20] - Chance the appearance of the lower tier souls. The lower Tier souls drop Rebirth Pts.</span>
-        <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** hero.rebirthTier)}}]</span>
-        <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** hero.rebirthTier)}}]</span>
+        <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
+        <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
         <span v-if="hero.rebirthTier >= 50">T[50] - Equipment Chance based on Rebirth Tier [{{(1.03 ** hero.rebirthTier).toFixed(2)}}]</span>
         <span v-if="hero.rebirthTier >= 60">T[60] - Space Boos appearance based on Rebirth Tier [{{(1.02 ** hero.rebirthTier).toFixed()}}]</span>
         <span v-if="hero.rebirthTier >= 70">T[70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 80">T[80] - Max Level Mult based on Rebirth Tier [1.08]</span>
+        <span v-if="hero.rebirthTier >= 80">T[80] - Max Level Mult based on Rebirth Tier [{{(1.015 ** (Math.min(hero.rebirthTier, 125) - 79)).toFixed(2)}}]</span>
       </p>
     </div>
 
