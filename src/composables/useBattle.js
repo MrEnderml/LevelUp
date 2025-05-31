@@ -2369,7 +2369,7 @@ export function useBattle(hero, enemy, buffs) {
       () => hero.value.trueLevel >= 3e4 + 1e4 * infGoals.value[26].tier,
       () => dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length > infGoals.value[27].tier,
       () => hero.value.def >= 5e4 + 1e4 * infGoals.value[28].tier,
-      () => hero.value.infTier > 15 + infGoals.value[29].tier
+      () => hero.value.mainInfTier > 15 + infGoals.value[29].tier
     ];
 
     if (conditions[idx]) return conditions[idx]();

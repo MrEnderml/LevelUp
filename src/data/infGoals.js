@@ -557,7 +557,7 @@ export const goals = ref([
       completed: false,
       tier: 0,
       maxTier: 5,
-      status: true,
+      status: false,
     },
   ]);
   
