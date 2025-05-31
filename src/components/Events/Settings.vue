@@ -234,8 +234,8 @@ const triggerFileInput = () => {
 
       if (data.hero) deepMerge(hero.value, data.hero);
 
-      if(hero.value.dId == 'main')
-        hero.value.maxInfTier = hero.value.infTier
+      if(hero.value.mainInfTier == 0)
+        hero.value.mainInfTier = hero.value.infTier
 
       if (data.enemy) deepMerge(enemy.value, data.enemy);
       if (data.perks) {
@@ -300,7 +300,7 @@ const triggerFileInput = () => {
       }
       if (data.infGoals) {
         for (let idx in data.infGoals) {
-          goals.value[idx].tier = data.infGoals[idx].tier;
+          goals.value[idx].tier = Math.min(data.infGoals[idx].tier, data.infGoals[idx].maxTier);
         }
       }
 
