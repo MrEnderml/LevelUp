@@ -62,7 +62,7 @@
           <span>💀</span>
           <div class="soul-tooltip abyss-shadow">
               <p><strong>D-Soul</strong></p>
-              <p>Enter the Dimension where souls have 100% appearence, but they are stronger than usual souls. Soul Loot scalles better</p>
+              <p>Enter the Dimension where souls have 100% appearence, but they are stronger thanт usual souls. Soul Loot scalles better</p>
               <p>Available at Stage 15</p>
               <p>Click to <span v-if="!hero.soulD">Enter</span><span  v-if="hero.soulD">Leave</span> The Dimension</p>
           </div>

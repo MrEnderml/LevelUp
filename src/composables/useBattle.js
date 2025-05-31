@@ -121,7 +121,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
-      test();
+      //test();
 
       if(enemy.value.isSpaceFight == 1){
         enemy.value.isSpaceFight = 2;
