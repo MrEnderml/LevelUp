@@ -35,9 +35,9 @@ export function useBattle(hero, enemy, buffs) {
     (enemy.value.rebirthEnemy["drop"]) * 
     (hero.value.activeFormation == 3? 2: 1) * 
     (1 + ascenPerks[34].level * 0.01) * 
-    (Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1)) *
+    (Math.max(1 + Math.max(hero.value.unlimitLevel - 700, 0) / 100, 1)) *
     (hero.value.mainInfTier >= 1 || hero.value.level >= 700? (1.06 ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1)+Math.log(hero.value.infPoints + 2)))) * 
-    (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1): 1);
+    (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1): 1);
 
     hero.value.totalExp = exp;
     let expPenalty = Math.min(1 - 0.02 * hero.value.infTier + (ascenPerks[42].level? 0.02: 0), 1);
@@ -1261,11 +1261,12 @@ export function useBattle(hero, enemy, buffs) {
     (equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel + hero.value.eqUpsMult['spRing'].bonus) + 
     (hero.value.infTier >= 6? Math.floor(hero.value.soulsMax/10): 0) + 
     (hero.value.mainInfTier >= 13? Math.floor(1.045 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints))): 0) + 
-    (Math.max(Math.floor((hero.value.unlimitLevel - 700) / 100 ), 0))
+    (Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 700, 0) / 100 ), 0))
 
     hero.value.level = hero.value.eLevel + hero.value.minLevel;
     hero.value.maxReachedLevel = Math.max(hero.value.maxReachedLevel, hero.value.level);
-    hero.value.unlimitLevel = Math.max(hero.value.unlimitLevel, hero.value.level);
+    if(hero.valud.dId == 'unlimitted')
+      hero.value.unlimitLevel = Math.max(hero.value.unlimitLevel, hero.value.level);
 
     hero.value.maxLevel = 30 + (perks.value[4].status? 0: perks.value[4].value * perks.value[4].level) + ascenPerks[0].level + ascenPerks[9].level + ascenPerks[18].level + hero.value.souls +
     ((equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.cap + hero.value.eqUpsMult['sword'].cap) +  
@@ -1282,7 +1283,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.maxLevel *= 1 + ((amulets[0].prefix.status? 0.02: 0) + (amulets[1].prefix.status? 0.04: 0) + (amulets[2].prefix.status? 0.06: 0) + (amulets[3].prefix.status? 0.08: 0)) * (hero.value.sp >= 99? 2: 1) + 
     (ascenPerks[31].level * 0.01) + (hero.value.rebirthTier >= 80? 1.015 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0) + (perks.value[4].status? 0.15: 0) +
     (ascenPerks[41].level? hero.value.overcorruption / 4: 0) + (hero.value.mainInfTier >= 10? 1.07 ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0) + 
-    (Math.max(1.05 ** ((hero.value.unlimitLevel - 700) / 75), 0) - 1)
+    (Math.max(1.05 ** (Math.max(hero.value.unlimitLevel - 700, 0) / 75), 0) - 1)
 
     hero.value.maxLevel = Math.floor(hero.value.maxLevel);
     hero.value.trueLevel = hero.value.maxLevel;
