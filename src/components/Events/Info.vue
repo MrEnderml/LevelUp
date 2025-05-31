@@ -450,7 +450,7 @@ const statSections = [
       },
       {
         desc: 'Dimension [S5-Ω3t]',
-        value: () => (Math.max(Math.floor((hero.value.unlimitLevel - 700) / 100 ), 0)),
+        value: () => (Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 700, 0) / 100 ), 0)),
         color: '#d516d5',
       },
       {
@@ -607,12 +607,12 @@ const statSections = [
       },
       {
         desc: 'Dimension [S5-Ω3t]',
-        value: () => (1 + Math.max(1.05 ** ((hero.value.unlimitLevel - 700) / 75), 0) - 1).toFixed(2),
+        value: () => (1 + Math.max(1.05 ** (Math.max(hero.value.unlimitLevel - 700, 0) / 75), 0) - 1).toFixed(2),
         color: '#991099',
       },
       {
         desc: 'Total',
-        value: () => ((1 + Math.max(1.05 ** ((hero.value.unlimitLevel - 700) / 75), 0) - 1) + 
+        value: () => ((1 + Math.max(1.05 ** (Math.max(hero.value.unlimitLevel - 700, 0) / 75), 0) - 1) + 
         ((hero.value.mainInfTier >= 10? 1.07 ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0)) + 
         ((hero.value.rebirthTier >= 80? 1.015 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0)) + 
         ((ascenPerks[41].level? hero.value.overcorruption / 5: 0)) + 
@@ -761,12 +761,12 @@ const statSections = [
       },
       {
         desc: 'Dimension [S5-Ω3t]',
-        value: () => formatNumber(Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1), true),
+        value: () => formatNumber(Math.max(1 + Math.max(hero.value.unlimitLevel - 700, 0) / 100, 1), true),
         color: '#ed14ed',
       },
       {
         desc: 'Dimension [S5-Ω3t] [Infinity Bonus]',
-        value: () => (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1),
+        value: () => (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1),
         color: '#ed14ed',
       },
       {
