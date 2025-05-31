@@ -1265,7 +1265,7 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.level = hero.value.eLevel + hero.value.minLevel;
     hero.value.maxReachedLevel = Math.max(hero.value.maxReachedLevel, hero.value.level);
-    if(hero.valud.dId == 'unlimitted')
+    if(hero.value.dId == 'unlimitted')
       hero.value.unlimitLevel = Math.max(hero.value.unlimitLevel, hero.value.level);
 
     hero.value.maxLevel = 30 + (perks.value[4].status? 0: perks.value[4].value * perks.value[4].level) + ascenPerks[0].level + ascenPerks[9].level + ascenPerks[18].level + hero.value.souls +
