@@ -372,7 +372,7 @@ const performAbyss = () => {
 
 const performInf = () => {
   hero.value.infTier = Math.min(hero.value.infTier + 1, 100);
-  hero.value.maxInfTier = Math.max(hero.value.infTier, hero.value.maxInfTier);
+  hero.value.mainInfTier = Math.max(hero.value.infTier, hero.value.mainInfTier);
 
   perform();
   hero.value.activeBuffs = [];
