@@ -121,7 +121,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
-      //test();
+      test();
 
       if(enemy.value.isSpaceFight == 1){
         enemy.value.isSpaceFight = 2;
@@ -2435,7 +2435,7 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.infoActive.infinity = true;
     if(hero.value.mainInfTier >= 7)
       hero.value.infoActive.singularity = true;
-    if(hero.value.abyssDStages >= 100)
+    if(hero.value.abyssDStages >= 80)
       hero.value.infoActive.dimension = true;
 
     if(hero.value.stage >= 40)
@@ -2736,7 +2736,7 @@ export function useBattle(hero, enemy, buffs) {
 
   const test = () => {
     //hero.value.infPointsGoals =
-    //dimensions.value[7].infTier = 15;
+    //dimensions.value[2].infTier = 0;
     //dimensions.value[3].maxInfTier = 15;
     //hero.value.dId = 'main';
     //hero.value.infTier = 6;

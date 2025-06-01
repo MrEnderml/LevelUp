@@ -376,10 +376,8 @@ const styledSections = [
     title: 'Dimension',
     class: 'dimension-section',
     content: [
-      'In dimensions that are weakly imbued with the D-Rule, the maximum possible stage in the Abyss is 100',
-      'Each dimension has a reward for each Infinity completed and a special reward for reaching the maximum Infinity in a certain dimension.',
-      'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
-      'Infinity Bonuses depends on IP',
+      `In dimensions that are weakly imbued with the D-Rule, the maximum possible stage in the Abyss is 100`,
+      `Each dimension has a reward for each Infinity completed and a special reward for reaching the maximum Infinity in a certain dimension.`,
       `Once you reach Level 700, you will automatically advance to the next Tier. Your power will make the transition easier. `,
       `Complete The Dimension [K7-D4n] to get the way to move between Stages. 
       Ravage the space-time continuum to travel to any possible point in the universe. But everything has its price. 
