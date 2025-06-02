@@ -93,14 +93,14 @@ const bonuses = computed(() => [
   { id: 10, stat: 'Buff Exp Gain', value: `*${formatNumber(scale(1.035))}`, status: 4 },
   { id: 11, stat: 'Corruption weakness', value: `+${formatNumber(linearDiff(1.01))}`, status: 5 },
   { id: 13, stat: 'Souls weakness', value: `*${formatNumber(Math.max(inverseScale(1.025), 0.1))}`, status: 6 },
-  { id: 14, stat: 'Level scales better', value: `*${formatNumber(Math.max(inverseScale(1.025)), 0.1)}`, status: 7 },
-  { id: 15, stat: 'Stage scales better', value: `*${formatNumber(Math.max(inverseScale(1.025)), 0.1)}`, status: 7 },
+  { id: 14, stat: 'Level scales better', value: `*${formatNumber(Math.max(inverseScale(1.03)), 0.1)}`, status: 7 },
+  { id: 15, stat: 'Stage scales better', value: `*${formatNumber(Math.max(inverseScale(1.03)), 0.1)}`, status: 7 },
   { id: 16, stat: 'Enemy weakness', value: `*${formatNumber(Math.max(inverseScale(1.02), 0.1))}`, status: 8 },
   { id: 17, stat: 'Max Level Mult', value: `*${formatNumber(scale(1.07, log()))}`, status: 10 },
   { id: 18, stat: 'Min Level', value: `+${Math.floor(scale(1.045))}`, status: 13 },
   { id: 19, stat: 'New Infinity Buff: Charges', value: ``, status: 15 },
   { id: 20, stat: 'Max Danger', value: `+${Math.floor(scale(1.08))}`, status: 16 },
-  { id: 21, stat: 'Stardust', value: `+${formatNumber(scale(1.0125))}`, status: 18 },
+  { id: 21, stat: 'Stardust', value: `*${formatNumber(scale(1.0125))}`, status: 18 },
   { id: 22, stat: 'Potential', value: `+${Math.floor(scale(1.0425))}`, status: 20 },
 ]);
 

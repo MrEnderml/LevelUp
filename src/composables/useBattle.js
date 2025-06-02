@@ -76,7 +76,7 @@ export function useBattle(hero, enemy, buffs) {
     
     return Math.max(100, Math.floor(((level+9)**2)**(1 + level/700)) * (Math.log(level+2)**((0.6-rScale) * (hero.value.eLevel >= 100? 4: 1))) * 
     (hero.value.isAbyss? 1.0155 ** level: 1)) * (hero.value.sp >= 24 && hero.value.abyssDStages >= 30? Math.max(2 - (1.015 ** (hero.value.abyssDStages - 29)), 0.1): 1) * 
-    (hero.value.mainInfTier >= 7? (1 / 1.025 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
+    (hero.value.mainInfTier >= 7? (1 / 1.03 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
     (ascenPerks[36].level? 1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2): 1) * (hero.value.isSingularity? 1e6 * (hero.value.singularity + 1): 1) * 
     (hero.value.eLevel > 700? 1000: 1);
   }
@@ -563,8 +563,8 @@ export function useBattle(hero, enemy, buffs) {
       let tier = 0;
       let stuck = [];
 
-      let t3 = Math.min(45, 1.1 * Math.log(hero.value.stage - 17)**1.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.45: 1));
-      let t2 = Math.min(50, 10 * Math.log(hero.value.stage - 17)**0.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.35: 1));
+      let t3 = Math.min(35, 1.1 * Math.log(hero.value.stage - 17)**1.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.35: 1));
+      let t2 = Math.min(45, 10 * Math.log(hero.value.stage - 17)**0.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.25: 1));
       let t1 = 100 - t2 - t3;
       let mutations = 0;
       for(var count = 0; count < countCurse; count++) {
@@ -1326,7 +1326,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.overcorruption = Math.max(hero.value.corruption - 1, 0);
     hero.value.corruption = Math.min(hero.value.corruption, 1);
 
-    hero.value.freeTreePoints = 30 * (dimensions.value[6].infTier - 10);
+    hero.value.freeTreePoints = 50 * (dimensions.value[6].infTier - 10);
     if(hero.value.abyssTier >= 3)
       hero.value.abyssDStages = Math.min(hero.value.abyssDStages, 100);
     hero.value.equipmentTiers['sword'] = Math.min(hero.value.equipmentTiers['sword'], 50);
@@ -1843,7 +1843,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.sp >= 24 && hero.value.abyssDStages >= 70? 0.01 * (1.01 * Math.log(hero.value.abyssDStages - 67)): 0) - 
     (dimensions.value[3].infTier * 0.01)
 
-    x += (hero.value.dId == 'overkill'? 0.2: 0);
+    x += (hero.value.dId == 'overkill'? 0.1: 0);
     x = Math.max(x, 1.05);
 
     var end = 5 * (hero.value.stage-1) + hero.value.zone;
@@ -1861,7 +1861,7 @@ export function useBattle(hero, enemy, buffs) {
 
     }
     start = Math.min(start, 10000);
-    hero.value.killsPerZone = Math.max(start * (hero.value.mainInfTier >= 7? (1 / 1.025 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 5);
+    hero.value.killsPerZone = Math.max(start * (hero.value.mainInfTier >= 7? (1 / 1.03 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 5);
   }
 
   const expCount = () => {
@@ -2393,7 +2393,7 @@ export function useBattle(hero, enemy, buffs) {
         }
       }
       if(goal.id == 28){
-        if(hero.value.abyssDStages >= 100){
+        if(hero.value.abyssDStages >= 80){
           infGoals.value[goal.id - 1].status = true;
         }
       }
@@ -2735,7 +2735,7 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const test = () => {
-    //hero.value.infPointsGoals =
+    //hero.value.infPointsGoals = 3000;
     //dimensions.value[2].infTier = 0;
     //dimensions.value[3].maxInfTier = 15;
     //hero.value.dId = 'main';

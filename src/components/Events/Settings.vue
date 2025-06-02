@@ -331,7 +331,7 @@ const resetGame = () => {
 const resetInf = () => {
   if (hero.value.infProgress == false) {
     hero.value.infProgress = true;
-    hero.value.infTier -= 1;
+    hero.value.mainInfTier -= 1;
   }
 };
 

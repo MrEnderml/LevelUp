@@ -80,7 +80,7 @@ export const dimensions = ref([
         maxInfTier: 15,
         c: `You will be able to enter this dimension once you have completed Infinity [T5] in the previous one and Infinity [T10] in the main one.`,
         d: `Enter the Dimension where The Tree does not exist. You start with Infinity [T10]`,
-        r: `+30 free Tree Points`,
+        r: `+50 free Tree Points`,
         sp: `Infinity Tree Perks scale slightly better in value`
     },
     {

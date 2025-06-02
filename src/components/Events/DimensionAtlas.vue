@@ -216,6 +216,10 @@ const selectDimension = (dimension) => {
   if(d_req(newD))
     return;
 
+  if(currentD.id === 'main' && !hero.value.infProgress){
+    hero.value.mainInfTier--;
+  }
+
   if (newD.id === 'ascension') {
     for (let perk in ascension) {
       newD.ascension[perk] = ascension[perk].level;
