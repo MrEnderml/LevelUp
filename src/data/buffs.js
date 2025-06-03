@@ -149,7 +149,7 @@ const buffs = ref([
           "+0.1% HP per second [MAX - 500s]",
           "+0.1% DMG per second [MAX - 750s]",
           "+0.1 ATTACK SPEED per 250 seconds [MAX - 1000s]",
-          "1% of enemy weakness per 100 seconds [MAX - 1250]; Start with 250 seconds",
+          "1% of enemy weakness per 75 seconds [MAX - 1250]; Start with 250 seconds",
           "Max Tier"
         ],
         tier: 1,

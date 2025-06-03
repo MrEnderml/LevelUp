@@ -51,7 +51,7 @@
               <p><strong>Infinity [T{{hero.infTier}}]</strong></p>
               <p>You become The Omnipotent , but The Dimension tries to keep you from breaking the D-Rule.</p>
               <p>{{infRewards[hero.infTier]}}</p>
-              <p>The Dimension is trying to destroy you. Reach 700 Level while your EXP Gain & Max Level ^{{(1 - 0.02 * (hero.infTier + 1) + (ascension[42].level? 0.02: 0)).toFixed(2)}}. 
+              <p>The Dimension is trying to destroy you. Reach Total Level 700 while your EXP Gain & Max Level ^{{(1 - 0.02 * (hero.infTier + 1) + (ascension[42].level? 0.02: 0)).toFixed(2)}}. 
               The Celestials succumb to D's will, becoming stronger. Corruption spreads its influence among all entities of this dimension, making them wild. </p>
               <p>You will need {{Math.round(700 ** (1 / (1 - 0.02 * (hero.infTier + 1) + (ascension[42].level? 0.02: 0))))}} True Max Level to reach 700 Max Level</p>
           </div>
@@ -153,7 +153,7 @@ const singularityR = [
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier`,
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. +1 Space Tier. Celestials from all dimensions see you. Auto is always opened`,
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Buffs no longer reset during Infinity; +1 Max Buff`,
-  `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. + Enchance Level per each Singularity Tier. Unlock Awakened Equipment`,
+  `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. + Enhance Level per each Singularity Tier. Unlock Awakened Equipment`,
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Rebirth starts with 1e5 Pts. Unlock Singularity Pts. `,
 ]
 
@@ -433,13 +433,11 @@ const performInf = () => {
 
   radPerks[7].perkStatus = false;
 
-  if(hero.value.singularity < 5){
-    for(let sp of spEnemy){
-      if(sp.id%6 == 0 || sp.id >= 25){
-        sp.status = false;
-      }
-    }  
-  }
+  for(let sp of spEnemy){
+    if(sp.id%6 == 0){
+      sp.status = false;
+    }
+  }  
   
 
   if(hero.value.singularity < 4){

@@ -46,7 +46,7 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T5] in the previous one.`,
         d: `Enter the Dimension where The requirements for the Stage are much worse. 
         Enemies become stronger depending on the number of kills in the zone`,
-        r: `Stage scales better`,
+        r: `Stage requirement scales better`,
         sp: `You can move between Stages`,
         nodeId: 'gravity',
     },

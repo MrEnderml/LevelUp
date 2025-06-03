@@ -306,7 +306,7 @@ export const spEnemy = [
             curses: ["⚙️T2", "🩸T2", "💫T3"]
           },
           reward: "5SP",
-          status: false
+          status: true
         },
         {
           id: 26,
@@ -319,7 +319,7 @@ export const spEnemy = [
             curses: ["🌪️T3", "🤺T4", "💢T2"]
           },
           reward: "5SP",
-          status: false
+          status: true
         },
         {
           id: 27,
@@ -332,7 +332,7 @@ export const spEnemy = [
             curses: ["💢T4", "🔪T4"]
           },
           reward: "5SP",
-          status: false
+          status: true
         },
         {
           id: 28,
@@ -345,7 +345,7 @@ export const spEnemy = [
             curses: ["🌪️T4", "🛡️T4", "🩸T2"]
           },
           reward: "5SP",
-          status: false
+          status: true
         },
         {
           id: 29,
@@ -358,7 +358,7 @@ export const spEnemy = [
             curses: ["⚙️T4", "🌪️T1", "🔰T4", "🩸T2"]
           },
           reward: "5SP",
-          status: false,
+          status: true,
           
         },
         {

@@ -45,7 +45,8 @@ const bonusReq = {
   15: 16,
   16: 18,
   18: 20,
-  20: 100
+  20: 100,
+  30: 100
 }
 
 const filterGoals = computed(() => 

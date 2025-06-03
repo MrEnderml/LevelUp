@@ -168,6 +168,8 @@ const styledSections = [
       '* - When you hover over it, a pop-up window appears with information',
       '^ - Exponent',
       'ApS - Attack per Second',
+      'Stage requirement scales better: You will need fewer kills to advance to the next Stage',
+      'Level requirement scales better: You will need fewer EXP to advance to the next Level',
       'Total Level = Current Level + MIN Level',
       'True Max Level - Level without any effects',
       '<strong>Event information is revealed when you reach that event.</strong>',
@@ -185,6 +187,17 @@ const styledSections = [
       'Exp gain depends on stage and Tree, Ascension, Rebirth perks.(excluding Formation, Buffs)',
       'Soul Booster increase The chance of soul appearence. The Power depends on Total AFK kills. Soul Booster works for only One Soul.',
       'On AFK Radiation affects T3 curse chance and each mutagen Tier chance'
+    ]
+  },
+  {
+    title: 'Auto',
+    class: 'auto-section lore',
+    content: [
+      `Unlock *Stop at Stage* after reaching Infinity [T1]`,
+      `Unlock *Auto-Ascension* after reaching Infinity [T2]`,
+      `Unlock *Auto-Rebirth* after reaching Infinity [T3]`,
+      `Level+: Add Value to *Min Level* when you Level is *Min Level*`,
+      `Stage+: Add Value to *Stage to Stop* when your current Stage is *Stage to Stop*.`
     ]
   },
   {
@@ -228,22 +241,22 @@ const styledSections = [
       'The drop chance depends on current Stage. The next tier has a lower drop chance',
       'At the beginning you can only have weapons of tier 3',
       'Minimum Tier adds a Tier to your weapon without affecting the drop chance',
-      hero.value.sp >= 1 && `Enchance level depends on Equipment Tier.<br>
-      If the Enchance level is higher than the Equipment Tier, only Enchance up to the current Tier are taken. <br>
+      hero.value.sp >= 1 && `Enhance level depends on Equipment Tier.<br>
+      If the Enhance level is higher than the Equipment Tier, only Enhance up to the current Tier are taken. <br>
       The amount of stardust dropped depends on the minimum stage before the current one [Current Stage - (40 - SP Perks)]<br>
-      Boost: Select what percentage you want to add to the chance of Enchance<br>
-      Auto - Enchance weapons with 100% chance to max level<br>
-      Each Enchance increases the general parameter(Max Level) by 10% of the current one, and the additional parameter(Mult Dmg, HP, ...) by 5%`
+      Boost: Select what percentage you want to add to the chance of Enhance<br>
+      Auto - Enhance weapons with 100% chance to max level<br>
+      Each Enhance increases the general parameter(Max Level) by 10% of the current one, and the additional parameter(Mult Dmg, HP, ...) by 5%`
     ]
   },
   {
     title: 'Amulet',
     class: 'amulet-section',
     content: [
-      'EXP & EXP Buff from Bonuses.',
-      'Extra Bonus Multiplier = ^(1 + 0.05 * total curses + [0.1 for each curse T4])',
-      `Bonus Penalty: ${(1 / Math.log(Math.max(3, 100 - hero.value.stage))).toFixed(2)}`,
-      'Higher stage = Higher Curse tier chance && less Penalty.',
+      'You can get EXP Mult and EXP Buff from Bonuses.',
+      'Bonus [Extra Multiplier] = ^(1 + 0.05 * total curses + [0.1 for each curse T4])',
+      `Bonus [Penalty]: ${(1 / Math.log(Math.max(3, 100 - hero.value.stage))).toFixed(2)}`,
+      'Higher stage = Higher Curse tier chance and less Penalty.',
       'Unlock the Amulet Suffix to upgrade the Tree Tier.',
       'Curse tiers: Green (T1), Yellow (T2), Red (T3), Purple (T4)'
     ]
@@ -338,38 +351,39 @@ const styledSections = [
     title: 'Singularity',
     class: 'singularity-section',
     content: [
+      `Singularity levels: increase the threshold after Max Level 700. After Level 700 your stats are getting double.`,
       hero.value.singularity >= 0 && 'Singularity [T0]',
       hero.value.singularity >= 0 && 'Challenge: Enter the singularity, where gravity devours space, opponents under the influence of gravity destroy galaxies and your level is on the verge of destruction.',
       hero.value.singularity >= 0 && 'Reward: Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Overkill [T4], +2% to skip stage per Singularity Tier (S), level up while your level is below 2% of Max Level per Singularity Tier (S).',
 
+      hero.value.singularity >= 1 && 'Singularity [T1]',
+      hero.value.singularity >= 1 && 'Challenge: Enter the singularity, where the opponents have learned to recognize the essence of curses',
+      hero.value.singularity >= 1 && 'Reward: Each curse gets a bonus from the next Tier. +25 singularity levels.',
+
       hero.value.singularity >= 2 && 'Singularity [T2]',
-      hero.value.singularity >= 2 && 'Challenge: Enter the singularity, where the opponents have learned to recognize the essence of curses',
-      hero.value.singularity >= 2 && 'Reward: Each curse gets a bonus from the next Tier. +25 singularity levels.',
+      hero.value.singularity >= 2 && 'Challenge: Enter the singularity, where The Tree is locked.',
+      hero.value.singularity >= 2 && 'Reward: +1 Tree Tier. +25 singularity levels.',
 
       hero.value.singularity >= 3 && 'Singularity [T3]',
-      hero.value.singularity >= 3 && 'Challenge: Enter the singularity, where The Tree is locked.',
-      hero.value.singularity >= 3 && 'Reward: +1 Tree Tier. +25 singularity levels.',
+      hero.value.singularity >= 3 && 'Challenge: Enter the singularity, where Ascension is locked.',
+      hero.value.singularity >= 3 && 'Reward: Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier. +25 singularity levels.',
 
       hero.value.singularity >= 4 && 'Singularity [T4]',
-      hero.value.singularity >= 4 && 'Challenge: Enter the singularity, where Ascension is locked.',
-      hero.value.singularity >= 4 && 'Reward: Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier. +25 singularity levels.',
+      hero.value.singularity >= 4 && 'Challenge: Enter the singularity, where Space is locked.',
+      hero.value.singularity >= 4 && 'Reward: +1 Space Tier. Celestials from all dimensions see you. Auto is always opened. +25 singularity levels.',
 
       hero.value.singularity >= 5 && 'Singularity [T5]',
-      hero.value.singularity >= 5 && 'Challenge: Enter the singularity, where Space is locked.',
-      hero.value.singularity >= 5 && 'Reward: +1 Space Tier. Celestials from all dimensions see you. Auto is always opened. +25 singularity levels.',
-
-      hero.value.singularity >= 6 && 'Singularity [T6]',
-      hero.value.singularity >= 6 && 'Challenge: Enter the singularity, where Buff is locked.',
-      hero.value.singularity >= 6 && 'Reward: Buffs no longer reset during Singularity. +1 Max Buff. +25 singularity levels.',
+      hero.value.singularity >= 5 && 'Challenge: Enter the singularity, where Buff is locked.',
+      hero.value.singularity >= 5 && 'Reward: Buffs no longer reset during Singularity. +1 Max Buff. +25 singularity levels.',
       
-      hero.value.singularity >= 7 && 'Singularity [T7]',
-      hero.value.singularity >= 7 && 'Challenge: Enter the singularity, where Equipment is locked.',
-      hero.value.singularity >= 7 && 'Reward: +1 Enchance Level per each Singularity Tier. Unlock Awakened Equipment. +25 singularity levels.',
-      `Singularity [T7]: Awakened Equipment: Reach the certain Tier of Equipment to increase a Base Drop Chance and the effectiveness of Enhanced generic parameter by 1%, additional parameter by 0.5%. +1 Gem Slot(Future content)`,
+      hero.value.singularity >= 6 && 'Singularity [T6]',
+      hero.value.singularity >= 6 && 'Challenge: Enter the singularity, where Equipment is locked.',
+      hero.value.singularity >= 6 && 'Reward: +1 Enhance Level per each Singularity Tier. Unlock Awakened Equipment. +25 singularity levels.',
+      `Singularity [T6]: Awakened Equipment: Reach the certain Tier of Equipment to increase a Base Drop Chance and the effectiveness of Enhanced generic parameter by 1%, additional parameter by 0.5%. +1 Gem Slot(Future content)`,
     
-      hero.value.singularity >= 8 && 'Singularity [T8]',
-      hero.value.singularity >= 8 && 'Challenge: Enter the singularity, where Rebirth is locked.',
-      hero.value.singularity >= 8 && 'Reward: +1 Tree Tier. +25 singularity levels. You start with 100000 Rebirth Pts. Unclock Singularity Pts',
+      hero.value.singularity >= 7 && 'Singularity [T7]',
+      hero.value.singularity >= 7 && 'Challenge: Enter the singularity, where Rebirth is locked.',
+      hero.value.singularity >= 7 && 'Reward: +1 Tree Tier. +25 singularity levels. You start with 100000 Rebirth Pts. Unclock Singularity Pts',
     ]
   },
   {
@@ -432,7 +446,7 @@ const statSections = [
         color: '#66ffcc',
       },
       {
-        desc: 'Comet Ring [Enchances]',
+        desc: 'Comet Ring [Enhances]',
         value: () => (hero.value.eqUpsMult['spRing'].bonus),
         color: '#66ffcc',
       },
@@ -493,7 +507,7 @@ const statSections = [
         color: '#66ffcc',
       },
       {
-        desc: 'Equipment [Enchances]',
+        desc: 'Equipment [Enhances]',
         value: () => Math.floor(hero.value.eqUpsMult['sword'].cap + 
           hero.value.eqUpsMult['armor'].cap + 
           hero.value.eqUpsMult['boots'].cap + 
@@ -624,6 +638,17 @@ const statSections = [
       { desc: `Infinity [T${hero.value.infTier}]`, value: '', color: 'gold',  uppercase: true, },
       {
         desc: 'Penalty [^]',
+        value: () => Math.min(1 - 0.02 * (hero.value.infTier), 1).toFixed(2),
+        color: 'gold',
+      },
+      { desc: `Penalty Reduction`, value: '', color: 'gold',  uppercase: true, },
+      {
+        desc: 'Ascension [Singularity Seed]',
+        value: () => (ascenPerks[42].level? 0.02: 0),
+        color: 'lightblue',
+      },
+      {
+        desc: 'Total [^]',
         value: () => Math.min((1 - 0.02 * (hero.value.infTier) + (ascenPerks[42].level? 0.02: 0)), 1).toFixed(2),
         color: 'gold',
       },
@@ -687,7 +712,7 @@ const statSections = [
         color: '#66ffcc',
       },
       {
-        desc: 'Ring [Enchances]',
+        desc: 'Ring [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['ring'].bonus, true),
         color: '#66ffcc',
       },
@@ -1068,13 +1093,24 @@ const statSections = [
       {
         desc: 'base',
         value: () => {
-          let extraLevel = hero.value.level + (ascenPerks[37].level? 25: 0);
+          let extraLevel = hero.value.level;
           let pt = Math.min((Math.log(Math.max((extraLevel - 97), 3)**(1.15 + 0.08 * (Math.floor(hero.value.rebirthPts)).toFixed(0).length))**(extraLevel/Math.max(100 - (1 * extraLevel/9), 1))), 10000);
           pt = (pt >= 400? 400 + Math.sqrt(pt - 400): pt)
           return formatNumber(pt);
         },
         color: '',
       },
+      {
+        desc: 'base: Ascension [Rebirth Echo]',
+        value: () => {
+          let extraLevel = hero.value.level + (ascenPerks[37].level? 50: 0);
+          let pt = Math.min((Math.log(Math.max((extraLevel - 97), 3)**(1.15 + 0.08 * (Math.floor(hero.value.rebirthPts)).toFixed(0).length))**(extraLevel/Math.max(100 - (1 * extraLevel/9), 1))), 10000);
+          pt = (pt >= 400? 400 + Math.sqrt(pt - 400): pt)
+          return formatNumber(pt);
+        },
+        color: 'lightblue',
+      },
+      { desc: 'Rebirth Mult', value: '', color: 'lightgreen',  uppercase: true, },
       {
         desc: 'Rebirth [Loot]',
         value: () => (hero.value.rebirthPts >= 100? enemy.value.rebirthEnemy["drop"]: 1),
@@ -1112,6 +1148,22 @@ const statSections = [
       },
       {
         desc: 'Total',
+        value: () => {
+          let t = 1;
+          t *= (hero.value.mainInfTier >= 3? (1.025 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
+          t *= (1 + ascenPerks[34].level * 0.01);
+          t *= (hero.value.rebirthPts >= 1250? Math.min((1 + 0.01 * hero.value.rebirthTier) ** 8, 2) * ((1 + 0.01 * Math.max(hero.value.rebirthTier - 9, 0)) ** 2) : 1);
+          t *= (hero.value.soulTier >= 4? 1.5: 1);
+          t *= (perks.value[14].level? perks.value[14].value: 1);
+          t *= (1.3 ** hero.value.abyssTier);
+          t *= (hero.value.rebirthPts >= 100? enemy.value.rebirthEnemy["drop"]: 1);
+          return formatNumber(t, true);
+        },
+        color: 'gold',
+      },
+      { desc: 'Total Pts', value: '', color: 'lightgreen',  uppercase: true, },
+      {
+        desc: 'Total',
         value: () => formatNumber(hero.value.totalPtsMult, true),
         color: 'gold',
       },
@@ -1138,7 +1190,7 @@ const statSections = [
     content: [
       { desc: 'BUFF EXP', value: '', color: 'orange',  uppercase: true, },
       {
-        desc: 'Base',
+        desc: 'Base [Curse Bonuses]',
         value: () => formatNumber(hero.value.cursedBonusExp * 10, true),
         color: '',
       },
@@ -1424,7 +1476,7 @@ const statSections = [
         color: '#22cccc',
       },
       {
-        desc: 'Sword [Enchances]',
+        desc: 'Sword [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['sword'].bonus, true),
         color: '#22cccc',
       },
@@ -1653,7 +1705,7 @@ const statSections = [
         color: '#22cccc',
       },
       {
-        desc: 'Equipment [Enchances]',
+        desc: 'Equipment [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['armor'].bonus, true),
         color: '#22cccc',
       },
@@ -1866,7 +1918,7 @@ const statSections = [
         color: '#22cccc',
       },
       {
-        desc: 'Boots [Enchances]',
+        desc: 'Boots [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['boots'].bonus, true),
         color: '#22cccc',
       },
@@ -1989,6 +2041,7 @@ const  formatNumber = (num, f = false) => {
 .endless-section { border: 1px solid #ffaa00; }
 .lore-section { border: 1px solid #9999ff; }
 .afk-section { border: 1px solid #22cccc; }
+.auto-section { border: 1px solid rgb(99, 255, 51); }
 .tree-section { border: 1px solid #00cc44; }
 .ascension-section { border: 1px solid rgb(56, 43, 243); }
 .souls-section { border: 1px solid #9900cc; }

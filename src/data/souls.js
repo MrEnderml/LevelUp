@@ -63,7 +63,7 @@ export const soulNames = [
       "BUFF EXP MULT - 1.5",
       "BUFF - Blood Art (P)",,
       "AMULET[T2] SLOT (P)",
-      "Stage killing scales better"
+      "Stage requirement scales better"
     ],
     [
       "Ascend Shards MULT When you Ascend - 1.5",

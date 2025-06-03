@@ -11,10 +11,13 @@
               <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['boots']}}]</span><br>
               <span v-if="heroComputed.eqTierReq['ring'] > 0">Ring[T{{heroComputed.equipmentTiers['ring'] + 1}}]: 
               {{ heroComputed.dropChance['ring'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['ring']}}]</span><br>
-              <span v-if="hero.rebirthPts >= 35">Collect the set to get a bonus: </span><br>
-              <span v-if="hero.rebirthPts >= 35">(T3, T3, T3) - +3 Min Level, +3 Max Level</span><br>
-              <span v-if="hero.rebirthPts >= 200">(T4, T4, T4, T4) - +4 Min Level, +4 Max Level</span><br>
-              <span v-if="hero.rebirthPts >= 4000">(T5, T5, T5, T5) - +5 Min Level, +5 Max Level</span><br>
+              <span>Collect the set to get a bonus: </span><br>
+              <span v-if="hero.rebirthPts < 25">Reach 25 Rebirth Pts<br></span>
+              <span v-else>(T3, T3, T3) - +3 Min Level, +3 Max Level<br></span>
+              <span v-if="hero.rebirthPts < 200">Reach 200 Rebirth Pts<br></span>
+              <span v-else>(T4, T4, T4, T4) - +4 Min Level, +4 Max Level<br></span>
+              <span v-if="hero.rebirthPts < 4000">Reach 4000 Rebirth Pts<br></span>
+              <span v-else>(T5, T5, T5, T5) - +5 Min Level, +5 Max Level<br></span>
           </span>        
         </span>
       </h2>
@@ -49,7 +52,7 @@
       <div v-if="selectedType && hero.sp >= hero.eqUpsReq[selectedType]" class="forge-info">
         <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType] + hero.freeEnchances}}</span></p>
         <div style="display: flex">
-          <span>Enchance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
+          <span>Enhance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
           <div v-if="upgradeResult" :class="['upgrade-message', upgradeResult]">
             {{ upgradeResult === 'success' ? '✨ Successful!' : '❌ Failed' }}
           </div>
@@ -87,7 +90,6 @@ const bonusChance = ref(0);
 const stardustCost = ref(0);
 const heroComputed = computed(() => hero.value);
 const selectedType = ref('');
-
 
 const setSelectedType = (type) => {
   selectedType.value = type;

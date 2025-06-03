@@ -2,22 +2,22 @@ export const spacePower = [
     {
         id: 1,
         sp: 1,
-        d: "Open the Star Forge. You can Enchance The Sword by Star Dust "
+        d: "Open the Star Forge. You can Enhance The Sword by Stardust "
     },
     {
         id: 2,
         sp: 2,
-        d: "After 40 Stage Enemies drop Star Dust"
+        d: "After Stage 40 enemies drop Stardust"
     },
     {
         id: 3,
         sp: 3,
-        d: "+1 MAX Equipment Tier"
+        d: "+1 Extra MAX Equipment Tier"
     },
     {
         id: 4,
         sp: 4,
-        d: "Open Amulet [T4]"
+        d: "Unlock Amulet [T4]"
     },
     {
         id: 5,
@@ -39,7 +39,7 @@ export const spacePower = [
     {
         id: 8,
         sp: 9,
-        d: "After 39 Stage Enemies drop Star Dust"
+        d: "After Stage 39 enemies drop Stardust"
     },
     {
         id: 9,
@@ -65,43 +65,43 @@ export const spacePower = [
     {
         id: 13,
         sp: 18,
-        d: "Open Amulet [T4] Suffix"
+        d: "Unlock Amulet: Suffix [T4]"
     },
     {
         id: 14,
         sp: 21,
-        d: "After 37 Stage Enemies drop Star Dust"
+        d: "After Stage 37 enemies drop Stardust"
     },
     {
         id: 15,
         sp: 24,
-        d: "Open Abyss D"
+        d: "Unlock Abyss D"
     },
     {
         id: 16,
         sp: 27,
-        d: "Stages scale better"
+        d: "Stage requirement scales better"
     },
     {
         id: 17,
         sp: 30,
-        d: "Open new BUFF: Jaggernaut"
+        d: "Unlock new BUFF: Jaggernaut"
     },
     {
         id: 18,
         st: 3,
-        d: "Sword has Suffix and Prefix",
+        d: "The Sword has Suffix and Prefix",
         boss: true
     },
     {
         id: 19,
         sp: 34,
-        d: "Open Amulet [T4] Prefix"
+        d: "Unlock Amulet: Prefix [T4]"
     },
     {
         id: 20,
         sp: 38,
-        d: "After 35 Stage Enemies drop Star Dust"
+        d: "After Stage 35 enemies drop Stardust"
     },
     {
         id: 21,
@@ -127,7 +127,7 @@ export const spacePower = [
     {
         id: 25,
         sp: 55,
-        d: "+3 extra Enchances"
+        d: "+3 extra Enhances"
     },
     {
         id: 26,
@@ -137,17 +137,17 @@ export const spacePower = [
     {
         id: 27,
         sp: 65,
-        d: "Open Blood Art [T4]"
+        d: "Unlock Blood Art [T4]"
     },
     {
         id: 28,
         sp: 70,
-        d: "MIN Chance Enchance - +5%"
+        d: "MIN Chance Enhance - +5%"
     },
     {
         id: 29,
         sp: 75,
-        d: "Open new Buff: The Flash"
+        d: "Unlock new Buff: The Flash"
     },
     {
         id: 30,
@@ -158,12 +158,12 @@ export const spacePower = [
     {
         id: 31,
         sp: 81,
-        d: "Open Combo [T4]"
+        d: "Unlock Combo [T4]"
     },
     {
         id: 32,
         sp: 87,
-        d: "After 32 Stage Enemies drop Star Dust"
+        d: "After Stage 32 enemies drop Stardust"
     },
     {
         id: 33,
@@ -173,12 +173,12 @@ export const spacePower = [
     {
         id: 34,
         sp: 99,
-        d: "Double Amulet Prefix Effect"
+        d: "Amulet: Prefix has double effect"
     },
     {
         id: 35,
         sp: 105,
-        d: "-1 Equipment Tier Required to Awaken"
+        d: "-1 Equipment Tier required for awakening"
     },
     {
         id: 36,

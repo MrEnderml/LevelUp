@@ -57,7 +57,7 @@
           <input type="number" v-model.number="auto.rebirth.minPts" />
         </label>
         <label>
-          Min Level:
+          Min Level(100+):
           <input type="number" v-model.number="auto.rebirth.minLevel" />
         </label>
         <label>

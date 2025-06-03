@@ -371,7 +371,7 @@ function performD(d, prev) {
   enemy.value.soulBuff.chance = 0;
 
   hero.value.treeTier = 0;
-  hero.value.perkPoints = 0;
+  hero.value.perkPoints = 0 + hero.value.freeTreePoints;
 
   hero.value.eqDrop['sword'] = 0;
   hero.value.eqDrop['armor'] = 0;
@@ -443,7 +443,7 @@ function performD(d, prev) {
   radPerks[10].max = 1;
 
   for(let sp of spEnemy){
-    if(sp.id%6 == 0 || sp.id >= 25){
+    if(sp.id%6 == 0){
       sp.status = false;
     }
   }  

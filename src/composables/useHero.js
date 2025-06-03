@@ -164,6 +164,7 @@ const hero = ref({
   sp: 0,
   st: 0,
   spCount: 0,
+  spMaxCount: 24,
   stardust: 0,
   corruption: 0.1,
   spaceFight : false,

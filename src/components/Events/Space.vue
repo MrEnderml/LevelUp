@@ -11,7 +11,7 @@
         <div class="progress-gradient" :style="{ width: progressPercent + '%' }"></div>
       </div>
 
-      <div class="enemy-info" v-if="spEnemy[hero.spCount].status">
+      <div class="enemy-info" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount">
         <h2>{{ spEnemy[hero.spCount].name }}</h2>
         <p class="boss-reward-sp"> Reward: {{spEnemy[hero.spCount].reward}}</p>
         <p>HP: {{ stats(1) }} | ATK: {{ stats(2) }} 
@@ -20,7 +20,7 @@
       </div>
       <div v-else style="text-align: center">Celestials dont see you</div>
 
-      <div class="bottom-bar" v-if="spEnemy[hero.spCount].status">
+      <div class="bottom-bar" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount">
         <button v-if="enemy.isSpaceFight == 0" class="attack-button" @click="attackEnemy">⚔️ Attack</button>
         <button v-if="enemy.isSpaceFight == 2" class="attack-button" @click="LeaveEnemy">Leave</button>
         <button v-if="hero.infTier >= 5 || hero.singularity >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
@@ -82,7 +82,7 @@ function formatReward(reward) {
 }
 
 const sortedRewards = computed(() => {
-    return sp.filter(reward => reward.id <= Math.min(hero.value.spCount + 1, 24 + (hero.value.infTier >= 5? 6: 0) + (hero.value.singularity >= 5? 6: 0) ));
+    return sp.filter(reward => reward.id <= Math.min(hero.value.spCount + 1, hero.value.spMaxCount ));
 });
 
 const progressPercent = computed(() => ((hero.value.spCount%6) / 6) * 100)
