@@ -29,7 +29,7 @@
 
     <div v-if="activeEvent === 'Buffs'" class="info-card buffs-section">
       <h3 class="info-title">Buffs</h3>
-      <p class="info-line">After stage 10 all Buffs become permanent(+10 CAP for each Abyss Tier). You can change them after <strong>ASCENSION</strong> & <strong>REBIRTH</strong></p>
+      <p class="info-line">After stage 10 all Buffs become permanent(+10 Stages for each Abyss Tier). You can change them after <strong>ASCENSION</strong> & <strong>REBIRTH</strong></p>
       <p class="info-line">Reach stage 20 to gain BUFF EXP</p>
       <p>MAX available BUFF Tier - 3. </p>
       <p class="info-line">Double Check - If the first attempt is false, the check is repeated.</p>
@@ -330,7 +330,7 @@ const styledSections = [
       'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
       'Infinity Bonuses depends on IP',
       `Infinity Discoveries:`,
-      hero.value.level >= 700 && `Infinity [T1]: Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
+      `Infinity [T1]: Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
       hero.value.mainInfTier >= 1 && `Infinity [T2]: Reset everyting you've got(except Abyss D), but you will get Ascend Permission. You have 5 Infinity Ascension Perks to serve you forever even after Infinity Reset. Extra skip stages until +25% Max Stage (S). You can get Shards from Bosses. Auto-Ascension`,
       hero.value.mainInfTier >= 2 && `Infinity [T3]: Reset everyting you've got(except Abyss D), but you will get Integration of Rebirth. Your Rebirth Tier are unlimmited. Enemy Power equals to 1. Auto-Rebirth`,
       hero.value.mainInfTier >= 3 && `Infinity [T4]: Reset everyting you've got(except Abyss D), but you will get Gamma Learning. Gain mutagens as if you have mutagen [T5]. Increase MAX Levels. Danger System scalles better. Danger System opens new Inf-Enemy`,
@@ -358,32 +358,32 @@ const styledSections = [
 
       hero.value.singularity >= 1 && 'Singularity [T1]',
       hero.value.singularity >= 1 && 'Challenge: Enter the singularity, where the opponents have learned to recognize the essence of curses',
-      hero.value.singularity >= 1 && 'Reward: Each curse gets a bonus from the next Tier. +25 singularity levels.',
+      hero.value.singularity >= 1 && 'Reward: Each curse gets a bonus from the next Tier. 1.05 MULT IP. +25 singularity levels.',
 
       hero.value.singularity >= 2 && 'Singularity [T2]',
       hero.value.singularity >= 2 && 'Challenge: Enter the singularity, where The Tree is locked.',
-      hero.value.singularity >= 2 && 'Reward: +1 Tree Tier. +25 singularity levels.',
+      hero.value.singularity >= 2 && 'Reward: +1 Tree Tier. 1.05 MULT IP. +25 singularity levels.',
 
       hero.value.singularity >= 3 && 'Singularity [T3]',
       hero.value.singularity >= 3 && 'Challenge: Enter the singularity, where Ascension is locked.',
-      hero.value.singularity >= 3 && 'Reward: Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier. +25 singularity levels.',
+      hero.value.singularity >= 3 && 'Reward: Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier. 1.05 MULT IP. +25 singularity levels.',
 
       hero.value.singularity >= 4 && 'Singularity [T4]',
       hero.value.singularity >= 4 && 'Challenge: Enter the singularity, where Space is locked.',
-      hero.value.singularity >= 4 && 'Reward: +1 Space Tier. Celestials from all dimensions see you. Auto is always opened. +25 singularity levels.',
+      hero.value.singularity >= 4 && 'Reward: +1 Space Tier. Celestials from all dimensions see you. Auto is always opened. 1.05 MULT IP. +25 singularity levels.',
 
       hero.value.singularity >= 5 && 'Singularity [T5]',
       hero.value.singularity >= 5 && 'Challenge: Enter the singularity, where Buff is locked.',
-      hero.value.singularity >= 5 && 'Reward: Buffs no longer reset during Singularity. +1 Max Buff. +25 singularity levels.',
+      hero.value.singularity >= 5 && 'Reward: Buffs no longer reset during Singularity. +1 Max Buff. 1.05 MULT IP. +25 singularity levels.',
       
       hero.value.singularity >= 6 && 'Singularity [T6]',
       hero.value.singularity >= 6 && 'Challenge: Enter the singularity, where Equipment is locked.',
-      hero.value.singularity >= 6 && 'Reward: +1 Enhance Level per each Singularity Tier. Unlock Awakened Equipment. +25 singularity levels.',
-      `Singularity [T6]: Awakened Equipment: Reach the certain Tier of Equipment to increase a Base Drop Chance and the effectiveness of Enhanced generic parameter by 1%, additional parameter by 0.5%. +1 Gem Slot(Future content)`,
+      hero.value.singularity >= 6 && 'Reward: +1 Enhance Level per each Singularity Tier. Unlock Awakened Equipment. 1.05 MULT IP. +25 singularity levels.',
+      hero.value.singularity >= 6 && `Awakened Equipment: Reach the certain Tier of Equipment to increase a Base Drop Chance and the effectiveness of Enhanced generic parameter by 1%, additional parameter by 0.5%. +1 Gem Slot(Future content)`,
     
       hero.value.singularity >= 7 && 'Singularity [T7]',
       hero.value.singularity >= 7 && 'Challenge: Enter the singularity, where Rebirth is locked.',
-      hero.value.singularity >= 7 && 'Reward: +1 Tree Tier. +25 singularity levels. You start with 100000 Rebirth Pts. Unclock Singularity Pts',
+      hero.value.singularity >= 7 && 'Reward: 1.05 MULT IP. +25 singularity levels. You start with 100000 Rebirth Pts. Unclock Singularity Pts',
     ]
   },
   {
@@ -1593,7 +1593,7 @@ const statSections = [
         value: () => formatNumber(hero.value.attack, true),
         color: 'gold',
       },
-      { desc: 'Crit', value: '', color: 'red',  uppercase: true, },
+      { desc: 'Crit Chance', value: '', color: 'red',  uppercase: true, },
       {
         desc: 'Tree',
         value: () => formatNumber((perks.value[7].level * perks.value[7].value), true),

@@ -24,19 +24,24 @@
         <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
         <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
         <span v-if="hero.rebirthTier >= 50">T[50] - Equipment Chance based on Rebirth Tier [{{(1.03 ** hero.rebirthTier).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 60">T[60] - Space Boos appearance based on Rebirth Tier [{{(1.02 ** hero.rebirthTier).toFixed()}}]</span>
+        <span v-if="hero.rebirthTier >= 60">T[60] - Space Boss appearance based on Rebirth Tier [{{(1.02 ** hero.rebirthTier).toFixed()}}]</span>
         <span v-if="hero.rebirthTier >= 70">T[70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
         <span v-if="hero.rebirthTier >= 80">T[80] - Max Level Mult based on Rebirth Tier [{{(1.015 ** (Math.min(hero.rebirthTier, 125) - 79)).toFixed(2)}}]</span>
       </p>
     </div>
 
     <div class="right-panel">
-      <h2>Rebirth Pts: {{Math.floor(hero.rebirthPts)}}</h2>
+      <h2 v-if="hero.rebirthPts <= 1e5" class="rbPts">Rebirth Pts(RP): {{Math.floor(hero.rebirthPts)}}</h2>
+      <h2 v-else class="snPts">Singularity Pts(SP): {{Math.floor(hero.rebirthPts)}}</h2>
       <div class="rewards-panel">
         <div
-            v-for="reward in rewards"
+            v-for="reward in rewardsFilter"
             :key="reward.points"
-            :class="['reward', { unlocked: hero.rebirthPts &gt;= reward.points }]"
+            :class="[
+              reward.points <= 1e5 ? 'reward' : 'rewardAbove',
+              hero.rebirthPts >= reward.points && reward.points <= 1e5 ? 'unlocked' : '',
+              hero.rebirthPts >= reward.points && reward.points > 1e5 ? 'unlocked' : ''
+            ]"
         >
             <span>{{ reward.points }} pts → {{ reward.description }}</span>
         </div>
@@ -57,7 +62,9 @@ import { perks as ascenPerks } from '../../data/ascension.js';
 const { hero } = useHero();
 const { enemy } = useEnemy();
 
-
+const rewardsFilter = computed(() => 
+  rewards.filter(r => r.points <= (hero.value.singularity >= 8? 1e7: 1e5))
+)
 
 </script>
 
@@ -124,8 +131,7 @@ const { enemy } = useEnemy();
   max-height: 550px;
 }
 
-.left-panel h2,
-.right-panel h2 {
+.left-panel h2 {
   color: #b9f6ca;
   text-shadow: 0 0 8px #00ff80;
   font-size: 1.6rem;
@@ -166,6 +172,38 @@ span {
   color: #002910;
   font-weight: bold;
   border-color: #00c853;
+}
+
+.rewardAbove {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid #70e3bd;
+  color: #e8f5e9;
+  padding: 0.7rem 1rem;
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  transition: 0.3s;
+  font-size: 0.95rem;
+}
+
+.rewardAbove.unlocked {
+  background: #70e3bd;
+  color: #002910;
+  font-weight: bold;
+  border-color: #70e3bd;
+}
+
+.rbPts {
+  color: #b9f6ca;
+  text-shadow: 0 0 8px #00ff80;
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.snPts {
+  color: #a4ffe1;
+  text-shadow: 0 0 8px rgb(128, 247, 207);
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
 }
 
 .rewards-panel {

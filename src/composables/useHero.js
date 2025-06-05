@@ -231,6 +231,16 @@ const hero = ref({
   ascensionAuto: false,
   ascensionAutoUnlock: false,
   afkTimeHandle: 1,
+  singularityKills: 0,
+  curset5: false,
+  curset5Chance: 0,
+  soulOverkill: 0,
+  soulDStage: 0,
+  ds: 0,
+  dsTotal: 0,
+  infPenalty: 0,
+  dangerStage: 0,
+  dsStage: 150,
 });
 
 export function useHero() {

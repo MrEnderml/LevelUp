@@ -109,11 +109,12 @@ export const dimensions = ref([
         id: 'next',
         name: 'DD-zΘaYY',
         idx: 9,
-        infTier: 20,
-        maxInfTier: 21,
+        infTier: 14,
+        maxInfTier: 15,
         c: `Closed`,
         d: `Enter The Dimension where gravity has destroyed The World Line. Your possible Stage is 20`,
         r: ``,
-        sp: `Open new Dimensions, Dimension Shards, Dark Stars.`
-    }
+        sp: `Open new Dimensions and Dimension Shards`
+    },
+    
 ]);

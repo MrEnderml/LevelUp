@@ -37,12 +37,19 @@
         >
           TIER-S
         </button>
+        <button style="margin-left: 10px" v-if="dimensions[9].infTier == dimensions[9].maxInfTier && tier >= 3" 
+          class="active-d"
+          @click="selectTier(8)"
+        >
+          TIER-D
+        </button>
       </div>
     </div>
 
     <p>Shards:🌌 <strong>{{ formatNumber(hero.ascensionShards) }}</strong> 
     <span v-if="dimensions[1].infTier == dimensions[1].maxInfTier"> (+{{formatNumber(hero.totalAscensionShards * 0.1)}})</span>
     </p>
+    <span v-if="dimensions[9].infTier == dimensions[9].maxInfTier" class="ds-text"><strong>Dimension Shard(DS): {{hero.ds}}</strong></span>
 
     <div class="perk-container">
       <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
@@ -86,6 +93,9 @@ const selectTier = (tier) => {
 
   if(tier == 7)
     currentTier.value = 7;
+  
+  if(tier == 8)
+    currentTier.value = 8;
 
   if (tier <= maxTier.value) {
     currentTier.value = tier;
@@ -99,19 +109,22 @@ const filteredPerks = computed(() =>
 );
 
 const getCost = (perk) => {
-  let penaltyI = 1 - 0.0075 * dimensions.value[1].infTier;
-  let penaltyS = 1 - 0.01 * dimensions.value[1].infTier;
+  let iPenalty = 1 - 0.01 * dimensions.value[1].infTier;
+  let sPenalty = (hero.value.rebirthPts >= 1e6? 1 - 0.01 * Math.log(hero.value.rebirthPts): 1);
+  let total = iPenalty * sPenalty;
   if(perk.tier == 6)
-    return Math.floor((perk.baseCost ** perk.level) ** penaltyI);
+    return Math.floor((perk.baseCost ** perk.level) ** total);
   if(perk.tier == 7)
-    return perk.baseCost ** penaltyS
+    return perk.baseCost ** total
   return perk.baseCost + perk.level * perk.costPerLevel;
 };
 
 const canUpgrade = (perk) => {
   return (
-    perk.level < perk.max &&
-    hero.value.ascensionShards >= getCost(perk)
+    perk.tieer < 8 && perk.level < perk.max &&
+    hero.value.ascensionShards >= getCost(perk) ||
+    perk.tier == 8 && perk.level < perk.max &&
+    hero.value.ds >= getCost(perk)
 
   );
 };
@@ -205,6 +218,11 @@ button.active-inf {
 
 button.active-s {
   background-color: #66ffcc;
+  color: white;
+}
+
+button.active-d {
+  background-color:rgb(254, 65, 254);
   color: white;
 }
 
@@ -307,5 +325,9 @@ h2 {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
+}
+
+.ds-text {
+  color: #fb15fb;
 }
 </style>

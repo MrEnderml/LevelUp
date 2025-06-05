@@ -20,6 +20,11 @@ export const cursed = [
                 effect: "Penetrate 40% DEF",
                 bonus: 7.2,
                 status: false
+            },
+            {
+                effect: "Penetrate 80% DEF",
+                bonus: 14.4,
+                status: false
             }
         ],
         status: true
@@ -44,6 +49,11 @@ export const cursed = [
             {
                 effect: "Heal 12% HP",
                 bonus: 10,
+                status: false
+            },
+            {
+                effect: "Heal 20% HP",
+                bonus: 20,
                 status: false
             }
         ],
@@ -71,6 +81,11 @@ export const cursed = [
                 effect: "Block 40% DMG",
                 bonus: 8.8,
                 status: false
+            },
+            {
+                effect: "Block 60% DMG",
+                bonus: 17.6,
+                status: false
             }
         ],
         status: true
@@ -95,6 +110,11 @@ export const cursed = [
             {
                 effect: "+0.9 Attack Per Second",
                 bonus: 20,
+                status: false
+            },
+            {
+                effect: "+1.5 Attack Per Second",
+                bonus: 40,
                 status: false
             }
         ],
@@ -121,6 +141,11 @@ export const cursed = [
                 effect: "16% to avoid attack",
                 bonus: 14.4,
                 status: false
+            },
+            {
+                effect: "25% to avoid attack",
+                bonus: 28.8,
+                status: false
             }
         ],
         status: true
@@ -145,6 +170,11 @@ export const cursed = [
             {
                 effect: "25% to STUN for 1 seconds",
                 bonus: 28,
+                status: false
+            },
+            {
+                effect: "35% to STUN for 1.2 seconds",
+                bonus: 56,
                 status: false
             }
         ],
@@ -172,6 +202,11 @@ export const cursed = [
                 effect: "15% to CRIT 300% DMG",
                 bonus: 19.2,
                 status: false
+            },
+            {
+                effect: "25% to CRIT 400% DMG",
+                bonus: 38.4,
+                status: false
             }
         ],
         status: true
@@ -197,6 +232,11 @@ export const cursed = [
                 effect: "Each of your attack deals you 5% Max HP",
                 bonus: 40,
                 status: false
+            },
+            {
+                effect: "Each of your attack deals you 8% Max HP",
+                bonus: 80,
+                status: false
             }
         ],
         status: false
@@ -221,6 +261,11 @@ export const cursed = [
             {
                 effect: "Enemies gets 8% DEF from Max HP",
                 bonus: 48,
+                status: false
+            },
+            {
+                effect: "Enemies gets 12% DEF from Max HP",
+                bonus: 96,
                 status: false
             }
         ],
@@ -248,6 +293,11 @@ export const cursed = [
                 bonus: 52,
                 status: false
             },
+            {
+                effect: "x3 Max HP",
+                bonus: 104,
+                status: false
+            },
         ],
         status: false
     },
@@ -271,6 +321,11 @@ export const cursed = [
             {
                 effect: "20% to bleed by 40% from Attack for 5 seconds",
                 bonus: 64,
+                status: false
+            },
+            {
+                effect: "30% to bleed by 60% from Attack for 6 seconds",
+                bonus: 128,
                 status: false
             }
         ],
@@ -299,6 +354,11 @@ export const cursed = [
                 effect: "The Hero's Regeneration is weaker by 40%",
                 bonus: 72,
                 status: false
+            },
+            {
+                effect: "The Hero's Regeneration is weaker by 60%",
+                bonus: 144,
+                status: false
             }
         ],
         status: false,
@@ -324,6 +384,11 @@ export const cursed = [
             {
                 effect: "x2 Attack",
                 bonus: 80,
+                status: false
+            },
+            {
+                effect: "x3 Attack",
+                bonus: 160,
                 status: false
             }
         ],

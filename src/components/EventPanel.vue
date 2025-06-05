@@ -162,7 +162,7 @@ function eventReq (e){
     if(hero.value.singularity >= 4 && e == 'Space') return true;
     if(hero.value.singularity >= 5 && e == 'Buff') return true;
     if(hero.value.singularity >= 6 && e == 'Equipment') return true;
-    if(hero.value.singularity >= 7 && e == 'Rebirth') return true;
+    if(hero.value.singularity == 7 && e == 'Rebirth') return true;
   }
   if(hero.value.dId == 'noTree' && e == 'Tree') return true;
   if(hero.value.dId == 'ascension' && e == 'Ascension')  return true;
@@ -192,7 +192,7 @@ function eventReqD (e){
     if(hero.value.singularity >= 4 && e == 'Space') return 'Singularity Conflict';
     if(hero.value.singularity >= 5 && e == 'Buff') return 'Singularity Conflict';
     if(hero.value.singularity >= 6 && e == 'Equipment') return 'Singularity Conflict';
-    if(hero.value.singularity >= 7 && e == 'Rebirth') return 'Singularity Conflict';
+    if(hero.value.singularity == 7 && e == 'Rebirth') return 'Singularity Conflict';
   }
   if(hero.value.dId == 'noTree' && e == 'Tree'){
     return 'The Unknown';

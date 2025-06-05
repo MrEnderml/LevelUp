@@ -146,7 +146,10 @@ const loadGame = () => {
     }
     if (data.space) {
       for(let idx in data.space){
-        space[idx].status = data.space[idx].status;
+       if(idx%6 == 5)
+          space[idx].status = data.space[idx].status;
+        else 
+          space[idx].status = true;
       }
     }
     if (data.buffs) {
@@ -191,9 +194,11 @@ const loadGame = () => {
 
     if(data.dimensions) {
         for (let idx in data.dimensions){
+          if(idx >= 9)
+            continue;
           dimensions.value[idx].infTier = data.dimensions[idx].infTier;
           if(idx == 1)
-            dimensions.value[idx].ascension = data.dimensions[idx].ascension;
+            dimensions.value[1].ascension = data.dimensions[1].ascension;
         }
     }
 

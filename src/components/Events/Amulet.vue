@@ -39,7 +39,7 @@
             <strong>{{ curse.icon }} {{ curse.name }}</strong>
             <ul>
                <template v-for="(tier, tIndex) in curse.tier" :key="tIndex" >
-                <li v-if="tIndex < 3 || tier.status" :class="{ 'tier-four': tIndex === 3 }"> 
+                <li v-if="tIndex < 3 || tier.status" :class="{ 'tier-four': tIndex === 3, 'tier-five': tIndex === 4 }"> 
                   [T{{ tIndex + 1 }}] {{ tier.effect }} 
                   (Bonus: {{ (tier.bonus * (hero.rebirthTier >= 10 ? 1.5 : 1)).toFixed(2) }})
                 </li>
@@ -241,6 +241,12 @@ function formatCurses() {
   color: #c56eff;
   font-weight: bold;
   text-shadow: 0 0 6px #c56eff;
+}
+
+.tier-five {
+  color: #66ffcc;
+  font-weight: bold;
+  text-shadow: 0 0 6px #66ffcc;
 }
 
 </style>

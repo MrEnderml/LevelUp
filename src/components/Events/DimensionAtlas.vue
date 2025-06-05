@@ -407,13 +407,15 @@ function performD(d, prev) {
   hero.value.curse = 0;
   hero.value.souls = 0;
   hero.value.soulTier = 0;
-  hero.value.soulsCap = 20;
+  hero.value.soulsCap = 20 + (hero.value.rebirthPts >= 2.5e5? 10: 0) + 
+  (hero.value.rebirthPts >= 5.5e5? 10: 0)
   hero.value.soulsMax = 0;
   hero.value.maxBuffs = 1;
   hero.value.ascendShardPerform = 0;
   hero.value.ascensionShards = 0;
   hero.value.totalAscensionShards = 0;
-  hero.value.abyssTier = 0;
+  hero.value.abyssTier = 0 + (hero.value.rebirthPts >= 2.5e5? 1: 0) + 
+  (hero.value.rebirthPts >= 5.5e5? 1: 0) + (hero.value.rebirthPts >= 1.5e6? 1: 0);
   hero.value.isAbyss = false;
 
   hero.value.isSpaceAuto = false;

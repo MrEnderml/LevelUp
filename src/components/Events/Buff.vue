@@ -73,7 +73,7 @@ function buffD(buff){
   if(buff.id == 6)
     return buffCharge(buff)
   if(buff.id == 10 && buff.tier == 1)
-    buff.description[0] = `${35 + 4 * dimensions.value[4].infTier}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`
+    buff.description[0] = `${35 + 5 * dimensions.value[4].infTier}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`
   return buff.description[buff.tier-1];
 }
 

@@ -40,7 +40,7 @@ export const autoProgress = () => {
 
     if(auto.value.rebirth.minPts != 0 && hero.value.stage >= 3 && hero.value.level >= 100){
       if(hero.value.totalRebirthPts >= auto.value.rebirth.minPts){
-        auto.value.ascension.enabled = true;
+        auto.value.rebirth.enabled = true;
         hero.value.perform = true;
       }
     }

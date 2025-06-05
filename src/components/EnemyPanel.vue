@@ -41,7 +41,7 @@ const maxHp = computed(() => enemy.value.maxHp);
 const attack = computed(() => enemy.value.attack);
 const def = computed(() => enemy.value.def);
 
-const colors = ['green', 'yellow', 'red', '#c56eff']
+const colors = ['green', 'yellow', 'red', '#c56eff', '#66ffcc']
 
 function formatNumber(num) {
   if (num < 1000) return Math.floor(num).toString();

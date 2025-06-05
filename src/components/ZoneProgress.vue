@@ -8,6 +8,7 @@
             <p><strong>Ascension</strong></p>
             <p>Reset to stage 1, but you will lose level, tree and equipment.</p>
             <p>Total shards: {{ formatNumber(hero.totalAscensionShards) }} <span v-if="hero.ascendShardPerform > 0">(+{{formatNumber(hero.ascendShardPerform)}} after Ascension)</span> 💠</p>
+            <p v-if="dimensions[9].infTier == dimensions[9].maxInfTier">Now you are available to get Dimension Shard(DS). Reach Stage {{hero.dsStage + 10 * hero.dsTotal}} to gain 1 DS</p>
           </div>
         </button>
       </div>
@@ -25,7 +26,7 @@
             <p v-if="hero.infTier >= 3">+{{Math.floor((hero.level - 90) / 10 > hero.rebirthTier? (hero.level - (90 + 10 * hero.rebirthTier)) / 10: 0)}} Rebirth Tier</p>
             <p v-if="(hero.rebirthTier + 1)%5 == 0 && hero.rebirthTier < 21">Unlock new Rebirth Affect</p>
             <p v-if="(hero.rebirthTier + 1)%10 == 0 && hero.rebirthTier >= 21 && hero.rebirthTier < 71">Unlock new Rebirth Affect</p>
-            <p>You gained: {{format(hero.totalRebirthPts)}} Pts</p>
+            <p v-if="hero.rebirthPts <= 1e5">You gained: {{format(hero.totalRebirthPts)}} Pts</p>
           </div>
         </button>
       </div>
@@ -59,23 +60,26 @@
       </div>
       <div class="soul-wrapper" v-if="hero.infTier >= 6 && !hero.isSingularity">
         <button class="btnSoul" @click="performSoulD" >
-          <span>💀</span>
+          <img :src="redSkull" width="24px" height="24px" v-if="hero.soulD" />
+          <span v-if="!hero.soulD">💀</span>
           <div class="soul-tooltip abyss-shadow">
               <p><strong>D-Soul</strong></p>
-              <p>Enter the Dimension where souls have 100% appearence, but they are stronger thanт usual souls. Soul Loot scalles better</p>
-              <p>Available at Stage 15</p>
+              <p>Enter the Dimension where souls have 100% appearence, but they are stronger than usual souls. Soul Loot scales better.</p>
               <p>Click to <span v-if="!hero.soulD">Enter</span><span  v-if="hero.soulD">Leave</span> The Dimension</p>
           </div>
         </button>
       </div>
-      <div class="singularity-wrapper" v-if="hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity && hero.singularity < 8">
+      <div class="singularity-wrapper" v-if="hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity">
       <button class="btnSingularity" @click="performSingularity" >
           <SvgIcon name="singularity" size="1.4em" />
           <div class="singularity-tooltip singularity-shadow">
-              <p><strong>Singularity [T{{hero.singularity}}]</strong></p>
+              <p v-if="hero.singularity < 8"><strong>Singularity [T{{hero.singularity}}]</strong></p>
+              <p v-else><strong>Singularity-BH</strong></p>
               <p>Face the hardest challenge of the universe to recreate the D-Rule</p>
               <p>{{singularityD[hero.singularity]}}</p>
               <p>{{singularityR[hero.singularity]}}</p>
+              <span v-if="hero.singularity >= 8 && hero.isSingularity">Total SP: {{formatNumber((Math.log(hero.kills + 3) ** 7.26) - (Math.log(hero.singularityKills + 3) ** 7.26))}}<br></span>
+              <span v-if="hero.singularity >= 8">Max kills: {{Math.max(hero.kills, hero.singularityKills)}}</span>
               <p>Reach Level 700 to Enter the singularity</p>
               <p v-if="hero.isSingularity">Click to leave the Singularity</p>
           </div>
@@ -123,6 +127,7 @@ import { cursed } from '../data/cursed.js';
 import { useBuff } from '../data/buffs.js';
 import { spEnemy } from '../data/spaceEnemy.js';
 import { dimensions } from '../data/dimensions.js';
+import redSkull from '../assets/red-skull.png';
 
 const { hero } = useHero();
 const { buffs } = useBuff();
@@ -142,7 +147,8 @@ const singularityD = [
   `Enter the singularity, where Space is locked`,
   `Enter the singularity, where Buff is locked`,
   `Enter the singularity, where Equipment is locked`,
-  `Enter the singularity, where Rebirth is locked`
+  `Enter the singularity, where Rebirth is locked`,
+  `Enter the singularity, where enemies under curse of D-Rule. All enemies have curse [T5]`
 ]
 
 const singularityR = [
@@ -155,6 +161,7 @@ const singularityR = [
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Buffs no longer reset during Infinity; +1 Max Buff`,
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. + Enhance Level per each Singularity Tier. Unlock Awakened Equipment`,
   `Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Rebirth starts with 1e5 Pts. Unlock Singularity Pts. `,
+  `Reach as max as possible to get Singularity Pts`
 ]
 
 const abyssDescription = [
@@ -198,17 +205,17 @@ const infRewards = [
 function abyssRwrd(tier) {
   if (tier < 3) return abyssRewards[tier];
 
-  let str = `<span>Reach 20 stage: High Tier Curses appear more often </span><br/>`;
+  let str = `<span>Reach Stage 20: High Tier Curses appear more often </span><br/>`;
 
   if (hero.value.abyssDStages >= 20)
-    str += `<span>Reach 30 stage: Level scales based on Max Stage in Abyss D</span>`; 
+    str += `<span>Reach Stage 30: Level scales based on Max Stage in Abyss D</span>`; 
   if (hero.value.abyssDStages >= 30){
     str += `<span>[*${Math.max(2 - (1.015 ** (hero.value.abyssDStages - 29)), 0.1).toFixed(2)}]</span> </span><br/>`;
-    str += `<span>Reach 40 stage: Corruption weakness is based on Max Stage in Abyss D</span>`;
+    str += `<span>Reach Stage 40: Corruption weakness is based on Max Stage in Abyss D</span>`;
   }
   if (hero.value.abyssDStages >= 40){
     str += `<span>[+${(1 - (1 / (Math.sqrt(Math.max(1, hero.value.abyssDStages - 39)) ** 0.15))).toFixed(2)}]</span></span><br/>`;
-    str += `<span>Reach 50 stage: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
+    str += `<span>Reach Stage 50: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
   }
   if (hero.value.abyssDStages >= 50){
     str += `<span>[*${((1.015 ** (hero.value.abyssDStages - 49))).toFixed(2)}]</span><br/>`;
@@ -216,10 +223,10 @@ function abyssRwrd(tier) {
   }
   if (hero.value.abyssDStages >= 60){
     str += `<span >[*${((1.02 ** (hero.value.abyssDStages - 59))).toFixed(2)}]</span></span><br/>`;
-    str += `<span>Reach 70 stage: Stages scale better based on Max Stage in Abyss D</span><br/>`;
+    str += `<span>Reach Stage 70: Stage requirement scales better based on Max Stage in Abyss D</span><br/>`;
   }
   if (hero.value.abyssDStages >= 70){
-    str += `<span>Reach 80 stage: Open D-Atlas</span><br/>`;
+    str += `<span>Reach Stage 80: Open D-Atlas</span><br/>`;
   }
 
   return str;
@@ -236,16 +243,25 @@ const toggleLockStage = () => {
     }
 };
 
+function dsGain() {
+  let total = Math.floor(Math.max(hero.value.stage - hero.value.dsStage, 0) / 10);
+  return hero.value.dsStage + 10 * total
+}
+
 
 const performSingularity = () => {
   if(!hero.value.isSingularity && hero.value.level < 700)
     return;
   
-  hero.value.perform = false;
+  hero.value.perform = true;
   enemy.value.soulBuff.active = false;
   enemy.value.boss.isBoss = false; 
   hero.value.soulD = false;
   hero.value.activeBuffs = [];
+
+  if(hero.value.isSingularity && hero.value.singularity >= 8) {
+      hero.value.singularityKills = hero.value.kills;
+  }
 
   perform();
 
@@ -276,7 +292,6 @@ const performSingularity = () => {
       hero.value.rebirthTier = hero.value.singularityRebirthTier;
       hero.value.singularityRebirthTier = 0;
     }
-
     return;
   }
   hero.value.isSingularity = true;
@@ -319,11 +334,20 @@ const performSingularity = () => {
     hero.value.singularityRebirthTier = hero.value.rebirthTier;
     hero.value.rebirthTier = 0;
   }
+  if(hero.value.singularity >= 8) {
+    hero.value.kills = hero.value.singularityKills;
+    hero.value.rebirthPts = 1e5 + (Math.log(hero.value.singularityKills) ** 7.26);
+  }
 }
 
 const performSoulD = () => {
-  if(hero.value.stage >= 15)
-    hero.value.soulD = hero.value.soulD? false: true;
+  hero.value.soulD = hero.value.soulD? false: true;
+  if(hero.value.soulD){
+    hero.value.soulDStage = hero.value.stage;
+    hero.value.stage = 15;
+  } else {
+    hero.value.stage = hero.value.soulDStage;
+  }
 }
 
 const performAscension = () => {
@@ -373,6 +397,7 @@ const performAbyss = () => {
 const performInf = () => {
   hero.value.infTier = Math.min(hero.value.infTier + 1, 100);
   hero.value.mainInfTier = Math.max(hero.value.infTier, hero.value.mainInfTier);
+  hero.value.perform = true;
 
   perform();
   hero.value.activeBuffs = [];
@@ -389,7 +414,7 @@ const performInf = () => {
   hero.value.activeFormation = null;
 
   hero.value.totalRebirthPts = 0;
-  hero.value.rebirthPts = 0;
+  hero.value.rebirthPts = (hero.value.singularity < 8? 0: hero.value.rebirthPts);
   hero.value.cursedBonusExp = 0;
   hero.value.cursedBonus = 0;
   hero.value.rebirthTier = 0;
@@ -399,13 +424,15 @@ const performInf = () => {
   hero.value.curse = 0;
   hero.value.souls = 0;
   hero.value.soulTier = 0;
-  hero.value.soulsCap = 20;
+  hero.value.soulsCap = 20 + (hero.value.rebirthPts >= 2.5e5? 10: 0) + 
+  (hero.value.rebirthPts >= 5.5e5? 10: 0);
   hero.value.soulsMax = 0;
   hero.value.maxBuffs = 1;
   hero.value.ascendShardPerform = 0;
   hero.value.ascensionShards = 0;
   hero.value.totalAscensionShards = 0;
-  hero.value.abyssTier = 0;
+  hero.value.abyssTier = (hero.value.rebirthPts >= 2.5e5? 1: 0) + 
+  (hero.value.rebirthPts >= 5.5e5? 1: 0) + (hero.value.rebirthPts >= 1.5e6? 1: 0);
   hero.value.isAbyss = false;
 
   hero.value.isSpaceAuto = false;

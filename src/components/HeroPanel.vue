@@ -138,7 +138,7 @@ function stats() {
 
   str += `💢<span>BASE CRIT: ${hero.value.crit.toFixed(1)}</span><br>`;
   str += `🔪<span>BASE CRIT DAMAGE: ${(hero.value.critAttack / 100).toFixed(1)}</span><br>`;
-  str += `🤺<span>BASE DOODGE: ${hero.value.avoid}</span><br>`;
+  str += `🤺<span>BASE DODGE: ${hero.value.avoid}</span><br>`;
   str += `💀<span>Overkill: ${Math.floor(hero.value.overkill - 1)}</span><br>`;
   str += `🥾<span>APS: ${hero.value.attacksPerSecond.toFixed(1)}</span><br>`;
 
@@ -258,7 +258,7 @@ const speedReduction = computed(() => (hero.value.survivalLevel * 2).toFixed(1))
 }
 
 .formation-btn {
-  font-size: 1.2rem;
+  font-size: 16px;
   padding: 0.1rem;
   border: 2px solid transparent;
   border-radius: 8px;

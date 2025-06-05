@@ -41,11 +41,17 @@ const bonusReq = {
   7: 8,
   8: 10,
   10: 13,
+  11: 13,
+  12: 13,
   13: 15,
+  14: 15,
   15: 16,
   16: 18,
+  17: 18,
   18: 20,
+  19: 20,
   20: 100,
+  21: 100,
   30: 100
 }
 
@@ -70,16 +76,22 @@ function infDescription(goal) {
 const inf = computed(() => hero.value.infPoints);
 const sqrt = () => Math.sqrt(inf.value + 1);
 const log = () => Math.log(inf.value + 2);
+const sBonus = () => 0
 
-const scale = (base, mod = 1) => (base ** (inf.value / (sqrt() * mod)));
-const addScale = (base, mod = 1) => (base ** (inf.value / (sqrt() + mod)));
-const inverseScale = (base, mod = 1) => (1 / (base ** (inf.value / (sqrt() * mod))));
-const additive = (base, mod = 1) => Math.floor(base ** (inf.value / (sqrt() * mod)));
-const linearDiff = (base, mod = 1) => ((base ** (inf.value / (sqrt() * mod))) - 1);
+
+const scale = (base, mod = 1) => ((base + sBonus()) ** (inf.value / (sqrt() * mod)));
+const addScale = (base, mod = 1) => ((base + sBonus()) ** (inf.value / (sqrt() + mod)));
+const inverseScale = (base, mod = 1) => (1 / ((base + sBonus()) ** (inf.value / (sqrt() * mod))));
+const additive = (base, mod = 1) => Math.floor((base + sBonus()) ** (inf.value / (sqrt() * mod)));
+const linearDiff = (base, mod = 1) => (((base + sBonus()) ** (inf.value / (sqrt() * mod))) - 1);
 
 function unlimitBonus(){
-  return hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1
+  let total = (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3)): 1) * 
+  (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1)
+  return total;
 }
+
+
 
 const bonuses = computed(() => [
   { id: 1, stat: 'Damage', value: `*${formatNumber(scale(1.055))}`, status: 0 },
