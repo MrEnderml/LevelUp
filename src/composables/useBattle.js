@@ -2859,14 +2859,14 @@ export function useBattle(hero, enemy, buffs) {
 
   const test = () => {
     //hero.value.infPointsGoals = 3000;
-    dimensions.value[9].infTier = 14;
-    dimensions.value[9].maxInfTier = 15;
+    //dimensions.value[9].infTier = 14;
+    //dimensions.value[9].maxInfTier = 15;
     //hero.value.dId = 'main';
     //hero.value.infTier = 2;
     //hero.value.singularity = 8;
     //hero.value.kills = 10;
     //hero.value.rebirthPts = 1e7;
-    hero.value.singularityKills = 0;
+    //hero.value.singularityKills = 0;
     //hero.value.stage = 169;
     //hero.value.spCount = 0;
     //hero.value.mainInfTier = 11;
