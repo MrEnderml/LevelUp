@@ -121,7 +121,7 @@ const getCost = (perk) => {
 
 const canUpgrade = (perk) => {
   return (
-    perk.tieer < 8 && perk.level < perk.max &&
+    perk.tier < 8 && perk.level < perk.max &&
     hero.value.ascensionShards >= getCost(perk) ||
     perk.tier == 8 && perk.level < perk.max &&
     hero.value.ds >= getCost(perk)
