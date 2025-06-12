@@ -4,7 +4,7 @@ export const perks = [
     name: 'Mutagen [T1]',
     description: '+0.5% to Mutagen [T1]',
     level: 0,
-    max: 30,
+    max: 25,
     baseCost: 1,
     costPerLevel: 1
   },
@@ -13,7 +13,7 @@ export const perks = [
     name: 'Mutagen [T2]',
     description: '+1% to Mutagen [T2]',
     level: 0,
-    max: 30,
+    max: 25,
     baseCost: 2,
     costPerLevel: 2
   },
@@ -22,7 +22,7 @@ export const perks = [
     name: 'Mutagen [T3]',
     description: '+1.5% to Mutagen [T3]',
     level: 0,
-    max: 30,
+    max: 25,
     baseCost: 4,
     costPerLevel: 4
   },
@@ -31,7 +31,7 @@ export const perks = [
     name: 'Mutagen [T4]',
     description: '+2% to Mutagen [T4]',
     level: 0,
-    max: 30,
+    max: 25,
     baseCost: 8,
     costPerLevel: 8
   },

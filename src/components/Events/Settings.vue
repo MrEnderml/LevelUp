@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="auto-panel-wrapper">
-      <div class="auto-panel" if="hero.mainInfTier >= 2">
+      <div class="auto-panel" v-if="hero.mainInfTier >= 2">
         <h3>🌌 Auto Ascension</h3>
         <label>
           Min Shards:
@@ -50,7 +50,7 @@
         </label>
       </div>
 
-      <div class="auto-panel" if="hero.mainInfTier >= 3">
+      <div class="auto-panel" v-if="hero.mainInfTier >= 3">
         <h3>♻️ Auto Rebirth</h3>
         <label>
           Min Rebirth Pts:
@@ -66,7 +66,7 @@
         </label>
       </div>
 
-      <div class="auto-panel" if="hero.mainInfTier >= 1">
+      <div class="auto-panel" v-if="hero.mainInfTier >= 1">
         <h3>⚔️ Stop at Stage</h3>
         <label>
           Stage to Stop:
@@ -134,6 +134,7 @@ import { goals } from "../../data/infGoals.js";
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { auto } from "../../composables/autoProgression.js";
 import { dimensions } from "../../data/dimensions.js";
+import { killHistory } from "../../composables/afkHandle.js";
 import CryptoJS from "crypto-js";
 import ToggleSwitch from '../ToggleSwitch.vue';
 
@@ -173,7 +174,8 @@ const saveGame = () => {
     space: space,
     infGoals: goals.value,
     auto: auto.value,
-    dimensions: dimensions.value
+    dimensions: dimensions.value,
+    hKill: killHistory,
   };
   localStorage.setItem("gameSave", JSON.stringify(saveData));
 };
@@ -191,7 +193,8 @@ const exportGame = () => {
     space: space,
     goals: goals.value,
     auto: auto.value,
-    dimensions: dimensions.value
+    dimensions: dimensions.value,
+    hKill: killHistory,
   };
   const json = JSON.stringify(data);
   const encrypted = CryptoJS.AES.encrypt(json, D_RULE).toString();
@@ -240,13 +243,17 @@ const triggerFileInput = () => {
       if (data.enemy) deepMerge(enemy.value, data.enemy);
       if (data.perks) {
         for (let idx in data.perks) {
+          perks.value[idx].block = data.perks[idx].block;
           const perkData = data.perks[idx];
           const targetPerk = perks.value[idx];
+
           if (!perkData || !targetPerk) continue;
           targetPerk.level = perkData.level;
           if ("status" in perkData) targetPerk.status = perkData.status;
-          if ("infStatus" in perkData)
+
+          if (targetPerk.infStatus != undefined) {
             targetPerk.infStatus = perkData.infStatus;
+        }
         }
         if (data.perks[0]?.kills !== undefined) {
           perks.value[0].kills = data.perks[0].kills;
@@ -260,6 +267,8 @@ const triggerFileInput = () => {
           ascension[idx].level = data.ascension[idx].level;
           if (ascension[idx].status !== undefined)
             ascension[idx].status = data.ascension[idx].status;
+          if (ascension[idx].infStatus !== undefined)
+            ascension[idx].infStatus = data.ascension[idx].infStatus
         }
       }
       if (data.space) {
@@ -274,6 +283,7 @@ const triggerFileInput = () => {
         for (let idx in data.buffs) {
           buffs.value[idx].exp = data.buffs[idx].exp;
           buffs.value[idx].tier = data.buffs[idx].tier;
+          buffs.value[idx].maxTier = data.buffs[idx].maxTier;
           buffs.value[idx].active = data.buffs[idx].active;
         }
       }
@@ -311,12 +321,17 @@ const triggerFileInput = () => {
 
       if(data.dimensions) {
         for (let idx in data.dimensions){
-          if(idx >= 9)
-              continue;
+          if(idx > 23) continue;
+
           dimensions.value[idx].infTier = data.dimensions[idx].infTier;
           if(idx == 1)
             dimensions.value[idx].ascension = data.dimensions[idx].ascension;
         }
+        dUpdate();
+      }
+
+      if (data.hKill?.length) {
+        killHistory.splice(0, killHistory.length, ...data.hKill);
       }
     };
 
@@ -326,6 +341,19 @@ const triggerFileInput = () => {
   input.click();
 };
 
+const dUpdate = () => {
+  dimensions.value[9].infTier = (dimensions.value[9].infTier == 14? 6: dimensions.value[9].infTier);
+  dimensions.value[23].infTier = (dimensions.value[23].infTier == 30? 10: dimensions.value[23].infTier);
+  dimensions.value[10].infTier = (dimensions.value[10].infTier == 15? 10: dimensions.value[10].infTier);
+  dimensions.value[12].infTier = (dimensions.value[12].infTier == 10? 0: dimensions.value[12].infTier);  
+  dimensions.value[20].infTier = (dimensions.value[20].infTier == 15? 20: dimensions.value[20].infTier); 
+  dimensions.value[22].infTier = (dimensions.value[22].infTier == 15? 25: dimensions.value[22].infTier); 
+  dimensions.value[19].infTier = (dimensions.value[19].infTier == 15? 20: dimensions.value[19].infTier); 
+  dimensions.value[21].infTier = (dimensions.value[21].infTier == 15? 30: dimensions.value[21].infTier);
+  dimensions.value[13].infTier = (dimensions.value[13].infTier == 0? 15: dimensions.value[13].infTier);   
+  dimensions.value[18].infTier = (dimensions.value[18].infTier == 15? 20: dimensions.value[18].infTier);  
+}  
+
 const resetGame = () => {
   if (confirm("Are you sure you want to reset all progress?")) {
     localStorage.removeItem("gameSave");
@@ -334,10 +362,8 @@ const resetGame = () => {
 };
 
 const resetInf = () => {
-  if (hero.value.infProgress == false) {
+  if (hero.value.infProgress == false && hero.value.dId == 'main') {
     hero.value.infProgress = true;
-    hero.value.mainInfTier -= 1;
-    hero.value.infTier -= 1;
   }
 };
 
@@ -366,9 +392,13 @@ function useAfkTime() {
 
 const targetStage = ref(1)
 function travelToStage() {
+  if(targetStage.value == 1111) {
+    console.log('Secret-4');
+    hero.value.secrets.travell = true;
+  }
   targetStage.value = Math.max(Math.min(targetStage.value, hero.value.maxStage), 1);
 
-  hero.value.stage = targetStage.value;
+  hero.value.stage = targetStage.value < 100? (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15): targetStage.value): targetStage.value; 
   hero.value.travellPenalty = 4;
   hero.value.isTravell = true;
 }

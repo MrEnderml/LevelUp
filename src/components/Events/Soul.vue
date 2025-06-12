@@ -6,14 +6,14 @@
       <p>[{{hero.souls}}<span v-if="radPerks[9].level == 0">/{{hero.soulsCap}}</span>] {{ soulNames[hero.souls%50] }} 
       <span :title="'Soul Chance'">*[{{chanceFormat(enemy.soulBuff.chance)}}%]</span></p>
       <p style="text-align: left">Description:<br>
-        <span><strong>DMG MULT:</strong> [{{format(enemy.soulBuff.dmg)}}]</span><br>
-        <span><strong>HP MULT:</strong> [{{format(enemy.soulBuff.hp)}}]</span><br>
+        <span><strong>DMG MULT:</strong> [{{formatNumber(enemy.soulBuff.dmg, true)}}]</span><br>
+        <span><strong>HP MULT:</strong> [{{formatNumber(enemy.soulBuff.hp, true)}}]</span><br>
         <span :title="'EXP, WEAPON CHANCE'"><strong>*LOOT MULT:</strong> [{{format(enemy.soulBuff.drop)}}]</span><br> 
       </p>
     </div>
 
     <div class="souls-panel">
-      <h2> Souls T[{{hero.soulTier}}]</h2>
+      <h2 @click="hero.eLink = { set: 'Info', info: 'Souls' }"> <sup style="font-size: 12px">ℹ️</sup>Souls T[{{hero.soulTier}}]</h2>
       <div class="progress-container">
         <div class="soul-bar">
           <div
@@ -67,6 +67,20 @@ function format(value) {
   }
 }
 
+function formatNumber(num, f = false) {
+  if (num < 100 && f) return num.toFixed(2);
+  if (num < 1000000) return Math.floor(num).toString();
+
+  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const tier = Math.floor(Math.log10(num) / 3);
+
+  const suffix = units[tier];
+  const scale = Math.pow(10, tier * 3);
+  const scaled = num / scale;
+
+  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+}
+
 function chanceFormat(value){
   if(value >= 100)
     return 100
@@ -114,6 +128,8 @@ function chanceFormat(value){
   padding: 1rem;
   border-radius: 1rem;
   box-shadow: 0 0 10px #9333ea;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(214, 40, 226) transparent;
 }
 
 .soul-target {

@@ -2,7 +2,7 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
-
+    
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
       <Tree v-if="currentEvent === 'Tree'" />
@@ -57,6 +57,7 @@ import { spEnemy as space } from './data/spaceEnemy.js';
 import { goals } from './data/infGoals.js';
 import { auto } from "./composables/autoProgression.js";
 import { dimensions } from "./data/dimensions.js";
+import { killHistory } from './composables/afkHandle.js';
 
 import EventPanel from './components/EventPanel.vue';
 import BattleLogic from './components/BattleLogic.vue';
@@ -115,6 +116,7 @@ const loadGame = () => {
     if (data.enemy) deepMerge(enemy.value, data.enemy);
     if (data.perks) {
       for (let idx in data.perks) {
+        perks.value[idx].block = data.perks[idx].block;
         const perkData = data.perks[idx];
         const targetPerk = perks.value[idx];
 
@@ -125,7 +127,7 @@ const loadGame = () => {
           targetPerk.status = perkData.status;
         }
 
-        if ('infStatus' in perkData) {
+        if (targetPerk.infStatus != undefined) {
           targetPerk.infStatus = perkData.infStatus;
         }
       }
@@ -142,6 +144,8 @@ const loadGame = () => {
         ascension[idx].level = data.ascension[idx].level;
         if(ascension[idx].status !== undefined)
           ascension[idx].status = data.ascension[idx].status;
+        if (ascension[idx].infStatus !== undefined)
+            ascension[idx].infStatus = data.ascension[idx].infStatus
       }
     }
     if (data.space) {
@@ -156,6 +160,7 @@ const loadGame = () => {
       for(let idx in data.buffs){
         buffs.value[idx].exp = data.buffs[idx].exp;
         buffs.value[idx].tier = data.buffs[idx].tier;
+        buffs.value[idx].maxTier = data.buffs[idx].maxTier;
         buffs.value[idx].active = data.buffs[idx].active;
       }
     }
@@ -194,12 +199,17 @@ const loadGame = () => {
 
     if(data.dimensions) {
         for (let idx in data.dimensions){
-          if(idx >= 9)
-            continue;
+          if(idx > 23) continue;
+
           dimensions.value[idx].infTier = data.dimensions[idx].infTier;
           if(idx == 1)
-            dimensions.value[1].ascension = data.dimensions[1].ascension;
+            dimensions.value[idx].ascension = data.dimensions[idx].ascension;
         }
+        dUpdate();
+      }
+ 
+    if (data.hKill?.length) {
+      killHistory.splice(0, killHistory.length, ...data.hKill);
     }
 
 
@@ -208,9 +218,10 @@ const loadGame = () => {
 
       const diffMs = Date.now() - Number(lastOnline);
       hero.value.afkTimeHandle = (diffMs >= 0? 1: -1);
+      if(hero.value.afkTimeHandle < 0) hero.value.secrets.time = true;
       const seconds = Math.floor(diffMs / 1000);
 
-      let time = Math.abs(Math.min(seconds, 26400));
+      let time = Math.abs(Math.min(seconds, 28800));
       let maxKill = hero.value.maxStage * 75;
 
       let div = hero.value.enemyAfkHp * (time ** 0.1) - hero.value.attack;
@@ -220,7 +231,20 @@ const loadGame = () => {
     }
     saveGame();
 };
+
+const dUpdate = () => {
+  dimensions.value[9].infTier = (dimensions.value[9].infTier == 14? 6: dimensions.value[9].infTier);
+  dimensions.value[23].infTier = (dimensions.value[23].infTier == 30? 10: dimensions.value[23].infTier);
+  dimensions.value[10].infTier = (dimensions.value[10].infTier == 15? 10: dimensions.value[10].infTier);
+  dimensions.value[12].infTier = (dimensions.value[12].infTier == 10? 0: dimensions.value[12].infTier);  
+  dimensions.value[20].infTier = (dimensions.value[20].infTier == 15? 20: dimensions.value[20].infTier); 
+  dimensions.value[22].infTier = (dimensions.value[22].infTier == 15? 25: dimensions.value[22].infTier); 
+  dimensions.value[19].infTier = (dimensions.value[19].infTier == 15? 20: dimensions.value[19].infTier); 
+  dimensions.value[21].infTier = (dimensions.value[21].infTier == 15? 30: dimensions.value[21].infTier);
+  dimensions.value[18].infTier = (dimensions.value[18].infTier == 15? 20: dimensions.value[18].infTier);
   
+   
+}  
 
 loadGame();
 
@@ -266,8 +290,10 @@ const handleReturn = () => {
   hero.value.afkTimeHandle = (now - lastOnline >= 0? 1: -1);
 
   if (seconds > 5) {
+
+    if(hero.value.afkTimeHandle < 0) hero.value.secrets.time = true;
     
-    let time = Math.abs(Math.min(seconds, 26400));
+    let time = Math.abs(Math.min(seconds, 28800));
     let maxKill = hero.value.maxStage * 75;
 
     let div = enemy.value.maxHp * (time ** 0.1) - hero.value.attack;

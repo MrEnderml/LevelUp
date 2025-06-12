@@ -303,7 +303,6 @@ export const spEnemy = [
             hp: 915000,
             def: 132100,
             AS: 2.5,
-            curses: ["⚙️T2", "🩸T2", "💫T3"]
           },
           reward: "5SP",
           status: true
@@ -316,7 +315,6 @@ export const spEnemy = [
             hp: 1114000,
             def: 173500,
             AS: 2.6,
-            curses: ["🌪️T3", "🤺T4", "💢T2"]
           },
           reward: "5SP",
           status: true
@@ -329,7 +327,6 @@ export const spEnemy = [
             hp: 1350000,
             def: 194300,
             AS: 2.6,
-            curses: ["💢T4", "🔪T4"]
           },
           reward: "5SP",
           status: true
@@ -342,7 +339,6 @@ export const spEnemy = [
             hp: 1525000,
             def: 214100,
             AS: 2.2,
-            curses: ["🌪️T4", "🛡️T4", "🩸T2"]
           },
           reward: "5SP",
           status: true
@@ -355,7 +351,6 @@ export const spEnemy = [
             hp: 1875000,
             def: 227700,
             AS: 2.6,
-            curses: ["⚙️T4", "🌪️T1", "🔰T4", "🩸T2"]
           },
           reward: "5SP",
           status: true,
@@ -451,11 +446,159 @@ export const spEnemy = [
             curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
           },
           reward: "1ST - +200 Max Level",
-          status: true,
+          status: false,
           type: "boss"
         },
         {
           id: 37,
+          name: "Voidlurker Zhaar",
+          stats: {
+            dmg: 32000,
+            hp: 1.5e7,
+            def: 9e5,
+            AS: 3.5,
+          },
+          reward: "7SP",
+          status: true
+        },
+        {
+          id: 38,
+          name: "Chronobeast Vektalor",
+          stats: {
+            dmg: 35000,
+            hp: 2.5e7,
+            def: 1e6,
+            AS: 3.5,
+          },
+          reward: "7SP",
+          status: true
+        },
+        {
+          id: 39,
+          name: "Nulldrake Seraphon",
+          stats: {
+            dmg: 37000,
+            hp: 3.5e7,
+            def: 1.2e6,
+            AS: 3.5,
+          },
+          reward: "7SP",
+          status: true
+        },
+        {
+          id: 40,
+          name: "Xarneth the Shattermind",
+          stats: {
+            dmg: 39000,
+            hp: 4.5e7,
+            def: 1.5e6,
+            AS: 3.5,
+          },
+          reward: "7SP",
+          status: true
+        },
+        {
+          id: 41,
+          name: "Umbraworm Kel-Zir",
+          stats: {
+            dmg: 42000,
+            hp: 6.5e7,
+            def: 2.5e6,
+            AS: 3.5,
+          },
+          reward: "7SP",
+          status: true
+        },
+        {
+          id: 42,
+          name: "Boss - Celestarch Aurelion Vox",
+          stats: {
+            dmg: 62000,
+            hp: 2e8,
+            def: 8e6,
+            AS: 4,
+            curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
+          },
+          reward: "1ST - +300 Max Level",
+          status: false,
+          type: "boss"
+        },
+        {
+          id: 43,
+          name: "Aetherfang Ylmaris",
+          stats: {
+            dmg: 52000,
+            hp: 1e8,
+            def: 3e6,
+            AS: 3.5,
+          },
+          reward: "8SP",
+          status: true
+        },
+        {
+          id: 44,
+          name: "Threxil of the Fractured Sky ",
+          stats: {
+            dmg: 56000,
+            hp: 2e8,
+            def: 4e6,
+            AS: 3.5,
+          },
+          reward: "8SP",
+          status: true
+        },
+        {
+          id: 45,
+          name: "Zyggor the Echo Maw ",
+          stats: {
+            dmg: 60000,
+            hp: 3e8,
+            def: 6e6,
+            AS: 3.5,
+          },
+          reward: "8SP",
+          status: true
+        },
+        {
+          id: 46,
+          name: "Molthera, the Rift Broodmother",
+          stats: {
+            dmg: 66000,
+            hp: 5e8,
+            def: 7e6,
+            AS: 3.5,
+          },
+          reward: "8SP",
+          status: true
+        },
+        {
+          id: 47,
+          name: "Ixquar, Harbinger of Collapse",
+          stats: {
+            dmg: 72000,
+            hp: 8e8,
+            def: 9e6,
+            AS: 3.5,
+          },
+          reward: "8SP",
+          status: true
+        },
+        {
+          id: 48,
+          name: "Boss - MyrrKath, Starborn Sovereign",
+          stats: {
+            dmg: 150000,
+            hp: 5e9,
+            def: 5e7,
+            AS: 4,
+            curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
+          },
+          reward: "1ST - +400 Max Level",
+          status: false,
+          type: "boss"
+        },
+        {
+          id: 49,
           name: "Omnipotent",
           stats: {
             dmg: 1e100,
@@ -465,6 +608,6 @@ export const spEnemy = [
             curses: [],
           },
           reward: "?SP",
-          status: true
+          status: false
         },
 ]

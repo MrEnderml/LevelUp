@@ -66,13 +66,6 @@ const hero = ref({
     ring: 0,
     spRing: 0
   },
-  eqUpsReq: {
-    sword: 1,
-    armor: 7,
-    boots: 15,
-    ring: 42,
-    spRing: 1
-  },
   eqUpsMult: {
     sword: {
       cap: 0,
@@ -88,11 +81,15 @@ const hero = ref({
     },
     boots: {
       cap: 0,
-      bonus: 0
+      bonus: 0,
+      stage: 0,
+      overkill: 0,
     },
     ring: {
       cap: 0,
-      bonus: 0
+      bonus: 0,
+      level: 1,
+      multLevel: 0,
     },
     spRing: {
       cap: 0,
@@ -146,7 +143,7 @@ const hero = ref({
     { name: 'HP', id: 0, icon: '💚', description: 'HP - x2, ATK - x0.5, DEF - x0.5',status: false },
     { name: 'Attack', id: 1, icon: '⚔️', description: 'ATK - x2, HP - x0.5, DEF - x0.5' , status: false},
     { name: 'Defense', id: 2, icon: '🛡️', description: 'DEF - x2, HP - x0.5, ATK - x0.5' , status: false},
-    { name: 'Loot', id: 3, icon: '💎', description: 'DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, WEAPON, ASCENSION SHARDS(Abyss T2), REBIRTH SHARDS(Rebirth T20))' , status: false},
+    { name: 'Loot', id: 3, icon: '💎', description: 'DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, WEAPON CHANCE, ASCENSION SHARDS(Abyss [T2]))' , status: false},
   ],
   abyssTier: 0,
   isAbyss: false,
@@ -155,10 +152,10 @@ const hero = ref({
   isLocked: false,
   afkLocked: false,
   mutation: [
-    {type: 'Mutagen [T1]', chance: 25 },
-    {type: 'Mutagen [T2]', chance: 10},
-    {type: 'Mutagen [T3]', chance: 0},
-    {type: 'Mutagen [T4]', chance: 0},
+    {type: 'Mutation [T1]', chance: 25 },
+    {type: 'Mutation [T2]', chance: 10},
+    {type: 'Mutation [T3]', chance: 0},
+    {type: 'Mutation [T4]', chance: 0},
   ],
   mutagen: 0,
   sp: 0,
@@ -237,10 +234,37 @@ const hero = ref({
   soulOverkill: 0,
   soulDStage: 0,
   ds: 0,
+  dsSpend: 0,
+  dsMax: 0,
   dsTotal: 0,
   infPenalty: 0,
   dangerStage: 0,
   dsStage: 150,
+  dTimeReward: 0,
+  dTimer: 0,
+  dTimeReward: 0,
+  abyssDStagesMax: 100,
+  dKills: 0,
+  survivalStage: 0,
+  curseMult: 1,
+  infPointsMult: 1,
+  baseSp: 0,
+  eLink: {
+    set: '',
+    info: '',
+    stat: '',
+  },
+  secrets: {
+    travell: false,
+    time: false,
+    link: false,
+    dLink: false,
+    dLore: false,
+    dView: true,
+  },
+  maxLevelMult: 0,
+  stardustInfo: 0,
+  timeKiller: 0,
 });
 
 export function useHero() {

@@ -2,7 +2,7 @@
  
   <div class="equipment-wrapper">
     <div class="equipment-panel">
-       <h2>*EQUIPMENT
+       <h2 @click="hero.eLink = { set: 'Info', info: 'Equipment' }"><sup style="font-size: 12px">ℹ️</sup>EQUIPMENT
         <span class="tooltip-container">ℹ️
           <span class="tooltip-text" v-if="heroComputed">
               Chance to drop equipment:<br>
@@ -40,16 +40,20 @@
           <span class="stat" v-if="hero.spCount/6 >= 3 && item.type == 'sword'">P: +{{(hero.eqUpsMult['sword'].critDmg).toFixed(2)}} CRIT DMG</span>
           <span class="stat" v-if="hero.spCount/6 >= 6 && item.type == 'armor'">S: +{{(hero.eqUpsMult['armor'].def).toFixed(2)}} DEF</span>
           <span class="stat" v-if="hero.spCount/6 >= 6 && item.type == 'armor'">P: +{{(hero.eqUpsMult['armor'].heal).toFixed(2)}}% HEALING EFFECT</span>
+          <span class="stat" v-if="hero.spCount/6 >= 7 && item.type == 'boots'">S: -{{(hero.eqUpsMult['boots'].stage).toFixed(2)}} Base stage requirement</span>
+          <span class="stat" v-if="hero.spCount/6 >= 7 && item.type == 'boots'">P: +{{(hero.eqUpsMult['boots'].overkill).toFixed(2)}} Overkill</span>
+          <span class="stat" v-if="hero.spCount/6 >= 8 && item.type == 'ring'">S: *{{(hero.eqUpsMult['ring'].level).toFixed(2)}} Level requirement</span>
+          <span class="stat" v-if="hero.spCount/6 >= 8 && item.type == 'ring'">P: *{{(1 + hero.eqUpsMult['ring'].multLevel).toFixed(2)}} MULT Max Level</span>
         </div>
       </div>
     </div>
 
-    <div class="starforge-panel" v-if="hero.sp >= 1">
+    <div class="starforge-panel" v-if="hero.spCount >= 1">
       <h3>⭐ Star Forge</h3>
-      <p>✨ Stardust: {{ formatNumber(hero.stardust) }} <span v-if="stardustCost > 0">  - {{formatNumber(stardustCost)}}</span></p>
+      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Stardust' }">✨ <sup style="font-size: 12px">ℹ️</sup>Stardust: {{ formatNumber(hero.stardust) }} <span v-if="stardustCost > 0">  - {{formatNumber(stardustCost)}}</span></p>
       <p>Select equipment to enhance its power.</p>
       <div>{{capitalizeFirst(selectedType)}}</div>
-      <div v-if="selectedType && hero.sp >= hero.eqUpsReq[selectedType]" class="forge-info">
+      <div v-if="selectedType && hero.spCount >= eqUpsReq[selectedType]" class="forge-info">
         <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType] + hero.freeEnchances}}</span></p>
         <div style="display: flex">
           <span>Enhance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
@@ -57,7 +61,15 @@
             {{ upgradeResult === 'success' ? '✨ Successful!' : '❌ Failed' }}
           </div>
         </div>
-        <button @click="forgeUpgrade">Enhance ✨{{eqUpCost()}}</button>
+          <button
+          @mousedown="startForge"
+          @mouseup="stopForge"
+          @mouseleave="stopForge"
+          @touchstart.prevent="startForge"
+          @touchend="stopForge"
+          @click="forgeUpgrade">
+            Enhance ✨{{eqUpCost()}}
+          </button>
         <div class="bonus-buttons">
         <p>Boost Chance:</p>
         <button 
@@ -103,6 +115,14 @@ const icons = {
   boots: '🥾',
   ring: '💍',
   spRing: '☄️'
+};
+
+const eqUpsReq = {
+    sword: 1,
+    armor: 6,
+    boots: 11,
+    ring: 21,
+    spRing: 1
 };
 
 const getStatName = (type) => {
@@ -151,8 +171,9 @@ function awakened(type){
 }
 
 function awakenedTierReq(type){
-  let tier = 20 + 10 * hero.value.awakened[type] - (hero.value.sp >= 105? 1: 0) - (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0);
-  return hero.value.singularity >= 7 && hero.value.equipmentTiers[type] >= tier;
+  let tier = 20 + 10 * hero.value.awakened[type] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
+  (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0);
+  return hero.value.singularity >= 7 && Math.min(hero.value.equipmentTiers[type], 50) >= tier;
 }
 
 function autoEnchance(){
@@ -178,7 +199,8 @@ function setBonusChance(value) {
 
 
   let chance = getUpgradeChance(selectedType.value);
-  let penalty = 1 - 0.04 * Math.max(((hero.value.eqUps[selectedType.value] - 50) / 10), 0);
+  let penalty = Math.max(1 - 0.04 * Math.max(((hero.value.eqUps[selectedType.value] - 50) / 10), 0), 0.01) + 
+  (hero.value.spCount >= 37 ?0.02 * (hero.value.spCount / 6): 0);
 
   let minD = 0;
   let maxD = (hero.value.stardust - stardustUp);
@@ -207,15 +229,17 @@ function setBonusChance(value) {
 }
 
 function eqUpCost(){
-  return (hero.value.eqUps[selectedType.value]+1) * 10 * (1 + 2 * Math.floor(hero.value.eqUps[selectedType.value]/100)) ;
+  return Math.floor((hero.value.eqUps[selectedType.value]+1) * 10 * (1 + 1.25 * Math.floor(hero.value.eqUps[selectedType.value]/10)));
 }
 
 function getUpgradeChance(type) {
   const tier = hero.value.eqUps[type];
-  const minBase = 5 + (hero.value.sp >= 70? 5: 0) + (perks[44].level? 5: 0);
-  const base = Math.max(minBase ,50 - tier * 25);
+  const minBase = 5 + (hero.value.spCount >= 28? 5: 0) + (perks[44].level? 5: 0);
+  const base = Math.max(0 ,minBase - 0.1 * tier);
   return Math.floor(base);
 }
+
+
 
 function forgeUpgrade() {
   const chance = getUpgradeChance(selectedType.value) + bonusChance.value;
@@ -259,6 +283,21 @@ function formatNumber(num) {
   return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 
+let forgeInterval = null;
+
+function startForge() {
+  if (forgeInterval) return;
+  forgeUpgrade(); 
+  forgeInterval = setInterval(() => {
+    if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700)
+      forgeUpgrade();
+  }, 10); 
+}
+
+function stopForge() {
+  clearInterval(forgeInterval);
+  forgeInterval = null;
+}
 
 </script>
 
@@ -274,6 +313,9 @@ function formatNumber(num) {
   overflow-y: auto;
   max-height: 530px;
   margin-left: 60px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(37, 254, 250) transparent;
+  overflow-x: hidden;
 }
 
 .equipment-panel h2 {

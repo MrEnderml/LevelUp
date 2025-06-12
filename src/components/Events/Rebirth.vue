@@ -1,10 +1,10 @@
 <template>
   <div class="rebirth-panel">
     <div class="left-panel">
-      <h2>♻️ Rebirth [T{{hero.rebirthTier}}]</h2>
+      <h2 @click="hero.eLink = { set: 'Info', info: 'Rebirth' }">♻️ <sup style="font-size: 12px">ℹ️</sup>Rebirth [T{{hero.rebirthTier}}]</h2>
       
       <p v-if="hero.infTier < 3">Cap: {{ Math.min(100 + hero.rebirthTier * 10, 300) }}</p>
-      <p><strong class="pot"><span style="color: gold">Potential: {{hero.potential - radPerks[6].level}}</span>
+      <p><strong class="pot"><span style="color: gold" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Potential' }"><sup style="font-size: 12px">ℹ️</sup>Potential: {{hero.potential - radPerks[6].level}}</span>
       <span class="radPot" v-if="radPerks[6].level > 0">(+{{radPerks[6].level}})</span></strong><br>
         <strong><span style="color: lightgreen">+0.5 HP per 10 Potential</span></strong>
         <strong><span style="color: #eb4e4e">+0.2 DMG per 20 Potential</span></strong>
@@ -14,13 +14,13 @@
         <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
         <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
         <span :title="'EXP, WEAPON CHANCE'">*LOOT - [{{enemy.rebirthEnemy["drop"]}}] </span>
-        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{(1 / (1.04 + (ascenPerks[29].level? 0.01: 0))** Math.log(hero.ascensionShards)).toFixed(2)}}</span>
+        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.ascensionShards + 3), 0.01).toFixed(2)}}</span>
       </p>
       <p class="rebirthTiers">
         <span v-if="hero.rebirthTier >= 5">T[5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
         <span v-if="hero.rebirthTier >= 10">T[10] - 50% curse Bonus. +1 Max Curse</span>
         <span v-if="hero.rebirthTier >= 15">T[15] - +1 max Buff in Abyss</span>
-        <span v-if="hero.rebirthTier >= 20">T[20] - Chance the appearance of the lower tier souls. The lower Tier souls drop Rebirth Pts.</span>
+        <span v-if="hero.rebirthTier >= 20">T[20] - Get Rebirth Pts as if you had 25 more Levels</span>
         <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
         <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
         <span v-if="hero.rebirthTier >= 50">T[50] - Equipment Chance based on Rebirth Tier [{{(1.03 ** hero.rebirthTier).toFixed(2)}}]</span>
@@ -31,7 +31,7 @@
     </div>
 
     <div class="right-panel">
-      <h2 v-if="hero.rebirthPts <= 1e5" class="rbPts">Rebirth Pts(RP): {{Math.floor(hero.rebirthPts)}}</h2>
+      <h2 v-if="hero.rebirthPts <= 1e5" class="rbPts" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Rebirth' }"><sup style="font-size: 12px">ℹ️</sup>Rebirth Pts(RP): {{Math.floor(hero.rebirthPts)}}</h2>
       <h2 v-else class="snPts">Singularity Pts(SP): {{Math.floor(hero.rebirthPts)}}</h2>
       <div class="rewards-panel">
         <div
@@ -129,6 +129,8 @@ const rewardsFilter = computed(() =>
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 550px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(62, 226, 40) transparent;
 }
 
 .left-panel h2 {
@@ -209,6 +211,8 @@ span {
 .rewards-panel {
   max-height: 500px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(62, 226, 40) transparent;
 }
 
 .pot {

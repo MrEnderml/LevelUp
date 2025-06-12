@@ -34,10 +34,18 @@ const enemy = ref({
   enemyPower: 1,
   spaceBossChance: 0,
   isSpaceFight: 0,
-  dangerEnemyChance: [0, 0, 0, 0, 0, 0],
+  dangerEnemyChance: [0, 0, 0, 0, 0],
   dangerEnemyLoot: [0, 0, 0],
+  dEnemyChance: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  dEnemyLoot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   spawnType: 'none',
   weakStack: 0,
+  averageLoot: {
+    exp: 0,
+    buffexp: 0,
+    mutagen: 0,
+    stardust: 0,
+  },
 });
 
 const villainNames = [

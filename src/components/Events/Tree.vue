@@ -1,7 +1,7 @@
 <template>
   <div class="perk-tree">
-    <h2>TIER[{{hero.treeTier+1}}]</h2>
-    <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ hero.perkPoints }}</p>
+    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TIER[{{hero.treeTier+1}}]</h2>
+    <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ Math.floor(hero.perkPoints) }}</p>
 
     <div class="auto-buttons" v-if="hero.infTier >= 1 || hero.singularity >= 3">
       <button
@@ -28,12 +28,17 @@
         </div>
 
         <div class="perk-buttons">
-          <button class="btnInf" v-if="!perk.status && hero.infTier >= 1" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
+          <button class="btnInf" v-if="!perk.status && hero.infTier >= 1 && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
           <button class="radPerks tooltip-wrapper" @click="radiationPerks(perk)" v-if="perk.id < 7 && radPerks[7].level && !perk.infStatus">☢
               <div class="tooltip">
                 Click to activate/deactivate radiation perk. 
                 You can choose only one perk.
               </div>
+          </button>
+          <button v-if="hero.infTier >= 1 || hero.singularity >= 3" class="btnBlock" :class="{ active: perk.block }" @click="perk.block = !perk.block">
+            <Tooltip :text="perk.block ? 'Perk is blocked' : 'Activate to block this perk for AUTO'">
+              <span>🔒</span>
+            </Tooltip>
           </button>
         </div>
         
@@ -41,7 +46,7 @@
         <span class="perk-desc" v-if="!perk.status"><span v-if="perk.level > 0">{{calculate(perk)}}</span></span>
         <span class="perk-desc" v-if="perk.status && perk.id == 1"><span>Total: 
         [{{(1.01 ** Math.min(perk.kills,140) + (perk.kills >= 140? (perk.kills ** 0.09 - 1): 0)).toFixed(2)}}]</span></span>
-        <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(0.1 * (Math.floor(hero.stage / 5 - 1))).toFixed(1)}}</span></span>
+        <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(Math.max(0.1 * Math.floor(hero.stage / 5 - 1), 1.5)).toFixed(1)}}</span></span>
 
         <div class="perk-footer">
           <button 
@@ -191,12 +196,12 @@ const calculate = (perk) => {
 
 function descriptionPerks(perk) {
 let radDescription = [
-    `+1.01 MULT DMG per each killed enemy [HARDCAP - 4]`,
+    `+1.01 MULT DMG per each killed enemy [Softcap - 4]`,
     "+1% HEAL per second when battle starts [MAX - 10%]",
     "When you were attacked, 30% TO STUN ENEMY FOR 0.5 SECONDS",
     "Level up if your Level is below 10% of MAX Level.(S)",
     "x1.15 Max Level Mult",
-    "+0.1 Attack per Second for each boss killed [Max - 1]"
+    "+0.1 Attack per Second for each boss killed [Max - 1.5]"
   ]
 
   return perk.status? radDescription[perk.id - 1]: perk.description;
@@ -233,6 +238,8 @@ const radiationPerks = (perk) => {
   max-width: 1400px;
   margin: 0 auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(102, 253, 82) transparent;
 }
 
 .perk-tree h2 {
@@ -391,7 +398,7 @@ const radiationPerks = (perk) => {
 }
 
 .btnInf {
-  padding: 6px 12px;
+  padding: 4px 6px;
   background: linear-gradient(145deg, #fff200, #ffcc00);
   font-size: 12px;
   font-weight: bold;
@@ -401,7 +408,7 @@ const radiationPerks = (perk) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 40px;
+  width: 30px;
 }
 
 .btnInf:hover {
@@ -502,4 +509,28 @@ const radiationPerks = (perk) => {
   background-color:rgb(18, 233, 161);
   color: white;
 }
+
+.btnBlock {
+  background-color: #bcedc1;
+  color: #bbb;
+  border: 2px solid #555;
+  border-radius: 8px;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnBlock:hover {
+  background-color:rgb(150, 247, 160);
+  color: #fff;
+  border-color: #888;
+}
+
+.btnBlock.active {
+  background-color: #8b0000; 
+  color: #fff;
+  border-color: #ff5555;
+  box-shadow: 0 0 6px #ff5555aa;
+}
+
 </style>

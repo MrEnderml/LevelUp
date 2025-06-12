@@ -1,13 +1,15 @@
 <template>
   <div class="enemy">
     <h3 :class="{ 'soul-name': enemy.soulBuff.active || enemy.rebirthSoul, 'boss-name': enemy.boss.isBoss, 'ascension-name': enemy.ascensionSoul.active,
-     'space-name': enemy.isSpaceFight, 'inf-name': enemy.spawnType.slice(0, 3) == 'inf', 'singularity-name': hero.isSingularity }">👾 
+     'space-name': enemy.isSpaceFight, 'inf-name': enemy.spawnType.slice(0, 3) == 'inf', 'dim-name': enemy.spawnType.slice(0, 3) == 'dim',
+     'singularity-name': hero.isSingularity }">👾 
       {{ enemy.soulBuff.active ? soulNames[hero.souls%50] || 'Unknown Soul' : enemy.name }}
     </h3>
 
     <span style="color: white">⚔️ {{ formatNumber(attack) }}  </span>
     <span style="color: white" v-if="def > 0"> 🛡️{{formatNumber(def)}}</span>
     <span style="color: #e711e7" v-if="enemy.weakStack >= 1"> 👁️[{{Math.floor(enemy.weakStack)}}]</span>
+    <span style="color: red" v-if="hero.dKills > 0"> 🔥[*{{formatNumber((1.01 * (1.000 + 0.001 * (dimensions[20].infTier - 20))) ** hero.dKills, true)}}]</span>
     <div class="hp-bar">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
             <span class="hp-text">{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span>
@@ -28,6 +30,7 @@ import { useEnemy } from '../composables/useEnemy.js';
 import { useHero } from '../composables/useHero.js';
 import { soulNames} from '../data/souls.js';
 import { cursed } from '../data/cursed.js';
+import { dimensions } from '../data/dimensions.js';
 
 const { enemy } = useEnemy();
 const { hero } = useHero();
@@ -43,7 +46,8 @@ const def = computed(() => enemy.value.def);
 
 const colors = ['green', 'yellow', 'red', '#c56eff', '#66ffcc']
 
-function formatNumber(num) {
+function formatNumber(num, f = false) {
+  if (num < 10 && f) return num.toFixed(2)
   if (num < 1000) return Math.floor(num).toString();
 
   const units = [
@@ -185,6 +189,12 @@ function formatNumber(num) {
   color: rgba(136, 132, 255, 0.6);
   font-weight: bold;
   text-shadow: 0 0 5px rgb(136, 132, 255);
+}
+
+.dim-name {
+  color:rgb(9, 253, 233);
+  font-weight: bold;
+  text-shadow: 0 0 5px rgb(9, 253, 233);
 }
 
 .curse-wrapper {

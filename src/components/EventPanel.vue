@@ -1,11 +1,11 @@
 <template>
   <div class="sidebar">
     <div class="level-bar">
-      <div class="tooltip-wrapper-lvl">
-          <p>
+      <div class="tooltip-wrapper-lvl" >
+          <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Level' }"><sup style="font-size: 8px">ℹ️</sup>
             <span class="info-button-lvl"></span> 
             <span style="font-size: 12px" :class="{'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
-            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel) }}<span v-if="hero.trueLevel > 300">[{{formatNumber(hero.trueLevel)}}]</span></span>
+            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel, false, true) }}<span v-if="hero.trueLevel > 300 && hero.dId != 'unlimitted'">[{{formatNumber(hero.trueLevel, false, true)}}]</span></span>
           </p>
           <div class="tooltip-lvl">
             Every level gives you {{(2 + 0.5 * Math.floor(hero.potential/10)).toFixed(1)}} HP, {{(1 + 0.2 * Math.floor(hero.potential/20)).toFixed(1)}} DMG, 
@@ -21,7 +21,7 @@
           :style="{ width: `${Math.min(100, (exp / nextLevelExp) * 100)}%` }"
         ></div>
       </div>
-      <p><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
+      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'EXP' }"><sup style="font-size: 8px">ℹ️</sup><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
     </div>
     <Tooltip style="text-align: center" :text="() => corrList()">
       <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{(hero.corruption.toFixed(2))}}]</span>
@@ -39,7 +39,8 @@
           @click="emit('update:modelValue', event.name)"
         >
           <span v-if="event.name == 'Infinity'" class="icon infinity-glow">{{ icons[event.name] }}</span>
-          <span v-else class="icon">{{ icons[event.name] || '❔' }}</span>
+          <span v-else-if="event.name == 'Ascension'" class="icon"><img :src="ascensionIcon" width="18px" height="18px" style="vertical-align: -2px"/></span>
+          <span v-else class="icon" v-html="icons[event.name]"></span>
           {{ event.name }}
         </button>
 
@@ -60,6 +61,8 @@ import { computed, watchEffect } from 'vue';
 import { useHero } from '../composables/useHero.js';
 import { useEnemy } from '../composables/useEnemy.js';
 import { perks as rawPerks } from '../data/radPerks.js';
+import ascensionIcon from '../assets/ascension.png';
+import { dimensions } from '../data/dimensions.js'
 
 const props = defineProps({
   hero: Object,
@@ -77,7 +80,6 @@ const level = computed(() => props.hero.level);
 const eLevel = computed(() => props.hero.eLevel);
 const maxLevel = computed(() => props.hero.maxLevel);
 
-let div = computed(() => level.value - eLevel.value);
 
 const icons = {
   'Combat': '⚔️',
@@ -108,13 +110,53 @@ watchEffect(() => {
     emit('update:modelValue', 'Combat')
     hero.value.windowUpdate = false;
   }
+  if(hero.value.eLink.set != ''){
+    hero.value.eLink.set = '';
+    emit('update:modelValue', 'Info')
+  }
 
 })
 
-function formatNumber(num) {
+function formatNumber(num, f = false, lvl = false) {
+  if (num > 70000 && lvl) return `70k+`;
+  if (num < 10 && f) return num.toFixed(2)
   if (num < 1000) return Math.floor(num).toString();
 
-  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const units = [
+  "",  // 10^0
+  "k", // 10^3
+  "m", // 10^6
+  "b", // 10^9
+  "t", // 10^12
+  "q", // 10^15 (quadrillion)
+  "Q", // 10^18 (quintillion)
+  "s", // 10^21 (sextillion)
+  "S", // 10^24 (septillion)
+  "o", // 10^27 (octillion)
+  "n", // 10^30 (nonillion)
+  "d", // 10^33 (decillion)
+  "u", // 10^36 (undecillion)
+  "D", // 10^39 (duodecillion)
+  "T", // 10^42 (tredecillion)
+  "qt", // 10^45 (quattuordecillion)
+  "Qd", // 10^48 (quindecillion)
+  "sd", // 10^51 (sexdecillion)
+  "St", // 10^54 (septendecillion)
+  "Od", // 10^57 (octodecillion)
+  "Nd", // 10^60 (novemdecillion)
+  "vg", // 10^63 (vigintillion)
+  "Uv", // 10^66 (unvigintillion)
+  "Dv", // 10^69 (duovigintillion)
+  "Tv", // 10^72 (tresvigintillion)
+  "qtv", // 10^75 (quattuorvigintillion)
+  "Qtv", // 10^78 (quinvigintillion)
+  "sdv", // 10^81 (sexvigintillion)
+  "Stv", // 10^84 (septenvigintillion)
+  "Odv", // 10^87 (octovigintillion)
+  "Ndv", // 10^90 (novemvigintillion)
+  "Tg", // 10^93 (trigintillion)
+  "∞",  // 10^96+
+];
   const tier = Math.floor(Math.log10(num) / 3);
 
   const suffix = units[tier];
@@ -125,13 +167,15 @@ function formatNumber(num) {
 }
 
 const corrListHandle = computed(() => {
-  let space = (hero.value.sp >= 46? 1.002 ** hero.value.sp - 1: 0);
+  let base = 0.1 + (dimensions.value[22].infTier - 25) * 0.1;
+  let space = (hero.value.spCount >= 22? 1.002 ** hero.value.sp - 1: 0);
   let radiation = (rawPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0);
-  let abyssD = (hero.value.sp >= 24 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15)): 0);
+  let abyssD = (hero.value.spCount >= 15 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15)): 0);
   let rebirth = (hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0);
-  let inf = (hero.value.mainInfTier >= 5? (1.01 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
+  let inf = (hero.value.mainInfTier >= 5? ((1.01 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
 
   return {
+    base: base,
     space: space,
     radiation: radiation,
     abyssD: abyssD,
@@ -145,12 +189,13 @@ function corrList() {
   
   let str = ``;
 
+  str += `<span>Base: [${e.base.toFixed(3)}]</span><br>`;
   str += `<span>Space: [${e.space.toFixed(3)}]</span><br>`;
   str += `<span>Radiation: [${e.radiation.toFixed(3)}]</span><br>`;
   str += `<span>Abyss D: [${e.abyssD.toFixed(3)}]</span><br>`;
   str += `<span>Rebirth: [${e.rebirth.toFixed(3)}]</span><br>`;
   str += `<span>Infinity: [${e.inf.toFixed(3)}]</span><br>`;
-  str += `<span>Total: [${(e.space + e.radiation + e.abyssD + e.rebirth + e.inf + 0.1).toFixed(3)}]</span><br>`
+  str += `<span>Total: [${(hero.value.overcorruption + 1).toFixed(3)}]</span><br>`
 
   return str;
 }
@@ -167,7 +212,10 @@ function eventReq (e){
   if(hero.value.dId == 'noTree' && e == 'Tree') return true;
   if(hero.value.dId == 'ascension' && e == 'Ascension')  return true;
   if(hero.value.dId == 'noEq' && e == 'Equipment') return true;
-  
+  if(hero.value.dId == 'noBuffs' && e == 'Buff') return true;
+  if(hero.value.dId == 'noSpace' && e == 'Space') return true;
+
+  if(e == 'Soul' && hero.value.dId == 'soulD') return false;
 
   if(e == 'Combat') return hero.value.maxStage < 1;
   if(e == 'Equipment') return hero.value.maxStage < 2;
@@ -178,7 +226,7 @@ function eventReq (e){
   if(e == 'Amulet') return hero.value.maxStage < 20;
   if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
   if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
-  if(e == 'Radiation') return hero.value.sp < 5;
+  if(e == 'Radiation') return hero.value.spCount < 5;
   if(e == 'Infinity') return (hero.value.dId == 'main' && hero.value.infTier < 1 && hero.value.level < 700);
   if(e == 'D-Atlas') return hero.value.abyssDStages < 80;
   if(e == 'Info') return hero.value.maxStage < 1;
@@ -201,6 +249,12 @@ function eventReqD (e){
    return 'The Unknown';
   }
   if(hero.value.dId == 'noEq' && e == 'Equipment'){
+   return 'The Unknown';
+  }
+  if(hero.value.dId == 'noBuffs' && e == 'Buff'){
+   return 'The Unknown';
+  }
+  if(hero.value.dId == 'noSpace' && e == 'Space'){
    return 'The Unknown';
   }
 
@@ -235,6 +289,8 @@ function eventReqD (e){
   flex-direction: column;
   justify-content: flex-start;
   z-index: 1000;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(245, 229, 56) transparent;
 }
 
 .level-bar {
@@ -371,7 +427,6 @@ function eventReqD (e){
 .info-button-lvl {
   cursor: pointer;
   font-size: 1.1rem;
-  padding: 0.2rem 0.4rem;
   border-radius: 50%;
   color: #fee2e2;
   transition: transform 0.2s;

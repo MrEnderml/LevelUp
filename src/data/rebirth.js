@@ -56,11 +56,12 @@ export const rewards = [
     { points: 7e5,   description: 'Singularity Level Requirement is reduced based on Singularity Pts'},
     { points: 7.5e5, description: 'Extra Bonus MULT: [^0.2] -> [^0.3]'},
     { points: 8e5,   description: '15% to get 5% EXP from Level EXP requiremnt per enemy killed'},
-    { points: 8.5e5, description: '-1 Stage requirements for Dimension Shards based on Singularity Pts'},
+    { points: 8.5e5, description: '-Stage requirements for Dimension Shards based on Singularity Pts'},
     { points: 9e5,   description: '+1 Min Level per Sinularity Tier'},
     { points: 1e6,   description: 'Reduce Tier-INF and Tier-S Cost Based on Singularity Pts'},
     { points: 1.5e6, description: 'Abyss [T2] is always completed'},
     { points: 2e6, description: 'Max Danger based on singularity Pts'},
+    { points: 2.5e6, description: 'INF Penlaty reduction based on singularity Pts'},
     { points: 5e6, description: '+IP MULT based on singularity Pts'},
     { points: 1e7, description: 'Unlock The Black Hole'},
   ];

@@ -85,7 +85,7 @@ export const spacePower = [
     {
         id: 17,
         sp: 30,
-        d: "Unlock new BUFF: Jaggernaut"
+        d: "Unlock new BUFF: Juggernaut"
     },
     {
         id: 18,
@@ -184,6 +184,68 @@ export const spacePower = [
         id: 36,
         st: 6,
         d: "Body has Suffix and Prefix",
+        boss: true
+    },
+    {
+        id: 37,
+        sp: 112,
+        d: "The ENCHACE Cost scales better per each Space Tier"
+    },
+    {
+        id: 38,
+        sp: 119,
+        d: "+1 Danger per 1 SP"
+    },
+    {
+        id: 39,
+        sp: 126,
+        d: "After Stage 29 enemies drop Stardust"
+    },
+    {
+        id: 40,
+        sp: 133,
+        d: "Buff: Sniper [T4]"
+    },
+    {
+        id: 41,
+        sp: 140,
+        d: "+MIN Level based on Space Tier"
+    },
+    {
+        id: 42,
+        st: 7,
+        d: "Boots have suffix and prefix",
+        boss: true
+    },
+    {
+        id: 43,
+        sp: 148,
+        d: "+1 Max Buff in Space"
+    },
+    {
+        id: 44,
+        sp: 156,
+        d: "After Stage 25 enemies drop Stardust"
+    },
+    {
+        id: 45,
+        sp: 164,
+        d: "Formantion [T4] allows to double stardust drop"
+    },
+    {
+        id: 46,
+        sp: 172,
+        d: "-2 Equipment Tier required for awakening"
+    },
+    {
+        id: 47,
+        sp: 180,
+        d: "+1 MIN Equipment Tier"
+    },
+    {
+        id: 48,
+        st: 8,
+        d: "Ring has suffix and prefix",
         boss: true
     },
 ]

@@ -16,9 +16,9 @@
         <p class="boss-reward-sp"> Reward: {{spEnemy[hero.spCount].reward}}</p>
         <p>HP: {{ stats(1) }} | ATK: {{ stats(2) }} 
         | DEF: {{ stats(3) }} | ApS: {{ stats(4) }}</p>
-        <p v-if="spEnemy[hero.spCount].type == 'boss' || hero.spCount > 23">{{spEnemy[hero.spCount].stats.curses.join(' ')}}</p>
+        <p v-if="spEnemy[hero.spCount].type == 'boss'">{{spEnemy[hero.spCount].stats.curses.join(' ')}}</p>
       </div>
-      <div v-else style="text-align: center">Celestials dont see you</div>
+      <div v-else style="text-align: center" @click="hero.eLink = { set: 'Info', info: 'Space' }"><sup style="font-size: 12px">ℹ️</sup>Celestials dont see you</div>
 
       <div class="bottom-bar" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount">
         <button v-if="enemy.isSpaceFight == 0" class="attack-button" @click="attackEnemy">⚔️ Attack</button>
@@ -30,7 +30,7 @@
     
     <div v-else class="reward-layout">
         <div class="reward-column">
-            <h3>✨ Space Power(SP) - {{hero.sp}}</h3>
+            <h3 @click="hero.eLink = { set: 'Info', info: 'Space' }">✨ <sup style="font-size: 12px">ℹ️</sup>Space Power(SP) - {{hero.baseSp}} <span v-if="hero.sp > hero.baseSp">(+{{hero.sp - hero.baseSp}})</span></h3>
             <h3>🌟Star(ST) - {{hero.st}}</h3>
             <ul>
             <li v-for="(reward, i) in sortedRewards" :key="reward.id" :class="{ 'boss-reward': reward.boss }">
@@ -59,18 +59,17 @@ function switchTab(tab) {
 }
 
 function stats(id){
-  let penalty = hero.value.infTier - (ascension[42].level?1:0);
+  let inf = hero.value.infTier - hero.value.infPenalty/2;
+  let abyssPenalty = (hero.value.abyssDStages >= 160 && hero.value.spCount >= 15? Math.max(1 / (1.01 ** (hero.value.abyssDStages - 159)), 0.1): 1);
+  let corruption = (hero.value.dId == 'corruption'? 3: 1);
   switch(id){
-    case 1: return lastEnemy(spEnemy[hero.value.spCount].stats.hp * (1 + penalty * 0.1));
-    case 2: return lastEnemy(spEnemy[hero.value.spCount].stats.dmg * (1 + penalty * 0.1));
-    case 3: return lastEnemy(spEnemy[hero.value.spCount].stats.def * (1 + penalty * 0.1));
-    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + penalty * 0.02) * (1 - 0.02 * hero.value.survivalLevel)).toFixed(2);
+    case 1: return formatNumber(spEnemy[hero.value.spCount].stats.hp * (1 + inf * 0.1) * corruption * abyssPenalty);
+    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + inf * 0.1) * corruption * abyssPenalty);
+    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + inf * 0.1) * corruption * abyssPenalty);
+    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + inf * 0.02) * (1 - 0.02 * hero.value.survivalLevel) * abyssPenalty).toFixed(2);
   }
 }
 
-function lastEnemy(value){
-  return hero.value.spCount == 36? 'E': Math.floor(value);
-}
 
 function formatReward(reward) {
     if (reward.sp) {
@@ -88,8 +87,6 @@ const sortedRewards = computed(() => {
 const progressPercent = computed(() => ((hero.value.spCount%6) / 6) * 100)
 
 function attackEnemy() {
-  if(hero.value.spCount == 36)
-    return;
   enemy.value.isSpaceFight = 1;
 }
 
@@ -100,6 +97,20 @@ function LeaveEnemy(){
 function autoEnemy(){
   hero.value.isSpaceAuto = !hero.value.isSpaceAuto? true: false;
 }
+
+const  formatNumber = (num, f = false) => {
+    if(f && num < 100) return num.toFixed(2);
+    if (num < 1000) return Math.floor(num).toString();
+  
+    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+    const tier = Math.floor(Math.log10(num) / 3);
+  
+    const suffix = units[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = num / scale;
+  
+    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+  }
 </script>
 
 <style scoped>
@@ -241,6 +252,8 @@ function autoEnemy(){
   box-shadow: 0 0 15px rgba(255, 230, 0, 0.15);
   backdrop-filter: blur(6px);
   transition: all 0.3s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(223, 226, 40) transparent;
 }
 .reward-column li {
   margin-bottom: 0.5rem;

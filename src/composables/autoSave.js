@@ -11,6 +11,7 @@ import { spEnemy as space } from '../data/spaceEnemy.js';
 import { goals } from '../data/infGoals.js';
 import { auto } from "../composables/autoProgression.js";
 import { dimensions } from "../data/dimensions.js";
+import { killHistory } from '../composables/afkHandle.js';
 
 export function useAutoSave() {
   let interval;
@@ -33,6 +34,7 @@ export function useAutoSave() {
       infGoals: goals.value,
       auto: auto.value,
       dimensions: dimensions.value,
+      hKill: killHistory,
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
     console.log('Game saved');
@@ -64,7 +66,8 @@ export function saveGame() {
     space: space,
     infGoals: goals.value,
     auto: auto.value,
-    dimensions: dimensions.value
+    dimensions: dimensions.value,
+    hKill: killHistory,
   };
   localStorage.setItem('gameSave', JSON.stringify(data));
   console.log('Game saved');

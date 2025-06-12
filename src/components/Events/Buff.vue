@@ -1,10 +1,11 @@
 <template>
   <div class="buffs-panel">
-    <h2>🌀 Buffs</h2>
+    <h2 @click="hero.eLink = { set: 'Info', info: 'Buffs' }">🌀 <sup style="font-size: 12px">ℹ️</sup>Buffs</h2>
+    <span><strong>Note: </strong>You will not be able to change the buff after Stage 10. For more information, click on [ℹ️]. </span>
     <div class="buff-status">
     <div>
       <span style="color: #fbbf24">Active: {{ hero.activeBuffs.length }} / {{ hero.maxBuffs }}</span>
-      <span v-if="hero.abyssTier >= 3 && hero.rebirthPts >= 100000" style="color: #66ffcc">  -  Active: {{hero.spActiveBuffs.length}} / {{hero.maxBuffs - (hero.rebirthTier >= 15 && hero.isAbyss? 1: 0)}}</span>
+      <span v-if="hero.abyssTier >= 3 && hero.rebirthPts >= 100000" style="color: #66ffcc">  -  Active: {{hero.spActiveBuffs.length}} / {{hero.maxBuffs - (hero.rebirthTier >= 15 && hero.isAbyss? 1: 0) + (hero.spCount >= 43? 1: 0)}}</span>
     </div>
     <button
         v-if="hero.abyssTier >= 3 && hero.rebirthPts >= 100000"
@@ -29,7 +30,7 @@
         @click="toggleBuff(buff.id)"
       >
         <h3 class="buff-name">
-        <strong>{{ buff.name }} T[{{ buff.tier }}]</strong>
+        <strong>{{ buff.name }} [T{{ buff.tier }}]</strong>
         </h3>
         <div class="exp-bar">
             <div class="exp-fill" :style="{ width: (buff.exp / buff.maxExp[buff.tier-1]) * 100 + '%' }"></div>
@@ -72,6 +73,8 @@ const getActiveDescriptions = (buff) => {
 function buffD(buff){
   if(buff.id == 6)
     return buffCharge(buff)
+  if(buff.id == 7 && buff.tier == 4)
+    return `${10 + 5 * (dimensions.value[19].infTier == dimensions.value[19].maxInfTier? 1: 0)}% to gain EXP and WEAPON CHANCE for each overkilled Enemy`
   if(buff.id == 10 && buff.tier == 1)
     buff.description[0] = `${35 + 5 * dimensions.value[4].infTier}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`
   return buff.description[buff.tier-1];
@@ -90,10 +93,10 @@ const toggleBuff = (id) => {
     const index = hero.value.spActiveBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.spActiveBuffs.splice(index, 1);
-    } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.value.rebirthTier >= 15 && hero.value.isAbyss? 1: 0)) {
+    } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.value.rebirthTier >= 15 && hero.value.isAbyss? 1: 0) + (hero.value.spCount >= 43? 1: 0)) {
       hero.value.spActiveBuffs.push(id);
     }
-  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier){
+  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier && (!hero.value.soulD || hero.value.dId == 'soulD')){
     const index = hero.value.activeBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.activeBuffs.splice(index, 1);
@@ -130,10 +133,10 @@ function formatNumber(num) {
   border-radius: 1rem;
   color: #fff7db;
   box-shadow: 0 0 10px rgba(255, 191, 0, 0.2);
-  width: 75%;
+  width: 70%;
   position: fixed;
   top: 5%;
-  right: 2%;
+  right: 5%;
 }
 
 .buffs-grid {
@@ -143,6 +146,8 @@ function formatNumber(num) {
   overflow-y: auto;
   max-height: 500px;
   padding: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(245, 229, 56) transparent;
 }
 
 .buff-card {
@@ -169,9 +174,11 @@ function formatNumber(num) {
 }
 
 .buff-description {
-  max-height: 140px; /* Ограничиваем высоту области описания */
-  overflow-y: auto; /* Добавляем вертикальную прокрутку */
-  padding-right: 5px; /* Немного отступа для скролл-бара */
+  max-height: 140px; 
+  overflow-y: auto; 
+  padding-right: 5px; 
+  scrollbar-width: thin;
+  scrollbar-color: rgb(246, 226, 47) transparent;
 }
 
 .buff-card.selected {

@@ -12,6 +12,7 @@ export const perks = ref([
         kills: 0,
         baseCost: 10,
         infStatus: false,
+        block: false,
     },
     {
         id: 2,
@@ -24,6 +25,7 @@ export const perks = ref([
         buff: 1,
         baseCost: 7,
         infStatus: false,
+        block: false,
     },
     {
         id: 3,
@@ -35,6 +37,7 @@ export const perks = ref([
         status: false,
         baseCost: 21,
         infStatus: false,
+        block: false,
     },
     {
         id: 4,
@@ -46,6 +49,7 @@ export const perks = ref([
         status: false,
         baseCost: 7,
         infStatus: false,
+        block: false,
     },
     {
         id: 5,
@@ -57,6 +61,7 @@ export const perks = ref([
         status: false,
         baseCost: 15,
         infStatus: false,
+        block: false,
     },
     {
         id: 6,
@@ -68,6 +73,7 @@ export const perks = ref([
         status: false,
         baseCost: 100,
         infStatus: false,
+        block: false,
     },
     {
         id: 7,
@@ -77,7 +83,8 @@ export const perks = ref([
         level: 0,
         maxLevel: [1, 1, 1, 1, 1, 1, 1, 1],
         baseCost: 0,
-        infStatus: false,
+        block: false,
+        infStatus: undefined,
     },
     {
         id: 8,
@@ -88,6 +95,7 @@ export const perks = ref([
         maxLevel: [0, 5, 10, 15, 20, 25, 30, 35],
         baseCost: 40,
         infStatus: false,
+        block: false,
     },
     {
         id: 9,
@@ -98,6 +106,7 @@ export const perks = ref([
         maxLevel: [0, 10, 20, 30, 40, 50, 60],
         baseCost: 18,
         infStatus: false,
+        block: false,
     },
     {
         id: 10,
@@ -107,7 +116,8 @@ export const perks = ref([
         level: 0,
         maxLevel: [0, 1, 1, 1, 1, 1, 1],
         baseCost: 0,
-        infStatus: false,
+        block: false,
+        infStatus: undefined,
     },
     {
         id: 11,
@@ -118,6 +128,7 @@ export const perks = ref([
         maxLevel: [0, 1, 2, 3, 3, 4, 4, 5],
         baseCost: 200,
         infStatus: false,
+        block: false,
     },
     {
         id: 12,
@@ -128,6 +139,7 @@ export const perks = ref([
         maxLevel: [0, 1, 2, 3, 3, 3, 3],
         baseCost: 70,
         infStatus: false,
+        block: false,
     },
     {
         id: 13,
@@ -138,6 +150,7 @@ export const perks = ref([
         maxLevel: [0, 0, 0, 5, 5, 10, 15],
         baseCost: 35,
         infStatus: false,
+        block: false,
     },
     {
         id: 14,
@@ -147,7 +160,8 @@ export const perks = ref([
         level: 0,
         maxLevel: [0, 0, 0, 1, 1, 1, 1],
         baseCost: 0,
-        infStatus: false,
+        block: false,
+        infStatus: undefined,
     },
     {
         id: 15,
@@ -158,6 +172,7 @@ export const perks = ref([
         maxLevel: [0, 0, 1, 1, 1, 2, 3],
         baseCost: 200,
         infStatus: false,
+        block: false,
     },
     {
         id: 16,
@@ -168,6 +183,7 @@ export const perks = ref([
         maxLevel: [0, 0, 0, 0, 0, 50, 75],
         baseCost: 25,
         infStatus: false,
+        block: false,
     },
     {
         id: 17,
@@ -177,7 +193,8 @@ export const perks = ref([
         level: 0,
         maxLevel: [0, 0, 0, 0, 0, 1, 1],
         baseCost: 10000,
-        infStatus: false,
+        block: false,
+        infStatus: undefined,
     },
     {
         id: 18,
@@ -188,6 +205,7 @@ export const perks = ref([
         maxLevel: [0, 0, 0, 0, 0, 50, 75],
         baseCost: 30,
         infStatus: false,
+        block: false,
     },
     {
         id: 19,
@@ -198,16 +216,18 @@ export const perks = ref([
         maxLevel: [0, 0, 0, 0, 0, 30, 40],
         baseCost: 50,
         infStatus: false,
+        block: false,
     },
     {
         id: 20,
         name: "Roots of D",
-        description: "Tree Tier affects to weakness of Abyss Enemies",
+        description: "Tree Tier affects the weakness of Abyss Enemies",
         value: 1,
         level: 0,
         maxLevel: [0, 0, 0, 0, 0, 1, 1],
         baseCost: 10000,
-        infStatus: false,
+        block: false,
+        infStatus: undefined,
     },
   ]);
 

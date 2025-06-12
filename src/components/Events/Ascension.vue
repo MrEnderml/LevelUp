@@ -46,11 +46,17 @@
       </div>
     </div>
 
-    <p>Shards:🌌 <strong>{{ formatNumber(hero.ascensionShards) }}</strong> 
+    <p @click="hero.eLink = { set: 'Info', info: 'Ascension' }"><sup style="font-size: 12px">ℹ️</sup>Shards: <img :src="ascensionIcon" width="16px" height="16px" style="vertical-align: -2px;"/> <strong>{{ formatNumber(hero.ascensionShards) }}</strong> 
     <span v-if="dimensions[1].infTier == dimensions[1].maxInfTier"> (+{{formatNumber(hero.totalAscensionShards * 0.1)}})</span>
     </p>
-    <span v-if="dimensions[9].infTier == dimensions[9].maxInfTier" class="ds-text"><strong>Dimension Shard(DS): {{hero.ds}}</strong></span>
-
+    <div class="ds-container" v-if="currentTier == 8">
+      <span v-if="dimensions[9].infTier === dimensions[9].maxInfTier">
+        Dimension Shards(DS):
+        <img :src="ascensionDIcon" width="16" height="16" style="vertical-align: -2px;" />
+        <strong class="ds-text">{{ hero.dsTotal }}</strong>
+      </span>
+      <button :title="'Get your DS back'" class="ds-button" @click="dsHandle" v-if="hero.infProgress && hero.dId == 'main'">Annihilation</button>
+    </div>
     <div class="perk-container">
       <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
         <h3>{{ perk.name }}</h3>
@@ -58,7 +64,9 @@
         <p v-if="currentTier != 6">Level: {{ perk.level }} / {{ perk.max }}</p>
         <p v-if="currentTier == 6">Level: {{ perk.level }}</p>
         <button :disabled="!canUpgrade(perk)" @click="upgradePerk(perk)">
-          {{ formatNumber(getCost(perk)) }} 🌌
+          {{ formatNumber(getCost(perk)) }} 
+          <img v-if="currentTier < 8" :src="ascensionIcon" width="16px" height="16px" style="vertical-align: -2px;"/>
+          <img v-else :src="ascensionDIcon" width="16px" height="16px" style="vertical-align: -2px;"/>
         </button>
       </div>
     </div>
@@ -71,7 +79,13 @@ import { perks } from '../../data/ascension.js';
 import { computed, ref } from 'vue';
 import { perks as radPerks } from '../../data/radPerks.js';
 import { dimensions } from '../../data/dimensions.js';
+import ascensionIcon from '../../assets/ascension.png';
+import ascensionDIcon from '../../assets/ascnesion-d.png';
+
+
+
 const { hero } = useHero();
+
 
 
 const currentTier = ref(1);
@@ -105,13 +119,14 @@ const selectTier = (tier) => {
 const filteredPerks = computed(() =>
   currentTier.value === 7
     ? perks.filter(p => p.tier === currentTier.value && 38 + hero.value.singularity > p.id)
-    : perks.filter(p => p.tier === currentTier.value)
+    : (currentTier.value === 6? perks.filter(p => p.tier === currentTier.value && p.infStatus === true) : perks.filter(p => p.tier === currentTier.value))
 );
 
 const getCost = (perk) => {
-  let iPenalty = 1 - 0.01 * dimensions.value[1].infTier;
-  let sPenalty = (hero.value.rebirthPts >= 1e6? 1 - 0.01 * Math.log(hero.value.rebirthPts): 1);
-  let total = iPenalty * sPenalty;
+  let iPenalty = 1 - 0.01 * dimensions.value[1].infTier; 
+  let aPenalty = 1 - 0.0075 * Math.max(dimensions.value[17].infTier - 15, 0);
+  let sPenalty = (hero.value.rebirthPts >= 1e6? 1 - 0.01 * Math.log(hero.value.rebirthPts + 3): 1);
+  let total = iPenalty * sPenalty * aPenalty;
   if(perk.tier == 6)
     return Math.floor((perk.baseCost ** perk.level) ** total);
   if(perk.tier == 7)
@@ -124,32 +139,61 @@ const canUpgrade = (perk) => {
     perk.tier < 8 && perk.level < perk.max &&
     hero.value.ascensionShards >= getCost(perk) ||
     perk.tier == 8 && perk.level < perk.max &&
-    hero.value.ds >= getCost(perk)
+    hero.value.dsTotal >= getCost(perk)
 
   );
 };
 
 const upgradePerk = (perk) => {
   const cost = getCost(perk);
+  if(perk.tier == 8 && hero.value.dsTotal >= cost && perk.level < perk.max){
+    hero.value.dsSpend += cost;
+    perk.level;
+  }
   if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
     hero.value.ascensionShards -= cost;
     perk.level++;
   }
 };
 
+function dsHandle(){
+  hero.value.dsSpend = 0;
+
+  perks.forEach(perk => {
+    if (perk.tier === 8) perk.level = 0;
+  })
+}
+
 function getPerkDescription(perk) {
   if (perk.id === 28) {
-    return `Enemies weakness based on Corruption weakness [${(1- (hero.value.corruption - 0.1) * 0.5).toFixed(2)}]. Also works in The Abyss`
+    return `Enemies weakness based on Corruption weakness [${Math.max(1 / (Math.max(hero.value.overcorruption - 0.1, 0.1)), 0.1).toFixed(2)}]. Also works in The Abyss`
   }
   if (perk.id === 30) {
     return `Gain Ascension Shards based on SP - [${(1 + 0.04 * hero.value.sp).toFixed(2)}]. Ascension Affect scales better`
   }
   if(perk.id === 37){
-    return `Level Exp Reduction based on Rebirth Pts [${(1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2)).toFixed(2)}]`
+    return `Level Exp Reduction based on Rebirth Pts [${Math.max(1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2), 0.1).toFixed(2)}]`
   }
   if(perk.id === 42){
-    return `Max Level MULT based on overcap corruption [${(1 + hero.value.overcorruption / 4).toFixed(2) }]`
+    return `Max Level MULT based on overcap corruption [${(1 + hero.value.overcorruption / (4 - 0.15 * (dimensions.value[22].infTier - 25))).toFixed(2) }]`
   }
+  if(perk.id === 48){
+    return `The reduction in the INF Penalty depends on Total Dimension completed [${(dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length/200).toFixed(3)}]`
+  }
+  if(perk.id === 49){
+    return `+0.05% DMG for each Dimension completed [${(1 + 0.05 * dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length ).toFixed(2)}]`
+  }
+  if(perk.id === 50){
+    return `Enemies weakness based on Current Stage. [HARDCAP After 0.1] [${(1 - 0.006 * Math.min(hero.value.stage, 150) - 0.0003 * Math.max(hero.value.stage - 150, 0)).toFixed(2)}]`
+  }
+   if(perk.id === 53){
+    return `Get extra Enhances Level per 2 Dimensions completed [${Math.floor(dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length/2)}]`
+  }
+   if(perk.id === 55){
+    return `+Min Level based on Total Dimension completed [${dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length}]`
+  }
+
+
   return perk.description
 }
 
@@ -270,6 +314,8 @@ h2 {
   overflow-y: auto; 
   padding: 5px;
   max-width: 800px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(40, 71, 226) transparent;
 }
 
 .perk {
@@ -329,5 +375,36 @@ h2 {
 
 .ds-text {
   color: #fb15fb;
+}
+
+.ds-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a001a;
+  padding: 8px 12px;
+  border: 1px solid #6a0dad;
+  border-radius: 8px;
+}
+
+.ds-text {
+  color: #d4b0ff;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+.ds-button {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.ds-button:hover {
+  background-color: #8e3fdc;
 }
 </style>

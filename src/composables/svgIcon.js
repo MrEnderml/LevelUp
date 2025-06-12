@@ -147,6 +147,120 @@ export const icons = {
         <circle cx="40" cy="16" r="1" fill="#FFF"/>
       `
     },
+    galaxy9: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M14 32 Q32 14, 50 32 Q32 50, 14 32 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="20" cy="45" r="1" fill="#FFF"/>
+        <circle cx="44" cy="18" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy10: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M18 28 Q32 12, 46 28 Q32 44, 18 28 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="26" cy="50" r="1" fill="#FFF"/>
+        <circle cx="38" cy="14" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy11: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M20 36 Q32 18, 44 36 Q32 54, 20 36 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="22" cy="44" r="1" fill="#FFF"/>
+        <circle cx="42" cy="20" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy12: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M16 28 Q32 10, 48 28 Q32 46, 16 28 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="28" cy="50" r="1" fill="#FFF"/>
+        <circle cx="36" cy="12" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy13: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M12 32 Q32 8, 52 32 Q32 56, 12 32 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="30" cy="52" r="1" fill="#FFF"/>
+        <circle cx="34" cy="10" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy14: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M19 32 Q32 19, 45 32 Q32 45, 19 32 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="23" cy="43" r="1" fill="#FFF"/>
+        <circle cx="41" cy="21" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy15: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M22 32 Q32 22, 42 32 Q32 42, 22 32 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="26" cy="40" r="1" fill="#FFF"/>
+        <circle cx="38" cy="24" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy16: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M16 32 Q32 16, 48 32 Q32 48, 16 32 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="24" cy="48" r="1" fill="#FFF"/>
+        <circle cx="40" cy="16" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy17: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M15 30 Q32 18, 49 30 Q32 46, 15 30 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="25" cy="46" r="1" fill="#FFF"/>
+        <circle cx="39" cy="18" r="1" fill="#FFF"/>
+      `
+    },
+    galaxy18: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#13151b" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#ADFF2F" />
+        <path d="M17 34 Q32 20, 47 34 Q32 48, 17 34 Z" stroke="#E6E6FA" stroke-width="1.5" fill="none"/>
+        <circle cx="29" cy="47" r="1" fill="#FFF"/>
+        <circle cx="35" cy="17" r="1" fill="#FFF"/>
+      `
+    },
+    galaxyEternity: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#1a1325" rx="32"/>
+        <circle cx="32" cy="32" r="3" fill="#DDA0DD" />
+        <path d="M20 32 Q32 12, 44 32 Q32 52, 20 32 Z
+                 M44 32 Q32 52, 20 32 Q32 12, 44 32 Z" 
+              stroke="#BA55D3" stroke-width="1.5" fill="none"/>
+        <circle cx="24" cy="46" r="1" fill="#EEE"/>
+        <circle cx="40" cy="18" r="1" fill="#EEE"/>
+        <circle cx="30" cy="10" r="0.8" fill="#D8BFD8"/>
+        <circle cx="36" cy="54" r="0.8" fill="#D8BFD8"/>
+      `
+    }
   };
 
   export function getSvgIconHTML(name, size = '1em') {

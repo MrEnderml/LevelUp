@@ -14,18 +14,18 @@
               { active: hero.activeFormation === formation.id },
             ]"
             @click="toggleFormation(formation.id)"
-            :title="formation.description"
+            :title="formationD(formation)"
           >
             {{ formation.icon }}
           </button>
         </div>
       </div>
-      <span style="color: white">⚔️ {{ formatNumber(attack) }} </span>
-      <span style="color: white"> 🛡️{{ formatNumber(def) }}</span>
-      <div class="hp-bar">
+      <span style="color: white" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Damage' }"><sup style="font-size: 6px">ℹ️</sup>⚔️ {{ formatNumber(attack) }} </span>
+      <span style="color: white" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'DEF' }"> <sup style="font-size: 6px">ℹ️</sup>🛡️{{ formatNumber(def) }}</span>
+      <div class="hp-bar" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'HP' }">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
           <span class="hp-text"
-            >{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span
+            ><sup style="font-size: 6px">ℹ️</sup>{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span
           >
         </div>
       </div>
@@ -109,6 +109,14 @@ const hp = computed(() => hero.value.hp);
 const maxHp = computed(() => hero.value.maxHp);
 const attack = computed(() => hero.value.attack);
 const def = computed(() => hero.value.def);
+
+
+function formationD(f) {
+  switch(f.id){
+    case 3: return `DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, Equipment Chance, Ascnesion Soul Shards(Abyss [T2]))`
+    default: return f.description;
+  }
+}
 
 function formatNumber(num) {
   if (num < 1000) return Math.floor(num).toString();

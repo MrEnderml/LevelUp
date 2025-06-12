@@ -32,7 +32,7 @@ import { addLog, getLogs } from '../composables/logService.js';
 
 const logs = ref(getLogs());
 const logContainer = ref(null);
-const logTypes = ['All', 'EXP', 'Weapon', 'Ascend && Rebirth', 'Curses', 'Radiation', 'Stardust'];
+const logTypes = ['All', 'EXP', 'Weapon', 'Ascend && Rebirth', 'Curses', 'Radiation', 'Stardust', 'Creatures'];
 const currentFilter = ref('All');
 
 const filteredLogs = computed(() => {
@@ -54,7 +54,7 @@ watch(logs, async () => {
   max-width: 250px;
   position: fixed;
   right: 0;
-  top: 15%;
+  top: 20%;
   background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
   border: 1px solid #444;
   border-radius: 12px;
@@ -105,6 +105,8 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(226, 207, 40) transparent;
 }
 
 .log-entry {

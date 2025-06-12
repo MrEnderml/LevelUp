@@ -1,6 +1,6 @@
 <template>
   <div class="amulet-panel red-theme">
-    <h2>🔮 Amulets</h2>
+    <h2 @click="hero.eLink = { set: 'Info', info: 'Amulet' }">🔮 <sup style="font-size: 12px">ℹ️</sup>Amulets</h2>
     
     <div class="amulet-content">
       <div class="amulet-list">
@@ -32,7 +32,7 @@
       </div>
       <div class="curse-panel">
         <Tooltip :text="() => formatCurses()">
-          <h3>☠️ *Curses</h3>
+          <h3 @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Curse' }">☠️ <sup style="font-size: 12px">ℹ️</sup>*Curses</h3>
         </Tooltip>
         <ul>
           <li v-for="(curse, idx) in filterCurses" :key="idx">
@@ -40,7 +40,7 @@
             <ul>
                <template v-for="(tier, tIndex) in curse.tier" :key="tIndex" >
                 <li v-if="tIndex < 3 || tier.status" :class="{ 'tier-four': tIndex === 3, 'tier-five': tIndex === 4 }"> 
-                  [T{{ tIndex + 1 }}] {{ tier.effect }} 
+                  [T{{ tIndex + 1 }}] {{ tEffect(tier) }} 
                   (Bonus: {{ (tier.bonus * (hero.rebirthTier >= 10 ? 1.5 : 1)).toFixed(2) }})
                 </li>
               </template>
@@ -75,6 +75,13 @@ const filterCursesTier = computed(() =>
     curses.filter
 )
 
+function tEffect(tier){
+  return tier.effect.replace(/(\d+(\.\d+)?)/g, (match) => {
+    const newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2);
+    return newVal;
+  });
+}
+
 function prefixHandle(t){
   return `Max Level MULT - ${1 + t * 0.02 * (hero.value.sp >= 99? 2: 1)}`
 }
@@ -93,9 +100,15 @@ const CursesChance = computed(() => {
 
 function formatCurses() {
   let tier = CursesChance.value;
+  let t5 = hero.value.curset5Chance = (hero.value.rebirthPts >= 1.5e5? 1: 0) * 
+  (hero.value.rebirthPts >= 3.5e5? Math.log(hero.value.rebirthPts + 3): 1) * Math.max(1.01 ** (hero.value.abyssDStages - 99), 1);
+  
+  let s = `<span>[T1(%)] - ${tier.t1}</span><br><span>[T2(%)] - ${tier.t2}</span><br><span>[T3(%)] - ${tier.t3}</span>`;
+  if (t5 > 0) s += `<br><span>[T5(%)] - ${t5.toFixed(2)}</span>`
+
   if(hero.value.stage < 14)
     return `Reach Stage 15`;
-  return `<span>[T3(%)] - ${tier.t3}</span><br><span>[T2(%)] - ${tier.t2}</span><br><span>[T1(%)] - ${tier.t1}</span>`;
+  return s;
 }
 </script>
 
@@ -160,6 +173,8 @@ function formatCurses() {
   color: #ffe4e6;
   max-height: 500px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(226, 40, 40) transparent;
 }
 
 .curse-panel h3 {

@@ -18,6 +18,7 @@ defineProps({
 
 <style scoped>
 .battle-container {
+  margin-top: 80px;
   display: flex;
   justify-content: space-between;
   gap: 1rem;

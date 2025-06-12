@@ -2,7 +2,8 @@
   <div class="radiation-panel">
     <div class="mutation-chances">
       <h2>
-        Mutagens: {{Math.floor(hero.mutagen)}}
+        <span @click="hero.eLink = { set: 'Info', info: 'Radiation' }"><sup style="font-size: 12px">ℹ️</sup>Mutagen(M):</span>
+        <span @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Mutagen' }"><sup style="font-size: 12px">ℹ️</sup>{{hero.mutagen > 1e5? 1e5: Math.floor(hero.mutagen)}}</span>
       </h2>  
       <ul>
         <li
@@ -10,35 +11,34 @@
           :key="mutation.type"
           class="mutation"
         >
-          <span class="glow">{{ mutation.type }}</span> — {{ mutation.chance.toFixed(1) }}%
+          <span class="glow"> Mutation [T{{idx+1}}]</span> — {{ mutation.chance.toFixed(1) }}%
         </li>
       </ul>
       <div v-if="perks[10].level > 0" class="danger-wrapper">
-        <div>
-          DANGER: [{{perks[10].level}}]
+        <div @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Danger' }">
+          <sup style="font-size: 12px">ℹ️</sup>DANGER: [{{perks[10].level}}]
         </div> 
-        <p>Enemy Power: [{{(enemy.enemyPower).toFixed(2)}}]</p>
-        <span>Space Boss [T{{Math.floor(hero.spCount / 6) + 1}}] - [{{(enemy.spaceBossChance).toFixed(2)}}%]</span><br>
-        <span v-if="perks[10].level >= 10">Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[0])}}]</span><br>
-        <span v-if="perks[10].level >= 20">Ascension Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[4], true)}}]</span><br>
-        <span v-if="perks[10].level >= 40">Rebirth Souls(%) - [{{formatNumber(enemy.dangerEnemyChance[5])}}]</span><br>
-
-        <span v-if="hero.infTier >= 4">Ω-Infinity(%)  <span v-if="enemy.danger < 100"> - [Reach Danger 100]</span> 
-        <span v-if="enemy.danger >= 100">- [{{enemy.dangerEnemyChance[1].toFixed(2)}}]</span></span><br>
-
-        <span v-if="hero.infTier >= 4">Mirror of the Infinity(%)  <span v-if="enemy.danger < 150"> - [Reach Danger 150]</span>
-        <span v-if="enemy.danger >= 150">- [{{enemy.dangerEnemyChance[2].toFixed(2)}}]</span></span><br>
-
-        <span v-if="hero.infTier >= 4">The Infinite One(%) <span v-if="enemy.danger < 200"> - [Reach Danger 200]</span> 
-        <span v-if="enemy.danger >= 200">- [{{enemy.dangerEnemyChance[3].toFixed(2)}}]</span></span><br>
+        <p>Enemy Power: [{{formatNumber(enemy.enemyPower, true)}}]</p>
+      </div>
+      <div class="tab-buttons">
+        <button :class="{ active: activeTab === 'perks' }" @click="activeTab = 'perks'">🧬 Radiation Perks</button>
+        <button :class="{ active: activeTab === 'info' }" @click="activeTab = 'info'" :disabled="perks[10].level < 1">💀 Danger</button>
       </div>
     </div>
 
-    <div class="radiation-perks">
+   
+
+    <div v-if="activeTab === 'perks'" class="radiation-perks">
       <h2>🧬 Radiation Perks
-        <button v-if="hero.mainInfTier >= 4" @click="upAll">
-        Upgrade All
+        <button style="font-size: 14px;" v-if="hero.mainInfTier >= 4" @click="upAll">
+        Upgrade All (Except Danger)
         </button>
+        <Tooltip :text="() => `Reset Danger. You won't get mutagens back`">
+          <button v-if="hero.mainInfTier >= 4" style="font-size: 14px; margin-left: 6px;" @click="dReset">
+            R
+          </button>
+        </Tooltip>
+        
       </h2>
       <div class="perks-scroll">
         <div class="perks-grid">
@@ -58,14 +58,109 @@
               @mouseup="stopAutoUpgrade"
               @mouseleave="stopAutoUpgrade"
             >
-              Upgrade ({{ getCost(perk) }})
+              Upgrade ({{ getCost(perk) }}M)
             </button>
           </div>
         </div>
       </div>
     </div>
-  </div>
+    <div v-if="activeTab === 'info'" class="radiation-wrapper">
+      <div class="row">
+        <span style="color: orange" class="label">Space Boss [T{{Math.floor(hero.spCount / 6) + 1}}]</span>
+        <span class="value">{{ (enemy.spaceBossChance).toFixed(2) }}%</span>
+      </div>
 
+      <div v-if="perks[10].level >= 10" class="row">
+        <span class="label">Souls Chance</span>
+        <span class="value">*{{ formatNumber(enemy.dangerEnemyChance[0]) }}</span>
+      </div>
+
+      <div v-if="perks[10].level >= 20" class="row">
+        <span class="label">Ascension Souls (Shards MULT)</span>
+        <span class="value">*{{ formatNumber(enemy.dangerEnemyChance[4], true) }}</span>
+      </div>
+
+      <p style="color: gold" class="section-title">Infinity Creatures</p>
+
+      <div class="row" v-if="hero.infTier >= 4">
+        <span class="label">Ω-Infinity [{{enemy.dangerEnemyLoot[0]}} / 60]</span>
+        <span class="value">
+          <template v-if="enemy.danger < 100">Reach Danger 100</template>
+          <template v-else>{{ Math.min(enemy.dangerEnemyChance[1], 100).toFixed(2) }}%</template>
+        </span>
+      </div>
+
+      <div class="row" v-if="hero.infTier >= 4">
+        <span class="label">Mirror of the Infinity [{{enemy.dangerEnemyLoot[1]}} / 1000]</span>
+        <span class="value">
+          <template v-if="enemy.danger < 150">Reach Danger 150</template>
+          <template v-else>{{ Math.min(enemy.dangerEnemyChance[2], 100).toFixed(2) }}%</template>
+        </span>
+      </div>
+
+      <div class="row" v-if="hero.infTier >= 4">
+        <span class="label">The Infinite One [{{enemy.dangerEnemyLoot[2]}} / 5]</span>
+        <span class="value">
+          <template v-if="enemy.danger < 200">Reach Danger 200</template>
+          <template v-else>{{ Math.min(enemy.dangerEnemyChance[3], 100).toFixed(2) }}%</template>
+        </span>
+      </div>
+
+      <p class="section-title" v-if="dimensions[15].infTier == dimensions[15].maxInfTier">Dimension Creatures</p>
+
+      <template v-if="dimensions[15].infTier == dimensions[15].maxInfTier">
+        <div class="row">
+          <span class="label">Twisted Rootspawn [{{enemy.dEnemyLoot[0]}} / 200]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 400">Reach Danger 400</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[0], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+
+        <div class="row">
+          <span class="label">Voidpulse Entity [{{enemy.dEnemyLoot[1]}} / 50]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 550">Reach Danger 550</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[1], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+
+        <div class="row">
+          <span class="label">Fracture Beast [{{enemy.dEnemyLoot[2]}} / 5]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 600">Reach Danger 600</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[2], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+
+        <div class="row">
+          <span class="label">Clot of Dark Energy [{{enemy.dEnemyLoot[3]}} / 90]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 400">Reach Danger 400</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[3], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+
+        <div class="row">
+          <span class="label">Infinitron Prime [{{enemy.dEnemyLoot[4]}} / 25]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 600">Reach Danger 600</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[4], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+
+        <div class="row">
+          <span class="label">Entropy Reaver [{{enemy.dEnemyLoot[5]}} / 5]</span>
+          <span class="value">
+            <template v-if="enemy.danger < 700">Reach Danger 700</template>
+            <template v-else>{{ Math.min(enemy.dEnemyChance[5], 100).toFixed(2) }}%</template>
+          </span>
+        </div>
+      </template>
+
+  
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -73,12 +168,13 @@ import { ref, computed, reactive } from 'vue';
 import { perks as rawPerks } from '../../data/radPerks.js';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
+import { dimensions } from '../../data/dimensions.js';
 
 const perks = reactive([...rawPerks]);
 const { hero } = useHero();
 const { enemy } = useEnemy();
 
-console.log(hero.value.lent); //undefined
+const activeTab = ref('perks');
 
 
 const getCost = (perk) => {
@@ -88,12 +184,13 @@ const getCost = (perk) => {
 function upAll(){
   for(let perk of perks){
     while(perk.level < perk.max && getCost(perk) <= hero.value.mutagen){
+      if(perk.id == 11) break;
       hero.value.mutagen -= getCost(perk);
       perk.level++;
 
       if (perk.id == 7 && !perk.status){
           perk.level = 0;
-          perk.max = 30;
+          perk.max = 30 + (hero.value.infTier >= 4? 30: 0);
           perk.baseCost = 10;
           perk.status = true;
       }    
@@ -101,6 +198,9 @@ function upAll(){
   }
 }
 
+function dReset(){
+  rawPerks[10].level = 0;
+}
 
 function upgradePerk(perk) {
   if (perk.level < perk.max && getCost(perk) <= hero.value.mutagen) {  
@@ -124,8 +224,12 @@ function startAutoUpgrade(perk) {
   
   holdTimeout = setTimeout(() => {
     intervalId = setInterval(() => {
-      upgradePerk(perk);
-    }, 75);
+      if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700) {
+        upgradePerk(perk);
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 10);
   }, 500);
 }
 
@@ -181,7 +285,7 @@ const  formatNumber = (num, f = false) => {
     flex: 3;
   }
 
-  .radiation-perks {
+  .radiation-perks, .radiation-wrapper {
     flex: 7;
   }
 }
@@ -195,6 +299,49 @@ const  formatNumber = (num, f = false) => {
   display: flex;
   flex-direction: column;
 }
+
+.radiation-wrapper {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid #66ff66;
+  border-radius: 12px;
+  padding: 1rem;
+  color: #e0e0ff;
+  flex: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-family: 'Share Tech Mono', monospace;
+  overflow-y: auto;
+}
+
+.radiation-wrapper .section-title {
+  font-size: 1.1rem;
+  color: #ff99ff;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 0 6px #aa00aa;
+}
+
+.radiation-wrapper .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #9992;
+  padding: 4px 0;
+}
+
+.radiation-wrapper .label {
+  color: #ccccff;
+  font-size: 0.95rem;
+}
+
+.radiation-wrapper .value {
+  color: #d4ff00;
+  font-weight: bold;
+  font-size: 0.95rem;
+  text-shadow: 0 0 4px #88ff88;
+}
+
 
 .mutation {
   padding: 0.25rem 0;
@@ -218,6 +365,8 @@ const  formatNumber = (num, f = false) => {
   max-height: 66vh;
   overflow-y: auto;
   padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(29, 252, 0) transparent;
 }
 
 .perks-grid {
@@ -250,7 +399,8 @@ const  formatNumber = (num, f = false) => {
   animation: fadeInUp 0.4s ease-out both;
   width: 220px;
   height: 200px;
-
+  min-width: 220px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -351,5 +501,31 @@ button:hover {
   overflow-x: hidden;
   font-size: 14px;
 }
+
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.tab-buttons button {
+  flex: 1;
+  padding: 6px 12px;
+  font-family: 'Share Tech Mono', monospace;
+  background: #111;
+  color: #b6ff00;
+  border: 1px solid #66ff66;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tab-buttons button.active {
+  background: #b6ff00;
+  color: #111;
+  font-weight: bold;
+}
+
 
 </style>
