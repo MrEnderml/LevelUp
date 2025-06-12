@@ -114,7 +114,7 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T15] in the previous one and Infinity [T16] in the main one`,
         d: `Enter The Dimension where gravity has destroyed The World Line. Your possible Stage is 30. You start with Infinity [T6]`,
         r: ``,
-        sp: `Open Dimension Shards. See in Ascension`
+        sp: `Open Dimension Shards. See Ascension in the main Dimension`
     },
     {
         id: 'noStats',

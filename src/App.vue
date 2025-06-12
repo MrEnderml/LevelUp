@@ -2,7 +2,6 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
-      
 
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
@@ -242,9 +241,9 @@ const dUpdate = () => {
   dimensions.value[22].infTier = (dimensions.value[22].infTier == 15? 25: dimensions.value[22].infTier); 
   dimensions.value[19].infTier = (dimensions.value[19].infTier == 15? 20: dimensions.value[19].infTier); 
   dimensions.value[21].infTier = (dimensions.value[21].infTier == 15? 30: dimensions.value[21].infTier);
-  dimensions.value[18].infTier = (dimensions.value[18].infTier == 15? 20: dimensions.value[18].infTier);
+  dimensions.value[13].infTier = (dimensions.value[13].infTier == 0? 15: dimensions.value[13].infTier);   
+  dimensions.value[18].infTier = (dimensions.value[18].infTier == 15? 20: dimensions.value[18].infTier);  
   
-   
 }  
 
 loadGame();

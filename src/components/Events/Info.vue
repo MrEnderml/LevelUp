@@ -268,7 +268,7 @@ const styledSections = [
     title: 'Auto',
     class: 'auto-section lore',
     content: [
-      `Unlock *Stop at Stage* after reaching Infinity [T1]`,
+      `Unlock *Stop at Stage* after reaching Infinity [T0]`,
       `Unlock *Auto-Ascension* after reaching Infinity [T2]`,
       `Unlock *Auto-Rebirth* after reaching Infinity [T3]`,
       `Level+: Add Value to *Min Level* when you Rebirth`,

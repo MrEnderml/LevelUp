@@ -66,7 +66,7 @@
         </label>
       </div>
 
-      <div class="auto-panel" v-if="hero.mainInfTier >= 1">
+      <div class="auto-panel">
         <h3>⚔️ Stop at Stage</h3>
         <label>
           Stage to Stop:

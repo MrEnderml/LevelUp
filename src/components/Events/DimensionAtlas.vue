@@ -275,6 +275,7 @@ const endDrag = () => {
 const getPos = (id) => dimensions.value.find(d => d.id === id)
 
 const selectDimension = (dimension) => {
+  if(hero.value.isSingularity) return;
   const id = dimension.id;
   const newD = d_data.value.find(ds => ds.id === id);
   const currentD = d_data.value.find(ds => ds.id === hero.value.dId);
@@ -372,6 +373,7 @@ function dimensionD(hovered) {
 
   if(d.sp != '') str += `Special Reward: <span>${d.sp}</span><br>`;
   if(d.id == hero.value.dId) str += `<span style="color: green">[You are here now]</span><br>`
+  if(hero.value.isSingularity) str += `<span style="color: #66ffcc">You are in Singularity right now</span><br>`
 
   if(d.id == 'time') str += `<br>Your best time ${timeFormat(hero.value.dTimeReward)}`
 

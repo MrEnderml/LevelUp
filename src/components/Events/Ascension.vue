@@ -157,10 +157,10 @@ const upgradePerk = (perk) => {
 };
 
 function dsHandle(){
-  hero.value.dsSpend = 0;
+  hero.value.dsSpend = 0 + (perks[53].level == 1? 3: 0);
 
   perks.forEach(perk => {
-    if (perk.tier === 8) perk.level = 0;
+    if (perk.tier === 8 && perk.id !== 54) perk.level = 0;
   })
 }
 

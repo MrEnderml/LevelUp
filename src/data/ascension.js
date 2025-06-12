@@ -550,7 +550,7 @@ export const perks = [
       id: 54,
       tier: 8,
       name: 'Spatial Ascendancy',
-      description: '+1 Space Tier',
+      description: '+1 Space Tier (does not annihilate)',
       level: 0,
       max: 1,
       baseCost: 3,
