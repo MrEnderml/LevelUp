@@ -67,6 +67,24 @@ export const autoProgress = () => {
       
       auto.value.stop.enabled = false;
     }
+
+    if(hero.value.mainInfTier < 1) {
+      auto.value.stop.stage = 0;
+      auto.value.stop.stageNext = 0;
+      auto.value.untilKills = 0;
+      auto.value.enabled = false;
+    }
+    if(hero.value.mainInfTier < 2) {
+      auto.value.ascension.minShards = 0;
+      auto.value.ascension.minStage = 0;
+      auto.value.ascension.enabled = false;
+    }
+    if(hero.value.mainInfTier < 3){
+      auto.value.rebirth.minPts = 0;
+      auto.value.minLevel = 0;
+      auto.value.minLevelNext = 0;
+      auto.value.enabled = false;
+    }
 }
 
 

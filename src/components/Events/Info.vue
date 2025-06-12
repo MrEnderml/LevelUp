@@ -206,7 +206,7 @@ const styledSections = [
     class: 'auto-section lore',
     content: [
       `
-      <a href="https://discord.gg/your-invite-code" target="_blank">
+      <a href="https://discord.gg/EVnTk9HZwu" target="_blank">
         <img src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png" alt="Discord" width="32" title="Join our Discord community" />
       </a>
       <a href="https://your-username.github.io/your-repo" target="_blank">
@@ -401,7 +401,7 @@ const styledSections = [
       `<strong>Mutation</strong> [T1] will be available from <strong>Stage</strong> 30, 
       <strong>Mutation</strong> [T2] from <strong>Stage</strong> 35, 
       <strong>Mutation</strong> [T3] from <strong>Stage</strong> 40, 
-      <strong>Mutation</strong> [T3] from <strong>Stage</strong> 45.`,
+      <strong>Mutation</strong> [T4] from <strong>Stage</strong> 45.`,
       `<strong>Tip: Increase the chance of Curse [T3] and the frequency of enemy spawns</strong>`,
       `Each  Curse [T4] grants an additional [^0.1] curse bonus. For information on the additional bonus, see the Info -> Amulet Section.`,
       'Danger ↑ = special enemy chance ↑ + power ↑.',

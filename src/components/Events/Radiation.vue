@@ -58,7 +58,7 @@
               @mouseup="stopAutoUpgrade"
               @mouseleave="stopAutoUpgrade"
             >
-              Upgrade ({{ getCost(perk) }}M)
+              Upgrade ({{ getCost(perk) }} mut)
             </button>
           </div>
         </div>
@@ -80,7 +80,7 @@
         <span class="value">*{{ formatNumber(enemy.dangerEnemyChance[4], true) }}</span>
       </div>
 
-      <p style="color: gold" class="section-title">Infinity Creatures</p>
+      <p style="color: gold" class="section-title" v-if="hero.infTier >= 4">Infinity Creatures</p>
 
       <div class="row" v-if="hero.infTier >= 4">
         <span class="label">Ω-Infinity [{{enemy.dangerEnemyLoot[0]}} / 60]</span>
@@ -230,7 +230,7 @@ function startAutoUpgrade(perk) {
         clearInterval(intervalId);
       }
     }, 10);
-  }, 500);
+  }, 250);
 }
 
 function stopAutoUpgrade() {

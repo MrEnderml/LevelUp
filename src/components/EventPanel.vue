@@ -195,7 +195,7 @@ function corrList() {
   str += `<span>Abyss D: [${e.abyssD.toFixed(3)}]</span><br>`;
   str += `<span>Rebirth: [${e.rebirth.toFixed(3)}]</span><br>`;
   str += `<span>Infinity: [${e.inf.toFixed(3)}]</span><br>`;
-  str += `<span>Total: [${(hero.value.overcorruption + 1).toFixed(3)}]</span><br>`
+  str += `<span>Total: [${ (hero.value.corruption < 1? hero.value.corruption: hero.value.overcorruption + 1).toFixed(3)}]</span><br>`
 
   return str;
 }

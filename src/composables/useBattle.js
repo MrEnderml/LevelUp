@@ -1284,7 +1284,7 @@ export function useBattle(hero, enemy, buffs) {
     Math.max((hero.value.mainInfTier >= 1 && hero.value.isAbyss? (1 / infBase(1.0225) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
     (perks.value[19].level? 2 - 1.04 ** hero.value.treeTier: 1) *
     ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 75), 0.1): 1)) * 
-    (hero.value.isSingularity? Math.max(500000 - 65000 * Math.min(hero.value.singularity, 8) , 6250) : 1) * 
+    (hero.value.isSingularity? Math.max(475000 - 65000 * Math.min(hero.value.singularity, 8) , 6000) : 1) * 
     (hero.value.isSingularity? 1 - enemy.value.dEnemyLoot[3]*0.01: 1) * 
     (hero.value.dId == 'survival-2'? 100: 1) * 
     (hero.value.dId == 'gravity'? 1.045 ** hero.value.stage: 1) * 
@@ -2033,7 +2033,7 @@ export function useBattle(hero, enemy, buffs) {
     var totalKills = 1
 
     totalKills += (ascenPerks[21].level? 1: 0) + (ascenPerks[35].level) + (hero.value.mainInfTier >= 2? Math.floor(infBase(1.35) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) * Math.log(hero.value.infPoints + 2)))): 0) +
-    (1 * (dimensions.value[19].infTier - 15)) + hero.value.eqUpsMult['boots'].overkill;
+    (1 * (dimensions.value[19].infTier - 20)) + hero.value.eqUpsMult['boots'].overkill;
 
     if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 1){
       totalKills+=1
@@ -2080,7 +2080,7 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const expCount = () => {
-    return Math.log(hero.value.stage + 5)**4;
+    return Math.log(hero.value.stage + 5)**4.5;
   }
 
   const soulHandle = () => {
@@ -2383,7 +2383,6 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const starDustDrop = () => {
-    enemy.value.averageLoot.stardust = 0;
     hero.value.stardustInfo = 0;
 
     if(hero.value.spCount < 2)
@@ -2399,9 +2398,9 @@ export function useBattle(hero, enemy, buffs) {
       (!hero.value.infProgress? (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1);
       
     }
-    
+    enemy.value.averageLoot.stardust = 0;
     if(stardust > 0){
-      addLog(`You gain ${formatNumber(stardust)} stardust`, "Stardust");
+      addLog(`You gain ${formatNumber(stardust, true)} stardust`, "Stardust");
       hero.value.stardust += stardust;
       hero.value.stardustInfo = stardust;
       enemy.value.averageLoot.stardust = stardust;
@@ -2437,8 +2436,6 @@ export function useBattle(hero, enemy, buffs) {
         return;
       }
 
-
-      let totalExp = 0;
       let currentStage = hero.value.stage;
       let currentZone = hero.value.zone;
 
@@ -2495,10 +2492,10 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const afkMessages = (currentZone, currentStage, Locked) => {
-    let totalExp = (avgLootPerMinute.value.exp * (hero.value.afkTime / 60) * 0.75) * (hero.value.afkTimeHandle > 0? 1: -1);
-    let buffExp = (hero.value.stage >= 20? (avgLootPerMinute.value.buffexp * (hero.value.afkTime / 60) * 0.75) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
-    let mutagen = (hero.value.spCount >= 5? (avgLootPerMinute.value.mutagen * (hero.value.afkTime / 60) * 0.75) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
-    let stardust = (hero.value.spCount >= 1? (avgLootPerMinute.value.stardust * (hero.value.afkTime / 60) * 0.75) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
+    let totalExp = (avgLootPerMinute.value.exp * (hero.value.afkTime / 60) * 0.95) * (hero.value.afkTimeHandle > 0? 1: -1);
+    let buffExp = (hero.value.stage >= 20? (avgLootPerMinute.value.buffexp * (hero.value.afkTime / 60) * 0.95) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
+    let mutagen = (hero.value.spCount >= 5? (avgLootPerMinute.value.mutagen * (hero.value.afkTime / 60) * 0.95) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
+    let stardust = (hero.value.spCount >= 1? (avgLootPerMinute.value.stardust * (hero.value.afkTime / 60) * 0.95) * (hero.value.afkTimeHandle > 0? 1: -1): 0);
 
     hero.value.afkMessage = `
     <span>Offline bonus for ${Math.floor(hero.value.afkTime / 3600)}h ${Math.floor(hero.value.afkTime/60%60)}m ${hero.value.afkTime%60}s (MAX - 8h) </span><br>
@@ -2526,8 +2523,9 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.cursedBonus = buffExp;
       expBuffGrant();
     }
+
     killHistory.forEach(k => {
-      k.timestamp += hero.value.afkTime;
+      k.timestamp += hero.value.afkTime * 1000;
     });
     hero.value.afkTime = 0;
   }

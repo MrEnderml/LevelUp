@@ -83,7 +83,7 @@
         <button @click="autoEnchance()">Auto</button>
       </div>
       </div>
-      <div v-else-if="selectedType">You need {{hero.eqUpsReq[selectedType]}} SP</div>
+      <div v-else-if="selectedType">You need {{eqUpsReq[selectedType]}} SP</div>
     </div>
   </div>
 
@@ -284,19 +284,24 @@ function formatNumber(num) {
 }
 
 let forgeInterval = null;
+let holdTimeout = null;
 
 function startForge() {
   if (forgeInterval) return;
-  forgeUpgrade(); 
-  forgeInterval = setInterval(() => {
-    if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700)
-      forgeUpgrade();
-  }, 10); 
+  forgeUpgrade();
+
+  holdTimeout = setTimeout(() => { 
+    forgeInterval = setInterval(() => {
+      if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700)
+        forgeUpgrade();
+    }, 10); 
+  }, 500);
 }
 
 function stopForge() {
   clearInterval(forgeInterval);
   forgeInterval = null;
+  holdTimeout = null;
 }
 
 </script>
