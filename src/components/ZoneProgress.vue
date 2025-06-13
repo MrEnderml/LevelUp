@@ -224,11 +224,11 @@ function abyssRwrd(tier) {
     str += `<span>Reach Stage 50: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
   }
   if (hero.value.abyssDStages >= 50){
-    str += `<span>[*${((1.0125 ** Math.max(hero.value.abyssDStages - 49, 100))).toFixed(2)}]</span><br/>`;
+    str += `<span>[*${((1.0125 ** Math.min(hero.value.abyssDStages - 49, 100))).toFixed(2)}]</span><br/>`;
     str += `<span>Reach Stage 60: Stardust drop is better based on Max Stage in Abyss D</span>`; 
   }
   if (hero.value.abyssDStages >= 60){
-    str += `<span >[*${((1.015 ** Math.max(hero.value.abyssDStages - 59, 120))).toFixed(2)}]</span><br/>`;
+    str += `<span >[*${((1.015 ** Math.min(hero.value.abyssDStages - 59, 120))).toFixed(2)}]</span><br/>`;
     str += `<span>Reach Stage 70: Stage requirement scales better based on Max Stage in Abyss D</span><br/>`;
   }
   if (hero.value.abyssDStages >= 70){

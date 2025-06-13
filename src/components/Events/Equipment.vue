@@ -65,8 +65,6 @@
           @mousedown="startForge"
           @mouseup="stopForge"
           @mouseleave="stopForge"
-          @touchstart.prevent="startForge"
-          @touchend="stopForge"
           @click="forgeUpgrade">
             Enhance ✨{{eqUpCost()}}
           </button>
@@ -287,18 +285,18 @@ let forgeInterval = null;
 let holdTimeout = null;
 
 function startForge() {
-  if (forgeInterval) return;
-  forgeUpgrade();
-
   holdTimeout = setTimeout(() => { 
     forgeInterval = setInterval(() => {
       if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700)
         forgeUpgrade();
-    }, 10); 
+      else 
+        clearInterval(forgeInterval)
+    }, 50); 
   }, 500);
 }
 
 function stopForge() {
+  clearInterval(holdTimeout);
   clearInterval(forgeInterval);
   forgeInterval = null;
   holdTimeout = null;

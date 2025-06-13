@@ -498,7 +498,7 @@ export function useBattle(hero, enemy, buffs) {
     for(let id of hero.value.activeCurse){
       bonus += cursed[id].tier[hero.value.activeCurseTier[id]].bonus * (hero.value.singularity >= 2? 2: 1);
     }
-    bonus = bonus * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 50? 1.0125 ** Math.max(hero.value.abyssDStages - 49, 100): 1) * (hero.value.rebirthTier >= 10? 1.5: 1) 
+    bonus = bonus * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 50? 1.0125 ** Math.min(hero.value.abyssDStages - 49, 100): 1) * (hero.value.rebirthTier >= 10? 1.5: 1) 
     * (1 + ascenPerks[34].level * 0.01) * (hero.value.dId == 'hard'? 0: 1);
     let bRed = (ascenPerks[46].level? bonus ** 0.75: Math.sqrt(bonus))
     bonus = (hero.value.isAbyss? bRed: bonus);
@@ -1285,7 +1285,7 @@ export function useBattle(hero, enemy, buffs) {
     Math.max((hero.value.mainInfTier >= 1 && hero.value.isAbyss? (1 / infBase(1.0225) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
     (perks.value[19].level? 2 - 1.04 ** hero.value.treeTier: 1) *
     ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 75), 0.1): 1)) * 
-    (hero.value.isSingularity? Math.max(475000 - 65000 * Math.min(hero.value.singularity, 8) , 6000) : 1) * 
+    (hero.value.isSingularity? Math.max(475000 - 65000 * Math.min(hero.value.singularity, 8) , 7000) : 1) * 
     (hero.value.isSingularity? 1 - enemy.value.dEnemyLoot[3]*0.01: 1) * 
     (hero.value.dId == 'survival-2'? 100: 1) * 
     (hero.value.dId == 'gravity'? 1.045 ** hero.value.stage: 1) * 
@@ -1293,7 +1293,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'damage'? (1.01 * (1.000 + 0.001 * (dimensions.value[20].infTier - 20))) ** hero.value.dKills: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) * 
-    (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** Math.min(1 + 0.01 * ((hero.value.kills)/15), 0.8 + 0.3 * Math.floor(hero.value.kills/1000)): 1) * 
+    (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** Math.min(1 + 0.01 * ((hero.value.kills)/15), 1.1 + 0.3 * Math.floor(hero.value.kills/1000)): 1) * 
     (ascenPerks[49].level? 1 - 0.006 * Math.min(hero.value.stage, 150) - 0.0003 * Math.max(hero.value.stage - 150, 0): 1)
 
     hero.value.enemyAfkHp = enemy.value.maxHp;
@@ -2103,7 +2103,7 @@ export function useBattle(hero, enemy, buffs) {
     pt = (pt >= 400? 400 + Math.sqrt(pt - 400): pt);
     let pts = pt * 
       (hero.value.rebirthPts >= 100? enemy.value.rebirthEnemy["drop"]: 1) * (1.3 ** hero.value.abyssTier) * 
-      (perks.value[14].level? perks.value[14].value: 1) * (hero.value.soulTier >= 4? 1.5: 1) * 
+      (perks.value[14].level? 1 + 0.2 * perks.value[14].level: 1) * (hero.value.soulTier >= 4? 1.5: 1) * 
       (hero.value.rebirthPts >= 1250? Math.min((1 + 0.01 * hero.value.rebirthTier) ** 8, 2) * ((1 + 0.01 * Math.max(hero.value.rebirthTier - 9, 0)) ** 2) : 1) * 
       (1 + ascenPerks[34].level * 0.01) * (hero.value.mainInfTier >= 3? (infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
 
@@ -2249,7 +2249,7 @@ export function useBattle(hero, enemy, buffs) {
 
     let epPenalty = (hero.value.abyssDStages >= 140 && hero.value.spCount >= 15? (100 - Math.sqrt(hero.value.abyssDStages - 139)) * 0.01: 1);
     enemy.value.danger = radPerks[10].level;
-    enemy.value.enemyPower = ((1.0165 - (hero.value.infTier >= 4? 0.005: 0) + (hero.value.dId == 'danger'? 0.0055: 0)) ** epPenalty) ** radPerks[10].level;
+    enemy.value.enemyPower = ((1.017 - (hero.value.infTier >= 4? 0.005: 0) + (hero.value.dId == 'danger'? 0.01: 0)) ** epPenalty) ** radPerks[10].level;
     enemy.value.spaceBossChance = (((1.09 + (hero.value.infTier >= 4? 0.01: 0)) ** radPerks[10].level - 1) / (10 ** Math.floor((hero.value.spCount) / 6))) * 
     (hero.value.rebirthTier >= 60? 1.02 ** hero.value.rebirthTier: 1);
     enemy.value.spaceBossChance = Math.min(enemy.value.spaceBossChance, 100);
@@ -2393,7 +2393,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.spCount >= 32? 3: 0) - (hero.value.spCount >= 39? 3: 0) - (hero.value.spCount >= 44? 4: 0);
     if(hero.value.stage - st > 0){
       stardust = (((1.0525 ** (hero.value.stage - st)) * (1 + ascenPerks[34].level * 0.01) * 
-      (hero.value.infTier >= 5? 2: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1.015 ** Math.max(hero.value.abyssDStages - 59, 120)): 1) * 
+      (hero.value.infTier >= 5? 2: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1.015 ** Math.min(hero.value.abyssDStages - 59, 120)): 1) * 
       (hero.value.curset5? 2: 1) * (hero.value.spCount >= 45 && hero.value.activeFormation == 3? 2: 1) *
       (1 + perks.value[17].level*0.01) * ((hero.value.mainInfTier >= 18? infBase(1.0145) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints)): 1))) - 1) /
       (!hero.value.infProgress? (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1);
@@ -3148,7 +3148,10 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.kills = 9500;
    //s hero.value.singularity = 4;
    //hero.value.eqUps['spRing'] = 50;
-    //hero.value.mainInfTier = 1;
+     hero.value.mainInfTier = 9;
+      hero.value.infTier = 9;
+    //hero.value.stardust = 1e6;
+
   }
 
   createEnemy();

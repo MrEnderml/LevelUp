@@ -39,7 +39,7 @@ import { dimensions } from '../../data/dimensions.js';
 const { hero } = useHero();
 function  getBonusReq(tier) {
     if (tier <= 7) return tier + 1;
-    if (tier === 8) return 10;
+    if (tier === 8 || tier === 9) return 10;
     if (tier >= 10 && tier <= 12) return 13;
     if (tier === 13 || tier === 14) return 15;
     if (tier === 15) return 16;

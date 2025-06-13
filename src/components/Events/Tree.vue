@@ -182,8 +182,11 @@ const calculate = (perk) => {
   if(perk.id == 6)
     return "TOTAL: " + (perk.value * perk.level).toFixed(1);  
 
-  if(perk.id == 7 || perk.id == 10 || perk.id == 11 || perk.id == 12 || perk.id == 14 || perk.id == 15 || perk.id == 17)
+  if(perk.id == 7 || perk.id == 10 || perk.id == 11 || perk.id == 12 || perk.id == 14 || perk.id == 17)
     return "";
+  
+  if(perk.id == 15)
+    return "TOTAL: " + (1 + 0.2 * perk.level).toFixed(2);
 
   if(perk.id == 16)
     return "TOTAL: " + (perk.value ** perk.level).toFixed(2);

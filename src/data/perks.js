@@ -166,7 +166,7 @@ export const perks = ref([
     {
         id: 15,
         name: "The Gift",
-        description: "1.2 MULT Rebirth Pts",
+        description: "+0.2 MULT Rebirth Pts",
         value: 1.2,
         level: 0,
         maxLevel: [0, 0, 1, 1, 1, 2, 3],

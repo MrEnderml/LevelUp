@@ -1396,7 +1396,7 @@ const statSections = [
       },
       {
         desc: 'Tree',
-        value: () => formatNumber(perks.value[14].level? perks.value[14].value: 1, true),
+        value: () => formatNumber((perks.value[14].level? 1 + 0.2 * perks.value[14].level: 1), true),
         color: '#66ffcc',
       },
       {
@@ -1514,7 +1514,7 @@ const statSections = [
       },
       {
         desc: 'Abyss D',
-        value: () => formatNumber(hero.value.spCount >= 15 && hero.value.abyssDStages >= 50? 1.015 ** (hero.value.abyssDStages - 49): 1, true),
+        value: () => formatNumber(hero.value.spCount >= 15 && hero.value.abyssDStages >= 50? 1.015 ** Math.min(hero.value.abyssDStages - 49, 100): 1, true),
         color: '#ed14ed',
       },
       {
@@ -1579,7 +1579,7 @@ const statSections = [
       },
       {
         desc: 'Abyss D',
-        value: () => formatNumber((hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1.015 ** Math.max(hero.value.abyssDStages - 59, 120)): 1), true),
+        value: () => formatNumber((hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1.015 ** Math.min(hero.value.abyssDStages - 59, 120)): 1), true),
         color: '#ed14ed',
       },
       {
