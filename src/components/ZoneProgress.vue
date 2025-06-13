@@ -172,13 +172,13 @@ const singularityR = [
 
 const abyssDescription = [
   `You reached MAX Souls. Travell to the Abyss where enemies are stronger, Level scales worse. Buff EXP are locked. Souls are disappeared. 
-  Reach ${20 + 10 * hero.value.abyssTier} stage when you affected first 7 curses [T1]`,
+  Reach Stage ${20 + 10 * hero.value.abyssTier} when you affected first 7 curses [T1]`,
   `You reached MAX Souls. Abyss feels inexplicable essence through the darkness and directs its power to this dimension. 
   Travell to the Abyss where enemies are stronger, Level scales worse. Buff EXP are locked. Souls are disappeared.
-  Reach ${20 + 10 * hero.value.abyssTier} stage when you affected first 10 curses [T2]`,
+  Reach Stage ${20 + 10 * hero.value.abyssTier} when you affected first 10 curses [T2]`,
    `You reached MAX Souls. Abyss now directs to enemies mind force them to evo faster. Corruption forces to affect the World Rule. 
   Travell to the Abyss where enemies are stronger, Level scales worse. Buff EXP are locked. Souls are disappeared. 
-  Reach ${20 + 10 * hero.value.abyssTier} stage when you affected first 13 curses [T3].`,
+  Reach Stage ${20 + 10 * hero.value.abyssTier} when you affected first 13 curses [T3].`,
   `Dive into the Endless darkness to open new possibilities to escape from this Dimension. Travell to the Abyss where enemies are stronger, Level scales worse. Buff EXP are locked. Souls are disappeared.
   Reach as max as possible when you affected first 13 curses [T4]`
 ]

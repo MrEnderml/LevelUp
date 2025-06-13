@@ -2279,7 +2279,7 @@ const statSections = [
       },
       {
         desc: 'Tree',
-        value: () => formatNumber((perks.value[5].status? Math.max(0.1 * Math.floor(hero.value.stage / 5 - 1), 1.5): perks.value[5].value * perks.value[5].level), true),
+        value: () => formatNumber((perks.value[5].status? Math.min(0.1 * Math.floor(hero.value.stage / 5 - 1), 1.5): perks.value[5].value * perks.value[5].level), true),
         color: 'lightgreen',
       },
       {

@@ -75,9 +75,9 @@ export const autoProgress = () => {
     }
     if(hero.value.mainInfTier < 3){
       auto.value.rebirth.minPts = 0;
-      auto.value.minLevel = 0;
-      auto.value.minLevelNext = 0;
-      auto.value.enabled = false;
+      auto.value.rebirth.minLevel = 0;
+      auto.value.rebirth.minLevelNext = 0;
+      auto.value.rebirth.enabled = false;
     }
 }
 

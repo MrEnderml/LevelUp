@@ -140,6 +140,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
+      test();
 
       hero.value.dTimer += (interval / 1000);
 
@@ -1470,7 +1471,7 @@ export function useBattle(hero, enemy, buffs) {
 
     let base = 0.5 + (hero.value.activeBuffs.includes(14) && buffs.value[14].tier >= 1? 0.5: 0);
 
-    hero.value.attacksPerSecond = base + (perks.value[5].status? Math.max(0.1 * Math.floor(hero.value.stage / 5 - 1), 1.5): perks.value[5].value * perks.value[5].level) + 
+    hero.value.attacksPerSecond = base + (perks.value[5].status? Math.min(0.1 * Math.floor(hero.value.stage / 5 - 1), 1.5): perks.value[5].value * perks.value[5].level) + 
     (equipment[2].tiers[hero.value.equipmentTiers['boots']].bonus.speed + hero.value.eqUpsMult['boots'].bonus ) + 
     (buffs.value[3].combo == 100? 0.3: 0) + 
     (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 3? 0.1 * Math.floor(buffs.value[8].time/250): 0) + 
@@ -3147,6 +3148,7 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.kills = 9500;
    //s hero.value.singularity = 4;
    //hero.value.eqUps['spRing'] = 50;
+    hero.value.mainInfTier = 1;
   }
 
   createEnemy();
