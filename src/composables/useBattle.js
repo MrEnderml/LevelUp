@@ -140,7 +140,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
-      test();
+      //test();
 
       hero.value.dTimer += (interval / 1000);
 
@@ -3148,7 +3148,7 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.kills = 9500;
    //s hero.value.singularity = 4;
    //hero.value.eqUps['spRing'] = 50;
-    hero.value.mainInfTier = 1;
+    //hero.value.mainInfTier = 1;
   }
 
   createEnemy();
