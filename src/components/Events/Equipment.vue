@@ -287,7 +287,9 @@ let holdTimeout = null;
 function startForge() {
   holdTimeout = setTimeout(() => { 
     forgeInterval = setInterval(() => {
-      if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700)
+      if(hero.value.dId === 'unlimitted' ||
+        (hero.value.dId === 'main') ||
+        (hero.value.dId !== 'main' && hero.value.level < 700))
         forgeUpgrade();
       else 
         clearInterval(forgeInterval)

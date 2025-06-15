@@ -2,8 +2,8 @@
   <div class="radiation-panel">
     <div class="mutation-chances">
       <h2>
-        <span @click="hero.eLink = { set: 'Info', info: 'Radiation' }"><sup style="font-size: 12px">ℹ️</sup>Mutagen(M):</span>
-        <span @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Mutagen' }"><sup style="font-size: 12px">ℹ️</sup>{{hero.mutagen > 1e5? 1e5: Math.floor(hero.mutagen)}}</span>
+        <span @click="hero.eLink = { set: 'Info', info: 'Radiation' }"><sup style="font-size: 12px">ℹ️</sup>Mutagen:</span>
+        <span @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Mutagen' }"><sup style="font-size: 12px">ℹ️</sup>{{hero.mutagen > 1e5? '100000+': Math.floor(hero.mutagen)}}</span>
       </h2>  
       <ul>
         <li
@@ -224,7 +224,9 @@ function startAutoUpgrade(perk) {
   
   holdTimeout = setTimeout(() => {
     intervalId = setInterval(() => {
-      if (hero.value.dId == 'main' || hero.value.dId !== 'main' && hero.value.level < 700) {
+      if(hero.value.dId === 'unlimitted' ||
+        (hero.value.dId === 'main') ||
+        (hero.value.dId !== 'main' && hero.value.level < 700)){
         upgradePerk(perk);
       } else {
         clearInterval(intervalId);

@@ -71,10 +71,10 @@ function formatNumber(num, f = false) {
   if (num < 100 && f) return num.toFixed(2);
   if (num < 1000000) return Math.floor(num).toString();
 
-  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d", "u", "D", "T", "qt"];
   const tier = Math.floor(Math.log10(num) / 3);
 
-  const suffix = units[tier];
+  const suffix = tier < 16? units[tier]: "E";
   const scale = Math.pow(10, tier * 3);
   const scaled = num / scale;
 

@@ -178,6 +178,7 @@ const saveGame = () => {
     hKill: killHistory,
   };
   localStorage.setItem("gameSave", JSON.stringify(saveData));
+  localStorage.setItem('lastOnline', Date.now().toString());
 };
 
 const exportGame = () => {

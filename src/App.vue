@@ -249,7 +249,7 @@ const dUpdate = () => {
 loadGame();
 
 window.addEventListener('beforeunload', () => {
-      localStorage.setItem('lastOnline', Date.now().toString());
+  localStorage.setItem('lastOnline', Date.now().toString());
 });
 
 

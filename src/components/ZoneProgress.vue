@@ -49,16 +49,16 @@
         <button class="btnInf" @click="performInf" >
           <span class="infinity-glow">∞</span>
           <div class="inf-tooltip inf-shadow">
-              <p><strong>Infinity [T{{hero.mainInfTier + 1}}]</strong></p>
+              <p><strong>Infinity [T{{hero.mainInfTier}}]</strong></p>
               <p>You become The Omnipotent , but The Dimension tries to keep you from breaking the D-Rule.</p>
               <p>{{infRewards[hero.infTier]}}</p>
-              <p>The Dimension is trying to destroy you. Reach Total Level 700 while your EXP Gain & Max Level ^{{(1 - 0.02 * (hero.infTier + 1) + hero.infPenalty).toFixed(2)}}. 
+              <p>The Dimension is trying to destroy you. Reach Total Level 700 to get Infinity [T{{hero.mainInfTier+1}}] while your EXP Gain & Max Level ^{{(1 - 0.02 * (hero.infTier + 1) + hero.infPenalty).toFixed(2)}}. 
               The Celestials succumb to D's will, becoming stronger. Corruption spreads its influence among all entities of this dimension, making them wild.</p> 
               <p style="color: red" v-if="hero.infTier >= 20">The D-Rule tears the tissue of the universe, worsening the drop of stardust </p>
               <p style="color: red" v-if="hero.infTier >= 25">The D-Rule destroys all Celestial making them insignificant, worsening the drop of mutagen </p>
               <p style="color: red" v-if="hero.infTier >= 30">Dimensions are being consumed by the power of the multiverse. Curses are getting stronger</p>
               <p style="color: red" v-if="hero.infTier >= 40">You feel the touch of the unknown, but you do not know how to get to it.</p>
-              <p>You will need {{trueLevelReq()}} True Max Level to reach 700 Max Level</p>
+              <p>You will need {{trueLevelReq()}} True Max Level to reach 700 Max Level [Infinity T{{hero.mainInfTier + 1}}]</p>
           </div>
         </button>
       </div>
@@ -279,7 +279,7 @@ function totalSp(){
 }
 
 function trueLevelReq(){
-  let l = Math.round(700 ** (1 / (1 - 0.02 * (hero.infTier + 1) + hero.infPenalty)));
+  let l = Math.round(700 ** (1 / Math.min(1 - 0.02 * (hero.value.mainInfTier + 1) + hero.value.infPenalty, 1)));
   return (l < 1e5? l: `100k+`)
 }
 

@@ -439,6 +439,7 @@ const styledSections = [
       'Each Infinity provides rebuild mechanic, but everything is reset(except Abyss D)',
       'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
       'Infinity Bonuses depends on IP',
+      `Penalty Reduction: The full power of the penalty only works on the main dimension. But after the 20th main dimension, the penalty will start to spread among other dimensions. The greater the infinity in the main dimension, the stronger the penalty for other dimensions`,
       `Infinity Discoveries:`,
       `Infinity [T1]: Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
       hero.value.mainInfTier >= 1 && `Infinity [T2]: Reset everyting you've got(except Abyss D), but you will get Ascend Permission. You have 5 Infinity Ascension Perks to serve you forever even after Infinity Reset. Extra skip stages until +25% Max Stage (S). You can get Shards from Bosses. Auto-Ascension`,
@@ -830,8 +831,13 @@ const statSections = [
       { desc: `Total Penalty`, value: '', color: 'gold',  uppercase: true, },
       {
         desc: 'Total [^]',
-        value: () => Math.min((1 - 0.02 * (hero.value.infTier) + hero.value.infPenalty), 1).toFixed(2),
+        value: () => Math.min((1 - 0.02 * (hero.value.infTier) + hero.value.maxInfPenalty), 1).toFixed(2),
         color: 'gold',
+      },
+      {
+        desc: 'Penalty [^]',
+        value: () => Math.min((1 - 0.02 * (hero.value.infTier) + hero.value.infPenalty), 1).toFixed(2),
+        color: 'red',
       },
       {
         desc: `True Max Level Requirements [Infinity T${hero.value.infTier}]`,
@@ -1444,6 +1450,7 @@ const statSections = [
   },
   {
     title: 'BUFF EXP',
+    id: 'only buff exp',
     content: [
       { desc: 'BUFF EXP', value: '', color: 'orange',  uppercase: true, },
       {
@@ -1500,6 +1507,7 @@ const statSections = [
   },
   {
     title: 'Curse',
+    id: 'only curse',
     content: [
       { desc: 'Curse', value: '', color: 'red',  uppercase: true, },
       {
@@ -1556,6 +1564,7 @@ const statSections = [
   },
   {
     title: 'Stardust',
+    id: 'only stardust',
     content: [
       { desc: 'Stardust', value: '', color: 'gold',  uppercase: true, },
       {
@@ -1604,7 +1613,7 @@ const statSections = [
       },
       {
         desc: 'Infinity [Penalty]',
-        value: () => formatNumber((!hero.value.infProgress? (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1), true),
+        value: () => formatNumber((!hero.value.infProgress? 1 / (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1), true),
         color: 'red',
       },
       {
@@ -1616,6 +1625,7 @@ const statSections = [
   },
   {
     title: 'Mutagen',
+    id: 'only mutagen',
     content: [
       { desc: 'Mutagen', value: '', color: 'orange',  uppercase: true, },
       {
@@ -1645,7 +1655,7 @@ const statSections = [
       },
       {
         desc: 'Infinity [Penalty]',
-        value: () => (!hero.value.infProgress? 1 / (1 + 0.05 * Math.max(hero.value.infTier - 25, 0)): 1),
+        value: () => formatNumber(!hero.value.infProgress? 1 / (1 + 0.05 * Math.max(hero.value.infTier - 25, 0)): 1, true),
         color: 'red',
       },
       {
@@ -1657,6 +1667,7 @@ const statSections = [
   },
   {
     title: 'Potential',
+    id: 'only potential',
     content: [
       { desc: 'Potential', value: '', color: 'yellow',  uppercase: true, },
       {
@@ -1709,6 +1720,7 @@ const statSections = [
   },
   {
     title: 'Danger',
+    id: 'only danger',
     content: [
       { desc: 'MAX Danger', value: '', color: 'red',  uppercase: true, },
       {
@@ -1760,6 +1772,7 @@ const statSections = [
   },
   {
     title: 'Damage',
+    id: 'only damage',
     content: [
      { desc: 'Damage', value: '', color: 'red',  uppercase: true, },
      {

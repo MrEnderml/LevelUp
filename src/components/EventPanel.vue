@@ -210,7 +210,7 @@ function eventReq (e){
     if(hero.value.singularity == 7 && e == 'Rebirth') return true;
   }
   if(hero.value.dId == 'noTree' && e == 'Tree') return true;
-  if(hero.value.dId == 'ascension' && e == 'Ascension')  return true;
+  if((hero.value.dId == 'ascension' || hero.value.dId == 'ascension-2') && e == 'Ascension')  return true;
   if(hero.value.dId == 'noEq' && e == 'Equipment') return true;
   if(hero.value.dId == 'noBuffs' && e == 'Buff') return true;
   if(hero.value.dId == 'noSpace' && e == 'Space') return true;
@@ -245,7 +245,7 @@ function eventReqD (e){
   if(hero.value.dId == 'noTree' && e == 'Tree'){
     return 'The Unknown';
   }
-  if(hero.value.dId == 'ascension' && e == 'Ascension'){
+  if((hero.value.dId == 'ascension' || hero.value.dId == 'ascension-2') && e == 'Ascension'){
    return 'The Unknown';
   }
   if(hero.value.dId == 'noEq' && e == 'Equipment'){

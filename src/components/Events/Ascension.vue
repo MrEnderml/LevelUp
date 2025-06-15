@@ -166,7 +166,7 @@ function dsHandle(){
 
 function getPerkDescription(perk) {
   if (perk.id === 28) {
-    return `Enemies weakness based on Corruption weakness [${Math.max(1 / (Math.max(hero.value.overcorruption - 0.1, 0.1)), 0.1).toFixed(2)}]. Also works in The Abyss`
+    return `Enemies weakness based on Corruption weakness [${ Math.max(1 / (1 + Math.max(hero.value.corruption - 0.1, 0))).toFixed(2)}]. Also works in The Abyss`
   }
   if (perk.id === 30) {
     return `Gain Ascension Shards based on SP - [${(1 + 0.04 * hero.value.sp).toFixed(2)}]. Ascension Affect scales better`

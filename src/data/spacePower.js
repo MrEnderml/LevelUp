@@ -2,7 +2,7 @@ export const spacePower = [
     {
         id: 1,
         sp: 1,
-        d: "Open the Star Forge. You can Enhance The Sword by Stardust "
+        d: "Open the Star Forge. You can enhance the Sword by Stardust "
     },
     {
         id: 2,
@@ -34,7 +34,7 @@ export const spacePower = [
     {
         id: 7,
         sp: 7,
-        d: "You can upgrade Body"
+        d: "You can enhance the Body"
     },
     {
         id: 8,
@@ -54,7 +54,7 @@ export const spacePower = [
     {
         id: 11,
         sp: 15,
-        d: "You can upgrade Boots"
+        d: "You can enhance the Boots"
     },
     {
         id: 12,
@@ -106,7 +106,7 @@ export const spacePower = [
     {
         id: 21,
         sp: 42,
-        d: "You can upgrade Ring"
+        d: "You can enhance the Ring"
     },
     {
         id: 22,
@@ -189,7 +189,7 @@ export const spacePower = [
     {
         id: 37,
         sp: 112,
-        d: "The ENCHACE Cost scales better per each Space Tier"
+        d: "The Enhance Cost scales better per each Space Tier"
     },
     {
         id: 38,

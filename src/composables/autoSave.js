@@ -37,7 +37,7 @@ export function useAutoSave() {
       hKill: killHistory,
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
-    console.log('Game saved');
+    localStorage.setItem('lastOnline', Date.now().toString());
   };
 
   onMounted(() => {
@@ -70,5 +70,5 @@ export function saveGame() {
     hKill: killHistory,
   };
   localStorage.setItem('gameSave', JSON.stringify(data));
-  console.log('Game saved');
+  localStorage.setItem('lastOnline', Date.now().toString());
 };

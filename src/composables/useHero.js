@@ -265,6 +265,7 @@ const hero = ref({
   maxLevelMult: 0,
   stardustInfo: 0,
   timeKiller: 0,
+  maxInfPenalty: 0,
 });
 
 export function useHero() {

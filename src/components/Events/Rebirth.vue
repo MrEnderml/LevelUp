@@ -14,7 +14,7 @@
         <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
         <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
         <span :title="'EXP, WEAPON CHANCE'">*LOOT - [{{enemy.rebirthEnemy["drop"]}}] </span>
-        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.ascensionShards + 3), 0.01).toFixed(2)}}</span>
+        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss and Singularity. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.ascensionShards + 3), 0.01).toFixed(2)}}</span>
       </p>
       <p class="rebirthTiers">
         <span v-if="hero.rebirthTier >= 5">T[5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
