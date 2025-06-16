@@ -439,7 +439,7 @@ const styledSections = [
       'Each Infinity provides rebuild mechanic, but everything is reset(except Abyss D)',
       'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
       'Infinity Bonuses depends on IP',
-      `Penalty Reduction: The full power of the penalty only works on the main dimension. But after the 20th main dimension, the penalty will start to spread among other dimensions. The greater the infinity in the main dimension, the stronger the penalty for other dimensions`,
+      `Inf penalty reduction(IPR): The full power of the IPR only works on the main dimension. But after the 20th main dimension, the IPR will start to spread among other dimensions. The greater the infinity in the main dimension, the stronger the IPR for other dimensions`,
       `Infinity Discoveries:`,
       `Infinity [T1]: Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
       hero.value.mainInfTier >= 1 && `Infinity [T2]: Reset everyting you've got(except Abyss D), but you will get Ascend Permission. You have 5 Infinity Ascension Perks to serve you forever even after Infinity Reset. Extra skip stages until +25% Max Stage (S). You can get Shards from Bosses. Auto-Ascension`,

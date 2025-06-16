@@ -154,7 +154,7 @@ const artifacts = [
 
 
 const dimensions = ref([
-  { id: 'main', name: '🌍', x: 400, y: 300, color: '#4caf50', status: true },
+  { id: 'main', name: '🌍', x: 400, y: 300, color: '#4caf50' },
   { id: 'gravity', svg: getSvgIconHTML('galaxy1', '2em'), x: 600, y: 200, color: '#e53935' },
   { id: 'survival', svg: getSvgIconHTML('galaxy2', '2em'), x: 200, y: 200, color: '#2196f3' },
   { id: 'ascension', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: 400, color: '#673ab7' },
@@ -298,7 +298,7 @@ const selectDimension = (dimension) => {
   if(d_req(newD))
     return;
 
-  if(hero.value.dId == newD.id && newD.id == 'eternity'){
+  if(newD.id == 'eternity'){
     newD.status = (newD.status? false: true);
     d_data.value.forEach(d => {
       if (d.idx < 24 || d.idx >= 26) {
@@ -383,7 +383,7 @@ function dimensionD(hovered) {
     }
   }
 
-  if(d.id == 'eternity' && d.status == false)
+  if(d_data.value[24].status == false)
     return darkDimensions(d);
 
 
@@ -429,8 +429,20 @@ function darkDimensions(d){
 
   if(d_req(d)) str += `<span style="color: red">${d.c}</span><br>`;
 
-  if(d.id == 'eternity' && d.status == false) str+= `Dark Dimensions`;
+  if(d.id == 'eternity' && d.status == false) str += `Enter the Dark Side of the Dimensions. The Dark Dimensions have an unlimited Infinity Cap, but you need to reach level 1400 to gain the next tier. The next Infinity Tier is harder than previous one. The Infinity Penalty reduction does not apply between these dimensions. The dimensions are linked to each other: the next dimension takes power from the previous dimension. `;
+  else str += `<span>${d.d}</span><br><br>`;
 
+  if(d.id != 'eternity') str += `<span style="color: gold">Infinity [T${hero.value.infTier}]</span><br><br>`
+
+
+  if(d.id == 'eternity' && d.status == false) str += ``;
+  else str += `Reward: <span>${d.r}</span><br>`;
+
+
+
+  if(d.sp != '') str += `Special Reward: <span>${d.sp}</span><br>`;
+  if(d.id == hero.value.dId) str += `<span style="color: green">[You are here now]</span><br>`
+  if(hero.value.isSingularity) str += `<span style="color: #66ffcc">You are in Singularity right now</span><br>`
 
   return str;
 }

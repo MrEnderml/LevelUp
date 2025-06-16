@@ -712,16 +712,16 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeCurse.includes(0)){
       let penetrate = 0
       if (hero.value.activeCurseTier[0] == 0) {
-        penetrate = 0.1 * hero.value.curseMult;
+        penetrate = Math.min(0.1 * hero.value.curseMult, 1);
       }
       if (hero.value.activeCurseTier[0] == 1) {
-        penetrate = 0.2 * hero.value.curseMult;
+        penetrate = Math.min(0.2 * hero.value.curseMult, 1);
       }
       if (hero.value.activeCurseTier[0] == 2) {
-        penetrate = 0.3 * hero.value.curseMult;
+        penetrate = Math.min(0.3 * hero.value.curseMult, 1);
       }
       if (hero.value.activeCurseTier[0] == 3) {
-        penetrate = 0.4 * hero.value.curseMult;
+        penetrate = Math.min(0.4 * hero.value.curseMult, 1);
       }
       if (hero.value.activeCurseTier[0] == 4) {
         penetrate = Math.min(0.8 * hero.value.curseMult, 1);
@@ -2183,7 +2183,7 @@ export function useBattle(hero, enemy, buffs) {
     (amulets[1].status && amulets[1].suffix.status? 1: 0) + 
     (amulets[2].status && amulets[2].suffix.status? 1: 0) + 
     (amulets[3].status && amulets[3].suffix.status? 1: 0) + 
-    (hero.value.singularity >= 3? 1: 0) - 1;
+    (hero.value.singularity >= 3? 1: 0);
 
     hero.value.maxBuffs = 1 + (amulets[0].status && hero.value.maxStage >= 20? 1: 0) + (amulets[1].status && hero.value.maxStage >= 30? 1: 0) + 
     (amulets[2].status && hero.value.maxStage >= 40? 1: 0) + (amulets[3].status && hero.value.maxStage >= 50? 1: 0) + 
@@ -3159,7 +3159,7 @@ export function useBattle(hero, enemy, buffs) {
      //hero.value.rebirthPts = 4e4;
      //hero.value.singularity = 7;
     //hero.value.stardust = 1e6;
-    hero.value.mainInfTier = 17
+    //hero.value.mainInfTier = 17
     dimensions.value[15].infTier = 25;
     //hero.value.corruption = 0.1;
     hero.value.abyssDStages = 170;
