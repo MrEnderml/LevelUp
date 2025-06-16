@@ -1740,7 +1740,7 @@ const statSections = [
       },
       {
         desc: 'Infinity',
-        value: () =>  (hero.value.mainInfTier >= 20? Math.floor(hero.value.infPoints / (15 - ((hero.value.mainInfTier >= 25? 0.0035: 0) > 0? 1: 0))): 0),
+        value: () =>  (hero.value.mainInfTier >= 16? Math.floor(hero.value.infPoints / (15 - ((hero.value.mainInfTier >= 25? 0.0035: 0) > 0? 1: 0))): 0),
         color: 'gold',
       },
       {

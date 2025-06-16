@@ -419,7 +419,7 @@ export const perks = [
       id: 41,
       tier: 7,
       name: 'Void Hazard',
-      description: 'DANGER: +50 Max Level',
+      description: 'DANGER: +100 Max Level',
       level: 0,
       max: 1,
       baseCost: 1e13,

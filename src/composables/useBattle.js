@@ -357,10 +357,7 @@ export function useBattle(hero, enemy, buffs) {
 
       if(hero.value.resetKilledTime > 0){
         if(hero.value.hp < 0) hero.value.hp = 0;
-        let mult = 0.0125;
-        mult = (perks.value[11].value * perks.value[11].level == 1? 0.0225: 0.0125);
-        mult = (perks.value[11].value * perks.value[11].level == 2? 0.0325: 0.0125);
-        mult = (perks.value[11].value * perks.value[11].level == 3? 0.05: 0.0125);
+        let mult = Math.min(0.0125 + 0.01 * perks.value[11].level, 0.08);
         hero.value.hp += mult * hero.value.maxHp; 
         hero.value.hp = Math.min(hero.value.hp, hero.value.maxHp);
         if(hero.value.hp == hero.value.maxHp)
@@ -1146,7 +1143,7 @@ export function useBattle(hero, enemy, buffs) {
   }
   
   const createInfSouls = () => {
-    if(hero.value.infTier >= 4 && !hero.value.isAbyss){
+    if(hero.value.infTier >= 4 && !hero.value.isAbyss && hero.value.dId == 'main'){
       if(enemy.value.danger >= 100 && enemy.value.spawnType == 'none' && hero.value.stage > 59){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.dangerEnemyChance[1] >= 100? 'inf-1': enemy.value.spawnType);
         enemy.value.name = (enemy.value.spawnType == 'inf-1'? 'Ω-Infinity': enemy.value.name);
@@ -1455,7 +1452,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.rebirthPts >= 2.5e6? Math.sqrt(Math.log(hero.value.rebirthPts)) * 0.01: 0); 
     hero.value.maxInfPenalty = hero.value.infPenalty;
 
-    hero.value.infPenalty = (hero.value.dId !== 'main' && hero.value.mainInfTier >= 20? hero.value.infPenalty * infPenaltyScale(hero.value.mainInfTier, 40): hero.value.infPenalty);
+    hero.value.infPenalty = (hero.value.dId !== 'main' && hero.value.mainInfTier >= 20? hero.value.infPenalty * infPenaltyScale(hero.value.mainInfTier, 35): hero.value.infPenalty);
     if(!hero.value.infProgress && hero.value.level >= 700 && hero.value.dId == 'main'){
       hero.value.infProgress = true;
       hero.value.mainInfTier = Math.min(hero.value.mainInfTier + 1, 40);
@@ -2186,7 +2183,7 @@ export function useBattle(hero, enemy, buffs) {
     (amulets[1].status && amulets[1].suffix.status? 1: 0) + 
     (amulets[2].status && amulets[2].suffix.status? 1: 0) + 
     (amulets[3].status && amulets[3].suffix.status? 1: 0) + 
-    (hero.value.singularity >= 3? 1: 0);
+    (hero.value.singularity >= 3? 1: 0) - 1;
 
     hero.value.maxBuffs = 1 + (amulets[0].status && hero.value.maxStage >= 20? 1: 0) + (amulets[1].status && hero.value.maxStage >= 30? 1: 0) + 
     (amulets[2].status && hero.value.maxStage >= 40? 1: 0) + (amulets[3].status && hero.value.maxStage >= 50? 1: 0) + 
@@ -2233,14 +2230,9 @@ export function useBattle(hero, enemy, buffs) {
     if(radPerks[6].status) radPerks[6].max = (hero.value.infTier >= 4? 60: 30);
     radPerks[12].max = (hero.value.infTier >= 4? 200: 100);
 
-    if(hero.value.infTier >= 4){
-      radPerks[10].max += 100;
-      if(ascenPerks[40].level) radPerks[10].max += 50;
-      
-    }
     if(ascenPerks[51].level) hero.value.dangerStage = Math.max(hero.value.dangerStage, hero.value.stage);
 
-    radPerks[10].max += (hero.value.mainInfTier >= 20? infBase(15, 20): 0) + 
+    radPerks[10].max += (hero.value.infTier >= 4? 100: 0) + (ascenPerks[40].level? 100: 0) + (hero.value.mainInfTier >= 16? infBase(15, 20): 0) + 
     Math.floor(hero.value.rebirthPts >= 2e6? Math.log(hero.value.rebirthPts) ** 2: 0) + hero.value.dangerStage + 
     (dimensions.value[15].infTier > 10? Math.floor(1.45 ** (dimensions.value[15].infTier - 10)): 0) + (hero.value.spCount >= 38? hero.value.sp: 0);
 
@@ -2263,7 +2255,7 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.dangerEnemyChance[4] = (1.015 ** (radPerks[10].level - 20));
     enemy.value.dangerEnemyChance[5] = (1.02 ** (radPerks[10].level - 40));
     enemy.value.dangerEnemyChance[1] = (enemy.value.dangerEnemyLoot[0] < 60? (1.02 ** (radPerks[10].level - 100) - (0.11 * enemy.value.dangerEnemyLoot[0])): 0);
-    enemy.value.dangerEnemyChance[2] = (enemy.value.dangerEnemyLoot[1] < 1000? (0.925 ** enemy.value.dangerEnemyLoot[1] * 1.025 ** (radPerks[10].level - 150)): 0);
+    enemy.value.dangerEnemyChance[2] = (enemy.value.dangerEnemyLoot[1] < 1000? (0.945 ** enemy.value.dangerEnemyLoot[1] * 1.0325 ** (radPerks[10].level - 150)): 0);
     enemy.value.dangerEnemyChance[3] = (enemy.value.dangerEnemyLoot[2] < 5? 1 * (1 / (10 * enemy.value.dangerEnemyLoot[2] + 1)) * (1.04 * radPerks[10].level - 200): 0);
     
     if(dimensions.value[15].infTier == dimensions.value[15].maxInfTier){
@@ -2798,6 +2790,8 @@ export function useBattle(hero, enemy, buffs) {
     }
     let notAllowdId = ['main', 'unlimitted', 'time', 'survival-2', 'abyss-d']
 
+    if(hero.value.dId == 'eternity') return;
+
     if(hero.value.dId == 'time' && hero.value.level >= 700){
       hero.value.dTimeReward = (hero.value.dTimeReward == 0? hero.value.dTimer: hero.value.dTimeReward)
       hero.value.dTimeReward = Math.min(hero.value.dTimeReward, hero.value.dTimer)
@@ -3167,8 +3161,9 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.stardust = 1e6;
     hero.value.mainInfTier = 17
     dimensions.value[15].infTier = 25;
-   
-
+    //hero.value.corruption = 0.1;
+    hero.value.abyssDStages = 170;
+    
   }
 
   createEnemy();

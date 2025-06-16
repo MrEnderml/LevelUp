@@ -27,7 +27,7 @@
         :y1="getPos(link.from).y"
         :x2="getPos(link.to).x"
         :y2="getPos(link.to).y"
-        :stroke="!d_req(getDimension(link.to)) ? '#66ffcc' : '#444'"
+        :stroke="(link.id >= 27 && !d_req(getDimension(link.to))) ? '#f44336' : (!d_req(getDimension(link.to)) ? '#66ffcc' : '#444')"
         stroke-width="2"
         :style="{
           filter: !d_req(getDimension(link.to)) ? 'drop-shadow(0 0 4px #66ffcc)' : 'none',
@@ -151,63 +151,74 @@ const artifacts = [
   { id: 'void', x: 500, y: 300, color: '#00000088', radius: 20, label: 'Void' },
 ]
 
+
+
 const dimensions = ref([
   { id: 'main', name: '🌍', x: 400, y: 300, color: '#4caf50', status: true },
-  { id: 'gravity',svg: getSvgIconHTML('galaxy1', '2em'), x: 600, y: 200, color: '#e53935', status: true },
-  { id: 'survival', svg: getSvgIconHTML('galaxy2', '2em'), x: 200, y: 200, color: '#2196f3', status: true },
-  { id: 'ascension', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: 400, color: '#673ab7', status: true },
-  { id: 'overkill', svg: getSvgIconHTML('galaxy4', '2em'), x: 800, y: 300, color: '#f4a261', status: true},
-  { id: 'noTree', svg: getSvgIconHTML('galaxy5', '2em'), x: 300, y: -50, color: '#90caf9', status: true},
-  { id: 'noEq', svg: getSvgIconHTML('galaxy6', '2em'), x: 150, y: 50, color: '#90caf9', status: true},
-  { id: 'unlimitted', svg: getSvgIconHTML('galaxy7', '2em'), x: -50, y: 50, color: '#90caf9', status: true },
-  { id: 'afk', svg: getSvgIconHTML('galaxy8', '2em'), x: 450, y: 50, color: '#90caf9', status: true},
-  { id: 'next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9', status: true },
-  { id: 'time', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: -250, color: '#90caf9', status: true },
-  { id: 'noStats', svg: getSvgIconHTML('galaxy2', '2em'), x: 250, y: -250, color: '#90caf9', status: true },
-  { id: 'noMinLevel', svg: getSvgIconHTML('galaxy7', '2em'), x: 50, y: -250, color: '#90caf9', status: true },
-  { id: 'noBuffs', svg: getSvgIconHTML('galaxy10', '2em'), x: 500, y: -150, color: '#90caf9', status: true },
-  { id: 'danger', svg: getSvgIconHTML('galaxy14', '2em'), x: 700, y: -250, color: '#90caf9', status: true },
-  { id: 'damage', svg: getSvgIconHTML('galaxy1', '2em'), x: 650, y: -400, color: '#90caf9', status: true },
-  { id: 'overstage', svg: getSvgIconHTML('galaxy17', '2em'), x: 750, y: -550, color: '#90caf9', status: true },
-  { id: 'survival-2', svg: getSvgIconHTML('galaxy3', '2em'), x: 850, y: -550, color: '#90caf9', status: true },
-  { id: 'soulD', svg: getSvgIconHTML('galaxy13', '2em'), x: 850, y: 50, color: '#90caf9', status: true },
-  { id: 'ascension-2', svg: getSvgIconHTML('galaxy15', '2em'), x: 400, y: 500, color: '#90caf9', status: true },
-  { id: 'noSpace', svg: getSvgIconHTML('galaxy18', '2em'), x: 150, y: 125, color: '#90caf9', status: true },
-  { id: 'corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9', status: true },
-  { id: 'hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9', status: true },
+  { id: 'gravity', svg: getSvgIconHTML('galaxy1', '2em'), x: 600, y: 200, color: '#e53935' },
+  { id: 'survival', svg: getSvgIconHTML('galaxy2', '2em'), x: 200, y: 200, color: '#2196f3' },
+  { id: 'ascension', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: 400, color: '#673ab7' },
+  { id: 'overkill', svg: getSvgIconHTML('galaxy4', '2em'), x: 800, y: 300, color: '#f4a261' },
+  { id: 'noTree', svg: getSvgIconHTML('galaxy5', '2em'), x: 300, y: -50, color: '#90caf9' },
+  { id: 'noEq', svg: getSvgIconHTML('galaxy6', '2em'), x: 150, y: 50, color: '#90caf9' },
+  { id: 'unlimitted', svg: getSvgIconHTML('galaxy7', '2em'), x: -50, y: 50, color: '#90caf9' },
+  { id: 'afk', svg: getSvgIconHTML('galaxy8', '2em'), x: 450, y: 50, color: '#90caf9' },
+  { id: 'next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9' },
+  { id: 'time', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: -250, color: '#90caf9' },
+  { id: 'noStats', svg: getSvgIconHTML('galaxy2', '2em'), x: 250, y: -250, color: '#90caf9' },
+  { id: 'noMinLevel', svg: getSvgIconHTML('galaxy7', '2em'), x: 50, y: -250, color: '#90caf9' },
+  { id: 'noBuffs', svg: getSvgIconHTML('galaxy10', '2em'), x: 500, y: -150, color: '#90caf9' },
+  { id: 'danger', svg: getSvgIconHTML('galaxy14', '2em'), x: 700, y: -250, color: '#90caf9' },
+  { id: 'damage', svg: getSvgIconHTML('galaxy1', '2em'), x: 650, y: -400, color: '#90caf9' },
+  { id: 'overstage', svg: getSvgIconHTML('galaxy17', '2em'), x: 750, y: -550, color: '#90caf9' },
+  { id: 'survival-2', svg: getSvgIconHTML('galaxy3', '2em'), x: 850, y: -550, color: '#90caf9' },
+  { id: 'soulD', svg: getSvgIconHTML('galaxy13', '2em'), x: 850, y: 50, color: '#90caf9' },
+  { id: 'ascension-2', svg: getSvgIconHTML('galaxy15', '2em'), x: 400, y: 500, color: '#90caf9' },
+  { id: 'noSpace', svg: getSvgIconHTML('galaxy18', '2em'), x: 150, y: 125, color: '#90caf9' },
+  { id: 'corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
+  { id: 'hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9' },
   { id: 'eternity', svg: getSvgIconHTML('galaxyEternity', '2em'), x: 300, y: -450, color: '#90caf9', status: true },
-  { id: 'abyss-d', svg: getSvgIconHTML('galaxy5', '2em'), x: 600, y: -250, color: '#90caf9', status: true },
+  { id: 'abyss-d', svg: getSvgIconHTML('galaxy5', '2em'), x: 600, y: -250, color: '#90caf9' },
   { id: 'bh', svg: getSvgIconHTML('singularity', '2em'), x: -600, y: 50, color: '#90caf9', status: hero.value.rebirthPts >= 1e7 },
-])
+  { id: 'd-corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
+].map(dim => ({
+  ...dim,
+  status: dim.status ?? d_data.value.find(d => d.id === dim.id)?.status ?? false
+})))
 
 const links = ref([
-  { id: 1, from: 'main', to: 'gravity', status: true },
-  { id: 2, from: 'main', to: 'survival', status: true },
-  { id: 3, from: 'main', to: 'ascension', status: true },
-  { id: 4, from: 'gravity', to: 'overkill', status: true },
-  { id: 5, from: 'survival', to: 'noTree', status: true },
-  { id: 6, from: 'noTree', to: 'noEq', status: true },
-  { id: 7, from: 'noTree', to: 'unlimitted', status: true },
-  { id: 8, from: 'noTree', to: 'afk', status: true },
-  { id: 9, from: 'noTree', to: 'next', status: true },
-  { id: 10, from: 'next', to: 'noStats', status: true },
-  { id: 11, from: 'next', to: 'noBuffs', status: true },
-  { id: 12, from: 'next', to: 'time', status: true },
-  { id: 13, from: 'noBuffs', to: 'danger', status: true },
-  { id: 14, from: 'danger', to: 'damage', status: true },
-  { id: 15, from: 'noBuffs', to: 'soulD', status: true },
-  { id: 16, from: 'ascension', to: 'ascension-2', status: true },
-  { id: 17, from: 'noEq', to: 'noSpace', status: true },
-  { id: 18, from: 'damage', to: 'overstage', status: true },
-  { id: 19, from: 'overstage', to: 'survival-2', status: true },
-  { id: 20, from: 'damage', to: 'corruption', status: true },
-  { id: 21, from: 'damage', to: 'hard', status: true },
-  { id: 20, from: 'corruption', to: 'eternity', status: true },
-  { id: 21, from: 'hard', to: 'eternity', status: true },
-  { id: 22, from: 'danger', to: 'abyss-d', status: true },
-  { id: 23, from: 'main', to: 'bh', status: false },
-  { id: 24, from: 'noStats', to: 'noMinLevel', status: true },
-])
+  { id: 1, from: 'main', to: 'gravity' },
+  { id: 2, from: 'main', to: 'survival' },
+  { id: 3, from: 'main', to: 'ascension' },
+  { id: 4, from: 'gravity', to: 'overkill' },
+  { id: 5, from: 'survival', to: 'noTree' },
+  { id: 6, from: 'noTree', to: 'noEq' },
+  { id: 7, from: 'noTree', to: 'unlimitted' },
+  { id: 8, from: 'noTree', to: 'afk' },
+  { id: 9, from: 'noTree', to: 'next' },
+  { id: 10, from: 'next', to: 'noStats' },
+  { id: 11, from: 'next', to: 'noBuffs' },
+  { id: 12, from: 'next', to: 'time' },
+  { id: 13, from: 'noBuffs', to: 'danger' },
+  { id: 14, from: 'danger', to: 'damage' },
+  { id: 15, from: 'noBuffs', to: 'soulD' },
+  { id: 16, from: 'ascension', to: 'ascension-2' },
+  { id: 17, from: 'noEq', to: 'noSpace' },
+  { id: 18, from: 'damage', to: 'overstage' },
+  { id: 19, from: 'overstage', to: 'survival-2' },
+  { id: 20, from: 'damage', to: 'corruption' },
+  { id: 21, from: 'damage', to: 'hard' },
+  { id: 22, from: 'corruption', to: 'eternity' },
+  { id: 23, from: 'hard', to: 'eternity' },
+  { id: 24, from: 'danger', to: 'abyss-d' },
+  { id: 25, from: 'main', to: 'bh' },
+  { id: 26, from: 'noStats', to: 'noMinLevel' },
+  { id: 27, from: 'eternity', to: 'd-corruption' },
+].map(link => ({
+  ...link,
+  status: link.status ?? d_data.value.find(d => d.id === link.to)?.status ?? false
+})))
+
 
 const computedStyle = computed(() => {
   const x = (this.hovered.x - this.viewBoxXOffset) * this.zoom;
@@ -283,10 +294,37 @@ const selectDimension = (dimension) => {
   hero.value.dTimer = 0;
   killHistory.length = 0;
 
-  if(hero.value.dId == newD.id && hero.value.dId !== 'time')
-    return;
 
   if(d_req(newD))
+    return;
+
+  if(hero.value.dId == newD.id && newD.id == 'eternity'){
+    newD.status = (newD.status? false: true);
+    d_data.value.forEach(d => {
+      if (d.idx < 24 || d.idx >= 26) {
+        d.status = !d.status;
+      }
+    });
+
+    dimensions.value = dimensions.value.map(dim => {
+      if (['eternity', 'bh'].includes(dim.id)) return dim;
+      return {
+        ...dim,
+        status: d_data.value.find(d => d.id === dim.id)?.status ?? false
+      };
+    });
+
+    links.value = links.value.map(link => {
+      if (['eternity', 'bh'].includes(link.id)) return link;
+
+      return {
+        ...link,
+        status: d_data.value.find(d => d.id === link.to)?.status ?? false
+      };
+    });
+  }
+
+  if(hero.value.dId == newD.id && hero.value.dId !== 'time')
     return;
 
   if (newD.id === 'ascension' || newD.id === 'ascension-2') {
@@ -345,8 +383,12 @@ function dimensionD(hovered) {
     }
   }
 
-  let filtered = ['unlimitted', 'main', 'time', 'abyss-d', 'survival-2']
-  let dInfFiltered = ['time', 'abyss-d', 'survival-2']
+  if(d.id == 'eternity' && d.status == false)
+    return darkDimensions(d);
+
+
+  let filtered = ['unlimitted', 'main', 'time', 'abyss-d', 'survival-2', 'eternity']
+  let dInfFiltered = ['time', 'abyss-d', 'survival-2', 'eternity']
 
   if(d.id == 'unlimitted')
     d.r = unlimittedDescription();
@@ -376,6 +418,19 @@ function dimensionD(hovered) {
   if(hero.value.isSingularity) str += `<span style="color: #66ffcc">You are in Singularity right now</span><br>`
 
   if(d.id == 'time') str += `<br>Your best time ${timeFormat(hero.value.dTimeReward)}`
+
+  return str;
+}
+
+function darkDimensions(d){
+
+
+  let str = `<span><strong>Dimension: ${d.name} [${d.idx}]</strong></span><br>`
+
+  if(d_req(d)) str += `<span style="color: red">${d.c}</span><br>`;
+
+  if(d.id == 'eternity' && d.status == false) str+= `Dark Dimensions`;
+
 
   return str;
 }
@@ -549,10 +604,15 @@ function d_req(d){
     if (prev1.infTier < 35 || prev2.infTier < 15 || hero.value.mainInfTier < 100) return true;
   }
 
+  if (d.id === 'd-corruption') {
+    return false;
+  }
+
   return false;
 }
 
 function performD(d, prev) {
+  if(hero.value.dId == 'eternity') return;
   hero.value.perform = true;
   
   hero.value.dKills = 0;

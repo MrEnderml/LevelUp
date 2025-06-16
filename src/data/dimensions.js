@@ -11,7 +11,7 @@ export const dimensions = ref([
         d: `This is your main dimension. You are powerful enough to move between other dimensions.`,
         r: '',
         sp: '',
-        status: false,
+        status: true,
     },
     {
         id: 'ascension',
@@ -23,7 +23,7 @@ export const dimensions = ref([
         d: `Enter the Dimension where The Ascension does not exist.`,
         r: `The cost of TIER-INF and TIER-S scale better`,
         sp: `you will get [10]% Ascension Shards from Total Shards, [0.1]% in AFK every second`,
-        status: false,
+        status: true,
         ascension: [],
     },
     {
@@ -36,6 +36,7 @@ export const dimensions = ref([
         d: `Enter a dimension where enemies become stronger due to gravity. After stage 20, your damage becomes weaker`,
         r: `If you die, the enemy gains a Weakness charge of 1% per Infinity [Max - 90]`,
         sp: `90% of charges return to The next enemy`,
+        status: true,
     },
     {
         id: 'overkill',
@@ -49,6 +50,7 @@ export const dimensions = ref([
         r: `Stage requirement scales better`,
         sp: `You can move between Stages`,
         nodeId: 'gravity',
+        status: true,
     },
     {
         id: 'survival',
@@ -59,7 +61,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T8] in the main one.`,
         d: `Enter the Dimension where your HP and DEF - 1`,
         r: `+5% Extra Life Chance`,
-        sp: `Each attack has 5% to Stun the Enemy for 0.5s`
+        sp: `Each attack has 5% to Stun the Enemy for 0.5s`,
+        status: true
     },
     {
         id: 'unlimitted',
@@ -70,7 +73,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T12] in the previous one and Infinity [T12] in the main one.`,
         d: `Enter the Dimension where your Max Level no longer Limits. Reach level as max as possible. You start with Infintity [T10]`,
         r: `Exp boost: 1, Max Level Mult: 1, Min Level: 1`,
-        sp: ``
+        sp: ``,
+        status: true,
     },
     {
         id: 'noTree',
@@ -81,7 +85,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T5] in the previous one and Infinity [T10] in the main one.`,
         d: `Enter the Dimension where The Tree does not exist. You start with Infinity [T10]`,
         r: `+50 free Tree Points`,
-        sp: `Infinity Tree Perks scale slightly better in value`
+        sp: `Infinity Tree Perks scale slightly better in value`,
+        status: true,
     },
     {
         id: 'afk',
@@ -92,7 +97,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T11] in the previous one and Infinity [T10] in the main one.`,
         d: `Enter the Dimension where Bosses are stronger. They realized the curses. You start with Infinity [T14]`,
         r: ``,
-        sp: `You will be able to accumulate time and spend it on AFK`
+        sp: `You will be able to accumulate time and spend it on AFK`,
+        status: true,
     },
     {
         id: 'noEq',
@@ -103,7 +109,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T13] in the previous one and Infinity [T15] in the main one`,
         d: `Complete Dimension withouth Equipment. You start with Infinity [T5]`,
         r: `Extra Equipment Tier`,
-        sp: `Minus Tier of Requirement to Awaken per Singularity Tier`
+        sp: `Minus Tier of Requirement to Awaken per Singularity Tier`,
+        status: true,
     },
     {
         id: 'next',
@@ -114,7 +121,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T15] in the previous one and Infinity [T16] in the main one`,
         d: `Enter The Dimension where gravity has destroyed The World Line. Your possible Stage is 30. You start with Infinity [T6]`,
         r: ``,
-        sp: `Open Dimension Shards. See Ascension in the main Dimension`
+        sp: `Open Dimension Shards. See Ascension in the main Dimension`,
+        status: true,
     },
     {
         id: 'noStats',
@@ -125,7 +133,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T7] in the previous one and Infinity [T17] in the main one`,
         d: `Enter the dimension where a level do not provide stats. You start with Infinity [T10]`,
         r: `+6 Potential`,
-        sp: `Get double DMG in Singularity challenge`
+        sp: `Get double DMG in Singularity challenge`,
+        status: true,
     },
     {
         id: 'noBuffs',
@@ -136,7 +145,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T7] in the previous one and Infinity [T18] in the main one`,
         d: `Enter the dimension where buffs are locked. You start with Infinity [T5]`,
         r: `Buff EXP Boost: 1`,
-        sp: `Buff EXP upgrades all Buffs`
+        sp: `Buff EXP upgrades all Buffs`,
+        status: true,
     },
     {
         id: 'noMinLevel',
@@ -147,7 +157,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T15] in the previous one and Infinity [T19] in the main one`,
         d: `Enter the dimension where Min Level is locked.`,
         r: `+1 Min Level`,
-        sp: `Min Level provides double stats`
+        sp: `Min Level provides double stats`,
+        status: true,
     },
     {
         id: 'hard',
@@ -158,7 +169,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T21] in the previous one`,
         d: `Enter the dimension where curses are [T5] and they are permanent. You won't get loot from curses. Abyss is locked. Reach level 100 to be able to advance to the next INF Tier. You start with Infinity [T15]`,
         r: `+0.005 INF Penalty Reduction`,
-        sp: `Requirements for Dimension Shards are better`
+        sp: `Requirements for Dimension Shards are better`,
+        status: true,
     },
     {
         id: 'soulD',
@@ -169,7 +181,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T15] in the previous one and Infinity [T22] in the main one`,
         d: `Enter the Soul Dimension. You start with Infinity [T10]`,
         r: `Souls are getting weaker in Soul-D`,
-        sp: `+1 Extra Max Level per Soul`
+        sp: `+1 Extra Max Level per Soul`,
+        status: true,
     },
     {
         id: 'danger',
@@ -180,7 +193,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T12] in the previous one and Infinity [T21] in the main one`,
         d: `Enter the dimension where you are under danger 300 at the time. Next Infinity Increase Danger by 30. Danger Power gets worse. Danger does not effect a chance of special enemies appearing. You start with Infinity [T10]`,
         r: ` + Danger`,
-        sp: `Unlock new special enemies`
+        sp: `Unlock new special enemies`,
+        status: true,
     },
     {
         id: 'time',
@@ -191,7 +205,8 @@ export const dimensions = ref([
         c: `You will be able to enter this dimension once you have completed Infinity [T7] in the previous one, Infinity [T20] in the main one and The Dimension [X0-Δ7e] [7]`,
         d: `Complete the Dimension as fast as possible. The reward depends on the fastest time. You start with Infinity [T20]`,
         r: `0% to get AFK boost for 0s`,
-        sp: `Complete within 60 seconds to get an extra bonus to your reward`
+        sp: `Complete within 60 seconds to get an extra bonus to your reward`,
+        status: true,
     },
     {
         id: 'ascension-2',
@@ -203,7 +218,7 @@ export const dimensions = ref([
         d: `Enter the Dimension where The Ascension does not exist.`,
         r: `The cost of TIER-INF and TIER-S scale better`,
         sp: `You will get 2 new Infinity Perks`,
-        status: false,
+        status: true,
         ascension: [],
     },
     {
@@ -216,7 +231,7 @@ export const dimensions = ref([
         d: `Enter the Abyss D. Rewards from Abyss D spare along all dimension. Unlock new rewards.`,
         r: ``,
         sp: ``,
-        status: false,
+        status: true,
     },
     {
         id: 'overstage',
@@ -228,7 +243,7 @@ export const dimensions = ref([
         d: `Enter the Dimension where you start from Stage 100. Every Tier increases a stage by 5`,
         r: `+1 Overkill`,
         sp: `Buff: Overkill [T4] - 15% instead of 10%`,
-        status: false,
+        status: true,
     },
     {
         id: 'damage',
@@ -240,7 +255,7 @@ export const dimensions = ref([
         d: `Enter the Dimension where enemies are getting stronger for each death. This indicator is getting worse every Tier`,
         r: `+ 1.04 ** inf damage`,
         sp: `INF Bonus [Damage] scales better`,
-        status: false,
+        status: true,
     },
     {
         id: 'survival-2',
@@ -252,7 +267,7 @@ export const dimensions = ref([
         d: `Enter The Dimension where if you die The Dimension will reset to zero. The Reward depends on Max Stage. You start with Infinity [T30]`,
         r: ``,
         sp: ``,
-        status: false,
+        status: true,
     },
     {
         id: 'corruption',
@@ -264,7 +279,7 @@ export const dimensions = ref([
         d: `Enter the Dimension where corruption shows you its true power. Corruption is always 0.1. You start with Infinity [T25]`,
         r: `+0.1 Corruption weakness. [Corrupted Amplification] scales better`,
         sp: `+0.01 IP MULT per Inf Tier in main Dimension`,
-        status: false,
+        status: true,
     },
     {
         id: 'noSpace',
@@ -276,19 +291,19 @@ export const dimensions = ref([
         d: `Enter the Dimension where Space does not exist. You start with Infinity [T10]`,
         r: `+5 SP`,
         sp: `+1 Space Tier`,
-        status: false,
+        status: true,
     },
     {
         id: 'eternity',
         name: 'Et-n1t1',
         idx: 24,
-        infTier: 40,
-        maxInfTier: 41,
-        c: `You will be able to enter this dimension once you have completed Infinity [T40] in the main one and Infinity to the max in previous. Closed until update v0.5`,
+        infTier: 35,
+        maxInfTier: 36,
+        c: `You will be able to enter this dimension once you have completed Infinity [T35] in the main one and Infinity to the max in previous. Closed until update v0.5`,
         d: `Enter the Dimension`,
         r: ``,
         sp: `What is it?`,
-        status: false,
+        status: true,
     },
     {
         id: 'bh',
@@ -301,5 +316,16 @@ export const dimensions = ref([
         r: ``,
         sp: ``,
         status: false,
-    }
+    },
+    {
+        id: 'd-corruption',
+        name: 'JK-λbYX',
+        idx: 26,
+        infTier: 0,
+        maxInfTier: 10000,
+        c: ``,
+        d: `Enter the Dimension where corruption shows you its true power. Corruption is always 0.1. You start with Infinity [T25]`,
+        r: `+0.1 Corruption weakness. [Corrupted Amplification] scales better`,
+        status: false,
+    },
 ]);
