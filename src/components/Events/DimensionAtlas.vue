@@ -485,11 +485,11 @@ function unlimittedDescription(){
   let unlimitD = `
   <span>
   Exp boost ${Math.max(Math.max(hero.value.unlimitLevel - 700, 0) / 100, 1).toFixed(2)} - 
-  Max Level MULT ${((1.05 ** (Math.max(hero.value.unlimitLevel - 700, 0) / 75))).toFixed(2)} - 
+  Max Level MULT ${((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75))).toFixed(2)} - 
   MIN Level ${Math.max(Math.floor((hero.value.unlimitLevel - 700) / 100 ), 0)}
   </span><br>
   </span><br><span>Max Level: ${hero.value.unlimitLevel}</span><br>
-  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${(1.75 ** (infBonus + 1)).toFixed(2)}</span><br>
+  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${(2.25 ** (infBonus + 1)).toFixed(2)}</span><br>
   <span>Reach Level 2000 to unclock new Infinity Goal</span><br>
   `
 

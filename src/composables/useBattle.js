@@ -40,7 +40,7 @@ export function useBattle(hero, enemy, buffs) {
     Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1) *
     (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) *
     (hero.value.mainInfTier >= 1 || hero.value.level >= 700? (infBase(1.06) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1)+Math.log(hero.value.infPoints + 2)))) * 
-    (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1): 1);
+    (hero.value.dId == 'unlimitted'? 2.25 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1): 1);
 
     hero.value.totalExp = exp;
     let expPenalty = Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1);
@@ -1435,11 +1435,12 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.spCount / 6 >= 5? 150: 0) + (hero.value.spCount / 6 >= 6? 200: 0) + (hero.value.spCount / 6 >= 7? 300: 0) + (hero.value.spCount / 6 >= 8? 400: 0));
 
     hero.value.maxLevelMult = ((amulets[0].prefix.status? 0.02: 0) + (amulets[1].prefix.status? 0.04: 0) + (amulets[2].prefix.status? 0.06: 0) + (amulets[3].prefix.status? 0.08: 0)) * (hero.value.spCount >= 34? 2: 1) + 
-    (ascenPerks[31].level * 0.01) + (hero.value.rebirthTier >= 80? 1.01 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0) + (perks.value[4].status? 0.15: 0) +
+    (ascenPerks[31].level * 0.01) + (hero.value.rebirthTier >= 80? 1.01 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0) +
     (ascenPerks[41].level? hero.value.overcorruption / (4 - 0.15 * (dimensions.value[22].infTier - 25)): 0) + (hero.value.mainInfTier >= 10? infBase(1.07) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0) + 
-    (Math.max((1.05 ** ((hero.value.unlimitLevel - 700) / 75) - 1), 0)) +
+    ((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75) - 1)) +
     hero.value.eqUpsMult['ring'].multLevel + 
     (hero.value.spCount >= 15 && hero.value.abyssDStages >= 200? 1.025 ** (hero.value.abyssDStages - 199) - 1: 0)
+    hero.value.maxLevelMult *= (perks.value[4].status? 1.1: 1);
 
     hero.value.maxLevel *= 1 + hero.value.maxLevelMult;
 
@@ -2034,7 +2035,7 @@ export function useBattle(hero, enemy, buffs) {
   const overkillHandle = () => {
     var totalKills = 1
 
-    totalKills += (ascenPerks[21].level? 1: 0) + (ascenPerks[35].level) + (hero.value.mainInfTier >= 2? Math.floor(infBase(1.35) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) * Math.log(hero.value.infPoints + 2)))): 0) +
+    totalKills += (ascenPerks[21].level? 1: 0) + (ascenPerks[35].level) + (hero.value.mainInfTier >= 2? infBase(500, 7): 0) +
     (1 * (dimensions.value[19].infTier - 20)) + hero.value.eqUpsMult['boots'].overkill;
 
     if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 1){
@@ -2734,6 +2735,7 @@ export function useBattle(hero, enemy, buffs) {
     let bTotal = (hero.value.mainInfTier >= 25? 0.0035: 0);
     let dReward = (b == 1 && dimensions.value[20].infTier == dimensions.value[20].maxInfTier? 0.005: 0)
 
+    if(b == 7) return Math.floor(hero.value.infPoints / (v - (bTotal > 0? 50: 0)))
     if(b == 18) return Math.floor(hero.value.infPoints / (v - (bTotal > 0? 20: 0)))
     if(b == 20) return Math.floor(hero.value.infPoints / (v - (bTotal > 0? 1: 0)))
     if(b == 22) return Math.floor(hero.value.infPoints / (v - (bTotal > 0? 25: 0)))
@@ -2899,7 +2901,7 @@ export function useBattle(hero, enemy, buffs) {
     }
 
     if(hero.value.singularity < 4){
-      for(let perk of ascension){
+      for(let perk of ascenPerks){
         if(perk.tier != 6 && perk.tier != 7 && perk.tier != 8)
           perk.level = 0;
       }
@@ -3155,15 +3157,18 @@ export function useBattle(hero, enemy, buffs) {
    //s hero.value.singularity = 4;
    //hero.value.eqUps['spRing'] = 50;
      //hero.value.stage = 12;
-     hero.value.singularityKills = 10000;
+     //hero.value.singularityKills = 10000;
      //hero.value.rebirthPts = 4e4;
      //hero.value.singularity = 7;
     //hero.value.stardust = 1e6;
     //hero.value.mainInfTier = 17
-    dimensions.value[15].infTier = 25;
+    //dimensions.value[15].infTier = 25;
     //hero.value.corruption = 0.1;
-    hero.value.abyssDStages = 170;
-    
+    //hero.value.abyssDStages = 170;
+    //hero.value.infPoints = 20000;
+    //radPerks[7].perkStatus = false;
+    //hero.value.infTier = 5;
+    //dimensions.value[2].infTier = 5;
   }
 
   createEnemy();

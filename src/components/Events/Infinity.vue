@@ -85,10 +85,11 @@ const linearDiff = (base, mod = 1) => (((base + sBonus()) ** (inf.value / (sqrt(
 const minLevel = () => Math.floor(inf.value / (200 - (sBonus() > 0? 20: 0)));
 const pot = () => Math.floor(inf.value / (250 - (sBonus() > 0? 25: 0)));
 const danger = () => Math.floor(inf.value / (15 - (sBonus() > 0? 1: 0)));
+const overkill = () => Math.floor(inf.value / (500 - (sBonus() > 0? 50: 0)));
 
 function unlimitBonus(){
   let total = (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) * 
-  (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1)
+  (hero.value.dId == 'unlimitted'? 2.25 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1)
   return total;
 }
 
@@ -101,7 +102,7 @@ const bonuses = computed(() => [
   { id: 4, stat: 'EXP Gain', value: `*${formatNumber(addScale(1.06, log()) * unlimitBonus())}`, status: 0 },
   { id: 5, stat: 'Equipment Chance', value: `*${formatNumber(scale(1.08))}`, status: 1 },
   { id: 6, stat: 'Abyss weakness', value: `*${formatNumber(Math.max(inverseScale(1.0225), 0.1))}`, status: 1 },
-  { id: 7, stat: 'Overkill', value: `+${additive(1.35, log()).toFixed(0)}`, status: 2 },
+  { id: 7, stat: 'Overkill', value: `+${overkill()}`, status: 2 },
   { id: 8, stat: 'Ascension Shards Gain', value: `*${formatNumber(scale(1.045))}`, status: 3 },
   { id: 9, stat: 'Rebirth Shards Gain', value: `*${formatNumber(scale(1.025))}`, status: 3 },
   { id: 10, stat: 'Buff Exp Gain', value: `*${formatNumber(scale(1.035))}`, status: 4 },

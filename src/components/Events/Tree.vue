@@ -203,7 +203,7 @@ let radDescription = [
     "+1% HEAL per second when battle starts [MAX - 10%]",
     "When you were attacked, 30% TO STUN ENEMY FOR 0.5 SECONDS",
     "Level up if your Level is below 10% of MAX Level.(S)",
-    "x1.15 Max Level Mult",
+    "x1.1 Max Level Mult",
     "+0.1 Attack per Second for each boss killed [Max - 1.5]"
   ]
 

@@ -526,6 +526,7 @@ const statTabs = ['Level', 'IP', 'EXP', 'BUFF EXP', 'Equipment', 'Curse', 'Ascen
 const statSections = [
   {
     title: 'Level',
+    id: 'only level',
     content: [
       { desc: 'Min Level', value: '', color: 'lightgreen',  uppercase: true, },
       {
@@ -590,7 +591,7 @@ const statSections = [
       },
       {
         desc: 'Dimension [S5-Ω3t] [5]',
-        value: () => (Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 700, 0) / 100 ), 0)),
+        value: () => formatNumber(((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75))), true),
         color: '#d516d5',
       },
       {
@@ -735,11 +736,6 @@ const statSections = [
         color: '',
       },
       {
-        desc: 'Tree [Extra Level]',
-        value: () => ((perks.value[4].status? 0.15: 0)).toFixed(2),
-        color: 'lightgreen',
-      },
-      {
         desc: 'Amulets [Prefix]',
         value: () => (((amulets[0].prefix.status? 0.02: 0) + (amulets[1].prefix.status? 0.04: 0) + (amulets[2].prefix.status? 0.06: 0) + 
         (amulets[3].prefix.status? 0.08: 0)) * (hero.value.sp >= 99? 2: 1)).toFixed(2),
@@ -762,12 +758,12 @@ const statSections = [
       },
       {
         desc: 'Infinity',
-        value: () => ((hero.value.mainInfTier >= 10? (1.07 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))): 0)).toFixed(2),
+        value: () => ((hero.value.mainInfTier >= 10? (1.07 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0)).toFixed(2),
         color: 'gold',
       },
       {
         desc: 'Dimension [S5-Ω3t] [5]',
-        value: () => formatNumber(Math.max((1.05 ** ((hero.value.unlimitLevel - 700) / 75) - 1), 0), true),
+        value: () => formatNumber(((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75))) - 1, true),
         color: '#991099',
       },
       {
@@ -779,6 +775,11 @@ const statSections = [
         desc: 'Ring [Prefix]',
         value: () => formatNumber(hero.value.eqUpsMult['ring'].multLevel, true),
         color: '#66ffcc',
+      },
+      {
+        desc: 'Tree [Extra Level] [MULT]',
+        value: () => (perks.value[4].status? 1.1: 0),
+        color: 'lightgreen',
       },
       {
         desc: 'Total',
@@ -932,6 +933,7 @@ const statSections = [
   },
   {
     title: 'EXP',
+    id: 'only exp',
     content: [
       { desc: 'EXP', value: '', color: 'purple',  uppercase: true, },
       {
@@ -1021,13 +1023,13 @@ const statSections = [
         color: 'lightblue',
       },
       {
-        desc: 'Dimension [S5-Ω3t]',
+        desc: 'Dimension [S5-Ω3t] [5]',
         value: () => formatNumber(Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1), true),
         color: '#ed14ed',
       },
       {
-        desc: 'Dimension [S5-Ω3t] [Infinity Bonus]',
-        value: () => (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1),
+        desc: 'Dimension [S5-Ω3t] [5] [Infinity Bonus]',
+        value: () => (hero.value.dId == 'unlimitted'? 2.25 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1),
         color: '#ed14ed',
       },
       {
