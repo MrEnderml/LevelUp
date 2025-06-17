@@ -138,6 +138,16 @@ export const equipment = [
       { tier: 19, name: 'Celestial Ring [T10]-', bonus: { cap: 215, expMult: 12.5 } },
       { tier: 20, name: 'Celestial Ring [T11]-', bonus: { cap: 235, expMult: 13 } },
       { tier: 21, name: 'Celestial Ring [T12]-', bonus: { cap: 265, expMult: 13.5 } },
+      { tier: 22, name: 'Eternity Bright', bonus: { cap: 295, expMult: 14 } },
+      { tier: 23, name: 'Eternity Bright [T1]-', bonus: { cap: 330, expMult: 14.5 } },
+      { tier: 24, name: 'Eternity Bright [T2]-', bonus: { cap: 370, expMult: 15 } },
+      { tier: 25, name: 'Eternity Bright [T3]-', bonus: { cap: 410, expMult: 15.5 } },
+      { tier: 26, name: 'Eternity Bright [T4]-', bonus: { cap: 450, expMult: 16 } },
+      { tier: 27, name: 'Eternity Bright [T5]-', bonus: { cap: 500, expMult: 16.5 } },
+      { tier: 28, name: 'Eternity Bright [T6]-', bonus: { cap: 550, expMult: 17 } },
+      { tier: 29, name: 'Eternity Bright [T7]-', bonus: { cap: 600, expMult: 17.5 } },
+      { tier: 30, name: 'Eternity Bright [T8]-', bonus: { cap: 650, expMult: 18 } },
+      { tier: 31, name: 'Eternity Bright [T9]-', bonus: { cap: 700, expMult: 18.5 } },
     ]
   },
   {
@@ -168,6 +178,16 @@ export const equipment = [
       { tier: 22, name: 'Comet Ring ', bonus: { cap: 31, minLevel: 7 } },
       { tier: 23, name: 'Comet Ring ', bonus: { cap: 32, minLevel: 7 } },
       { tier: 24, name: 'Comet Ring ', bonus: { cap: 33, minLevel: 7 } },
+      { tier: 25, name: 'Comet Ring ', bonus: { cap: 34, minLevel: 7 } },
+      { tier: 26, name: 'Comet Ring ', bonus: { cap: 35, minLevel: 7 } },
+      { tier: 27, name: 'Comet Ring ', bonus: { cap: 36, minLevel: 7 } },
+      { tier: 28, name: 'Comet Ring ', bonus: { cap: 37, minLevel: 8 } },
+      { tier: 29, name: 'Comet Ring ', bonus: { cap: 38, minLevel: 8 } },
+      { tier: 30, name: 'Comet Ring ', bonus: { cap: 39, minLevel: 8 } },
+      { tier: 31, name: 'Comet Ring ', bonus: { cap: 40, minLevel: 8 } },
+      { tier: 32, name: 'Comet Ring ', bonus: { cap: 41, minLevel: 8 } },
+      { tier: 33, name: 'Comet Ring ', bonus: { cap: 42, minLevel: 8 } },
+      { tier: 34, name: 'Comet Ring ', bonus: { cap: 43, minLevel: 8 } },
     ]
   }
 ];

@@ -266,6 +266,7 @@ const hero = ref({
   stardustInfo: 0,
   timeKiller: 0,
   maxInfPenalty: 0,
+  infEvents: 0,
 });
 
 export function useHero() {

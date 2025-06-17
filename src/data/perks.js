@@ -169,7 +169,7 @@ export const perks = ref([
         description: "+0.2 MULT Rebirth Pts",
         value: 1.2,
         level: 0,
-        maxLevel: [0, 0, 1, 1, 1, 2, 3],
+        maxLevel: [0, 0, 0, 1, 1, 2, 3],
         baseCost: 200,
         infStatus: false,
         block: false,

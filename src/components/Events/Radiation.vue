@@ -30,7 +30,7 @@
 
     <div v-if="activeTab === 'perks'" class="radiation-perks">
       <h2>🧬 Radiation Perks
-        <button style="font-size: 14px;" v-if="hero.mainInfTier >= 4" @click="upAll">
+        <button style="font-size: 14px;" v-if="hero.mainInfTier >= 4 || hero.infEvents >= 4" @click="upAll">
         Upgrade All (Except Danger)
         </button>
         <Tooltip :text="() => `Reset Danger. You won't get mutagens back`">
@@ -90,7 +90,7 @@
         </span>
       </div>
 
-      <div class="row" v-if="hero.infTier >= 4">
+      <div class="row" v-if="hero.infTier >= 4 || hero.infEvents >= 4">
         <span class="label">Mirror of the Infinity [{{enemy.dangerEnemyLoot[1]}} / 1000]</span>
         <span class="value">
           <template v-if="enemy.danger < 150">Reach Danger 150</template>
@@ -267,7 +267,8 @@ const  formatNumber = (num, f = false) => {
   flex-direction: column;
   height: 100%;
   max-height: 100%;
-  width: 900px;
+  width: 100%; /* Вместо фиксированных 900px */
+  max-width: 1400px; /* Или 100% */
   gap: 1rem;
   font-family: 'Share Tech Mono', monospace;
   background: radial-gradient(circle at center, #0a0f0a, #0b0b12);
@@ -275,7 +276,7 @@ const  formatNumber = (num, f = false) => {
   color: #d4ff00;
   box-sizing: border-box;
   overflow: hidden;
-  margin-left: 120px;
+  margin-left: 180px;
 }
 
 @media (min-width: 768px) {

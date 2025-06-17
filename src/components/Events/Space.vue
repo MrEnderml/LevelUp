@@ -23,7 +23,7 @@
       <div class="bottom-bar" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount">
         <button v-if="enemy.isSpaceFight == 0" class="attack-button" @click="attackEnemy">⚔️ Attack</button>
         <button v-if="enemy.isSpaceFight == 2" class="attack-button" @click="LeaveEnemy">Leave</button>
-        <button v-if="hero.infTier >= 5 || hero.singularity >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
+        <button v-if="hero.infTier >= 5 || hero.infEvents >= 5 || hero.singularity >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
       </div>
     </div>
 
@@ -64,8 +64,8 @@ function stats(id){
   let corruption = (hero.value.dId == 'corruption'? 3: 1);
   switch(id){
     case 1: return formatNumber(spEnemy[hero.value.spCount].stats.hp * (1 + inf * 0.1) * corruption * abyssPenalty);
-    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + inf * 0.1) * corruption * abyssPenalty);
-    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + inf * 0.1) * corruption * abyssPenalty);
+    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + inf * 0.25) * corruption * abyssPenalty);
+    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + inf * 0.5) * corruption * abyssPenalty);
     case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + inf * 0.02) * (1 - 0.02 * hero.value.survivalLevel) * abyssPenalty).toFixed(2);
   }
 }

@@ -113,7 +113,7 @@ const def = computed(() => hero.value.def);
 
 function formationD(f) {
   switch(f.id){
-    case 3: return `DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, Equipment Chance, Ascnesion Soul Shards(Abyss [T2]))`
+    case 3: return `DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, Equipment Chance, Ascension Soul Shards(Abyss [T2]))`
     default: return f.description;
   }
 }

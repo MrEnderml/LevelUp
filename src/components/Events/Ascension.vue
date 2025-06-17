@@ -25,7 +25,7 @@
         >
           TIER-R
         </button>
-        <button style="margin-left: 10px" v-if="hero.mainInfTier >= 2 && tier >= 3"
+        <button style="margin-left: 10px" v-if="(hero.infEvents >= 2 || hero.mainInfTier >= 2) && tier >= 3"
           class="active-inf"
           @click="selectTier(6)"
         >
@@ -200,7 +200,7 @@ function getPerkDescription(perk) {
 function formatNumber(num) {
   if (num < 1000000) return Math.floor(num).toString();
 
-  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d", "u", "D", "T", "qt", "Qd", "sd"];
   const tier = Math.floor(Math.log10(num) / 3);
 
   const suffix = units[tier];
@@ -213,7 +213,7 @@ function formatNumber(num) {
 
 <style scoped>
 .ascension-panel {
-  background: linear-gradient(145deg, #1f2d46, #2e3b66); /* Градиентный фон */
+  background: linear-gradient(145deg, #1f2d46, #2e3b66); 
   color: #f0f0f0;
   padding: 20px;
   border-radius: 10px;

@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="auto-panel-wrapper">
-      <div class="auto-panel" v-if="hero.mainInfTier >= 2">
+      <div class="auto-panel" v-if="hero.mainInfTier >= 2 || hero.infEvents >= 2">
         <h3>🌌 Auto Ascension</h3>
         <label>
           Min Shards:
@@ -50,7 +50,7 @@
         </label>
       </div>
 
-      <div class="auto-panel" v-if="hero.mainInfTier >= 3">
+      <div class="auto-panel" v-if="hero.mainInfTier >= 3 || hero.infEvents >= 3">
         <h3>♻️ Auto Rebirth</h3>
         <label>
           Min Rebirth Pts:
@@ -365,6 +365,7 @@ const resetGame = () => {
 const resetInf = () => {
   if (hero.value.infProgress == false && hero.value.dId == 'main') {
     hero.value.infProgress = true;
+    hero.value.infEvents--;
   }
 };
 

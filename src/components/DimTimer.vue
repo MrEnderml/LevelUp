@@ -14,7 +14,7 @@
       <span>Mutagen/min:</span>
       <span class="green">{{ formatNumber(avgLootPerMinute.mutagen) }}</span>
     </div>
-    <div class="afk-row" v-if="hero.spCount >= 1">
+    <div class="afk-row" v-if="hero.spCount >= 1 && stardustStage()">
       <span>Stardust/min:</span>
       <span class="gold">{{ formatNumber(avgLootPerMinute.stardust) }}</span>
     </div>
@@ -45,6 +45,12 @@ const { enemy } = useEnemy();
 function curDimension(){
   let d = dimensions.value.find(d => d.id === hero.value.dId);
   return d ? `[${d.name}] [${d.idx}]` : '[Unknown]';
+}
+
+function stardustStage(){
+  let stage = 39 - (hero.value.spCount >= 8? 1: 0) - (hero.value.spCount >= 14? 2: 0) - (hero.value.spCount >= 20? 2: 0) - 
+  (hero.value.spCount >= 32? 3: 0) - (hero.value.spCount >= 39? 3: 0) - (hero.value.spCount >= 44? 4: 0);
+  return hero.value.stage >= stage;
 }
 
 function curTier(){

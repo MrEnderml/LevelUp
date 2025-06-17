@@ -22,8 +22,8 @@
             Rebirth to stage 1, but you will lose level, tree, equipment, souls.<br>
             Every tier provides stonger enemies and high rewards
             </p>
-            <p v-if="hero.infTier < 3">Next rebirth Tier: {{Math.min(100 + (10 * hero.rebirthTier), 300)}} Level</p>
-            <p v-if="hero.infTier >= 3">+{{Math.floor((hero.level - 90) / 10 > hero.rebirthTier? (hero.level - (90 + 10 * hero.rebirthTier)) / 10: 0)}} Rebirth Tier</p>
+            <p v-if="hero.infTier < 3 || hero.infEvents < 3">Next rebirth Tier: {{Math.min(100 + (10 * hero.rebirthTier), 300)}} Level</p>
+            <p v-if="hero.infTier >= 3 || hero.infEvents >= 3">+{{Math.floor((hero.level - 90) / 10 > hero.rebirthTier? (hero.level - (90 + 10 * hero.rebirthTier)) / 10: 0)}} Rebirth Tier</p>
             <p v-if="(hero.rebirthTier + 1)%5 == 0 && hero.rebirthTier < 21">Unlock new Rebirth Affect</p>
             <p v-if="(hero.rebirthTier + 1)%10 == 0 && hero.rebirthTier >= 21 && hero.rebirthTier < 71">Unlock new Rebirth Affect</p>
             <p v-if="hero.rebirthPts <= 1e5">You gained: {{format(hero.totalRebirthPts)}} Pts</p>
@@ -62,7 +62,7 @@
           </div>
         </button>
       </div>
-      <div class="soul-wrapper" v-if="hero.infTier >= 6 && !hero.isSingularity && hero.dId != 'soulD'">
+      <div class="soul-wrapper" v-if="(hero.infEvents >= 6 || hero.infTier >= 6) && !hero.isSingularity && hero.dId != 'soulD'">
         <button class="btnSoul" @click="performSoulD" >
           <img :src="redSkull" width="24px" height="24px" v-if="hero.soulD" />
           <span v-if="!hero.soulD">💀</span>
@@ -444,6 +444,7 @@ const performInf = () => {
   hero.value.perform = true;
   hero.value.dTimer = 0;
   hero.value.infTier = hero.value.mainInfTier;
+  hero.value.infEvents = hero.value.mainInfTier + 1;
 
   perform();
   hero.value.activeBuffs = [];

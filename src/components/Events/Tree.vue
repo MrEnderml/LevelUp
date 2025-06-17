@@ -3,7 +3,7 @@
     <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TIER[{{hero.treeTier+1}}]</h2>
     <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ Math.floor(hero.perkPoints) }}</p>
 
-    <div class="auto-buttons" v-if="hero.infTier >= 1 || hero.singularity >= 3">
+    <div class="auto-buttons" v-if="hero.infEvents >= 1 || hero.infTier >= 1 || hero.singularity >= 3">
       <button
         @click="toggleAuto"
         :class="['btn', 'btn-auto', { active: hero.treeAuto }]"
@@ -165,7 +165,7 @@ const resetPerks = () => {
     }
   }
 
-  hero.value.perkPoints = hero.value.freeTreePoints + hero.value.eLevel * (hero.value.infTier >= 1? 2: 1);
+  hero.value.perkPoints = hero.value.freeTreePoints + hero.value.eLevel * (hero.value.infTier >= 1 || hero.value.infEvents >= 1? 2: 1);
 };
 
 
