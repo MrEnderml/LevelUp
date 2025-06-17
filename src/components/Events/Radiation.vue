@@ -267,8 +267,7 @@ const  formatNumber = (num, f = false) => {
   flex-direction: column;
   height: 100%;
   max-height: 100%;
-  width: 100%; /* Вместо фиксированных 900px */
-  max-width: 1400px; /* Или 100% */
+  width: 900px;
   gap: 1rem;
   font-family: 'Share Tech Mono', monospace;
   background: radial-gradient(circle at center, #0a0f0a, #0b0b12);
@@ -276,7 +275,7 @@ const  formatNumber = (num, f = false) => {
   color: #d4ff00;
   box-sizing: border-box;
   overflow: hidden;
-  margin-left: 180px;
+  margin-left: 120px;
 }
 
 @media (min-width: 768px) {
@@ -401,9 +400,9 @@ const  formatNumber = (num, f = false) => {
   font-size: 0.85rem;
   animation: fadeInUp 0.4s ease-out both;
   width: 220px;
-  height: 200px;
+  height: 250px;
   min-width: 220px;
-  min-height: 200px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
