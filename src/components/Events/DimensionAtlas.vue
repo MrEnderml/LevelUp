@@ -341,7 +341,7 @@ const selectDimension = (dimension) => {
     }
   }
 
-  
+  if(newD.id == 'main') hero.value.infEvents = hero.value.mainInfTier;
 
   hero.value.infTier = newD.id === 'main'
     ? (hero.value.mainInfTier ?? 0)

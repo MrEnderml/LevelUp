@@ -140,7 +140,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
-      test();
+      //test();
 
       hero.value.dTimer += (interval / 1000);
 
@@ -2951,7 +2951,7 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.isRebirth || auto.value.rebirth.enabled){
       hero.value.rebirthPts += hero.value.totalRebirthPts;
 
-      if(hero.value.infTier < 3 || hero.value.infEvents < 3){
+      if(hero.value.infTier < 3 || (hero.value.infEvents < 3 && hero.value.dId == 'main')){
         if(hero.value.level >= 100 + 10 * hero.value.rebirthTier && hero.value.rebirthTier < 20){
             hero.value.rebirthTier++;
         }
@@ -3174,7 +3174,7 @@ export function useBattle(hero, enemy, buffs) {
     //dimensions.value[2].infTier = 5;
     
     //hero.value.singularity = 0;   
-    //hero.value.eLevel = 600;
+    //hero.value.eLevel = 700;
     //hero.value.infEvents = -3;
     //hero.value.stage = 20;
     //hero.value.spCount = 24;              

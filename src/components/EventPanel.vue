@@ -227,7 +227,7 @@ function eventReq (e){
   if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
   if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
   if(e == 'Radiation') return hero.value.spCount < 5;
-  if(e == 'Infinity') return (hero.value.dId == 'main' && hero.value.infTier < 1 && hero.value.level < 700);
+  if(e == 'Infinity') return (hero.value.dId == 'main' && (hero.value.infTier < 1 && hero.value.infEvents < 1) && hero.value.level < 700);
   if(e == 'D-Atlas') return hero.value.abyssDStages < 80;
   if(e == 'Info') return hero.value.maxStage < 1;
   if(e == 'Settings') return hero.value.maxStage < 1;

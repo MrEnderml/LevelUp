@@ -28,7 +28,7 @@
         </div>
 
         <div class="perk-buttons">
-          <button class="btnInf" v-if="!perk.status && hero.infTier >= 1 && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
+          <button class="btnInf" v-if="(hero.infTier >= 1 || hero.infEvents >= 1) && !perk.status && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
           <button class="radPerks tooltip-wrapper" @click="radiationPerks(perk)" v-if="perk.id < 7 && radPerks[7].level && !perk.infStatus">☢
               <div class="tooltip">
                 Click to activate/deactivate radiation perk. 
