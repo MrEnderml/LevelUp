@@ -180,7 +180,7 @@ const hero = ref({
   afkSoulBoost: 1,
   capInfPerks: 1,
   mutations: 0,
-  infProgress: true,
+  infProgress: false,
   infoActive: {
     lore: true,
     tree: true,

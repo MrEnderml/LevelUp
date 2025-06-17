@@ -140,7 +140,7 @@ export function useBattle(hero, enemy, buffs) {
       infoHandle();
       singularityHandle();
       dHandle();
-      //test();
+      test();
 
       hero.value.dTimer += (interval / 1000);
 
@@ -1456,8 +1456,10 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.infPenalty = (hero.value.dId !== 'main' && hero.value.mainInfTier >= 20? hero.value.infPenalty * infPenaltyScale(hero.value.mainInfTier, 35): hero.value.infPenalty);
     if(!hero.value.infProgress && hero.value.level >= 700 && hero.value.dId == 'main'){
       hero.value.infProgress = true;
-      hero.value.mainInfTier = Math.min(hero.value.mainInfTier + 1, 40);
-      hero.value.infTier = hero.value.mainInfTier;
+      if(hero.value.infEvents >= 1 || hero.value.mainInfTier >= 1){
+        hero.value.mainInfTier = Math.min(hero.value.mainInfTier + 1, 40);
+        hero.value.infTier = hero.value.mainInfTier;
+      }
     }
 
     let infPower = Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1);
@@ -3171,11 +3173,11 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.infTier = 5;
     //dimensions.value[2].infTier = 5;
     
-    hero.value.singularity = 0;   
-    hero.value.eLevel = 700;
+    //hero.value.singularity = 0;   
+    //hero.value.eLevel = 600;
     //hero.value.infEvents = -3;
-    hero.value.stage = 20;
-    hero.value.spCount = 24;              
+    //hero.value.stage = 20;
+    //hero.value.spCount = 24;              
   }
 
   createEnemy();
