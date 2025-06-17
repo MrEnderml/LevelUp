@@ -293,6 +293,7 @@ const selectDimension = (dimension) => {
 
   hero.value.dTimer = 0;
   killHistory.length = 0;
+  hero.value.infEvents = 0;
 
 
   if(d_req(newD))
