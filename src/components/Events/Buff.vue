@@ -96,7 +96,7 @@ const toggleBuff = (id) => {
     } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.value.rebirthTier >= 15 && hero.value.isAbyss? 1: 0) + (hero.value.spCount >= 43? 1: 0)) {
       hero.value.spActiveBuffs.push(id);
     }
-  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier && (!hero.value.soulD || hero.value.dId == 'soulD')){
+  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier && !hero.value.isTravell && (!hero.value.soulD || hero.value.dId == 'soulD')){
     const index = hero.value.activeBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.activeBuffs.splice(index, 1);

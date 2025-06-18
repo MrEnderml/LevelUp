@@ -181,6 +181,17 @@ const dimensions = ref([
   { id: 'abyss-d', svg: getSvgIconHTML('galaxy5', '2em'), x: 600, y: -250, color: '#90caf9' },
   { id: 'bh', svg: getSvgIconHTML('singularity', '2em'), x: -600, y: 50, color: '#90caf9', status: hero.value.rebirthPts >= 1e7 },
   { id: 'd-corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
+  { id: 'd-hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9' },
+  { id: 'd-damage', svg: getSvgIconHTML('galaxy1', '2em'), x: 650, y: -400, color: '#90caf9' },
+  { id: 'd-overstage', svg: getSvgIconHTML('galaxy17', '2em'), x: 750, y: -550, color: '#90caf9' },
+  { id: 'd-survival-2', svg: getSvgIconHTML('galaxy3', '2em'), x: 850, y: -550, color: '#90caf9' },
+  { id: 'd-danger', svg: getSvgIconHTML('galaxy14', '2em'), x: 700, y: -150, color: '#90caf9' },
+  { id: 'd-noBuffs', svg: getSvgIconHTML('galaxy10', '2em'), x: 500, y: -150, color: '#90caf9' },
+  { id: 'd-noMinLevel', svg: getSvgIconHTML('galaxy7', '2em'), x: 250, y: -250, color: '#90caf9' },
+  { id: 'd-next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9' },
+  { id: 'd-noTree', svg: getSvgIconHTML('galaxy5', '2em'), x: 300, y: -50, color: '#90caf9' },
+  { id: 'd-noEq', svg: getSvgIconHTML('galaxy6', '2em'), x: 150, y: 50, color: '#90caf9' },
+  { id: 'd-noSpace', svg: getSvgIconHTML('galaxy18', '2em'), x: 150, y: 125, color: '#90caf9' },
 ].map(dim => ({
   ...dim,
   status: dim.status ?? d_data.value.find(d => d.id === dim.id)?.status ?? false
@@ -214,6 +225,18 @@ const links = ref([
   { id: 25, from: 'main', to: 'bh' },
   { id: 26, from: 'noStats', to: 'noMinLevel' },
   { id: 27, from: 'eternity', to: 'd-corruption' },
+  { id: 28, from: 'eternity', to: 'd-hard' },
+  { id: 29, from: 'd-corruption', to: 'd-damage' },
+  { id: 30, from: 'd-hard', to: 'd-damage' },
+  { id: 31, from: 'd-damage', to: 'd-overstage' },
+  { id: 32, from: 'd-overstage', to: 'd-survival-2' },
+  { id: 33, from: 'd-damage', to: 'd-danger' },
+  { id: 34, from: 'd-damage', to: 'd-noBuffs' },
+  { id: 35, from: 'd-noBuffs', to: 'd-noMinLevel' },
+  { id: 36, from: 'd-noBuffs', to: 'd-next' },
+  { id: 37, from: 'd-next', to: 'd-noTree' },
+  { id: 38, from: 'd-noTree', to: 'd-noEq' },
+  { id: 39, from: 'd-noEq', to: 'd-noSpace' },
 ].map(link => ({
   ...link,
   status: link.status ?? d_data.value.find(d => d.id === link.to)?.status ?? false
@@ -614,12 +637,58 @@ function d_req(d){
   if (d.id === 'eternity') {
     const prev1 = d_data.value.find(dim => dim.id === 'corruption');
     const prev2 = d_data.value.find(dim => dim.id === 'hard');
+    return false;
     if (prev1.infTier < 35 || prev2.infTier < 15 || hero.value.mainInfTier < 100) return true;
   }
 
   if (d.id === 'd-corruption') {
     return false;
   }
+
+  if (d.id === 'd-hard') {
+    return false;
+  }
+
+  if (d.id === 'd-damage') {
+    return true;
+  }
+
+  if (d.id === 'd-overstage') {
+    return true;
+  }
+
+  if (d.id === 'd-survival-2') {
+    return true;
+  }
+
+  if (d.id === 'd-danger') {
+    return true;
+  }
+
+  if (d.id === 'd-noBuffs') {
+    return true;
+  }
+
+  if (d.id === 'd-noMinLevel') {
+    return true;
+  }
+
+  if (d.id === 'd-next') {
+    return true;
+  }
+
+  if (d.id === 'd-noTree') {
+    return true;
+  }
+
+  if (d.id === 'd-noEq') {
+    return true;
+  }
+
+  if (d.id === 'd-noSpace') {
+    return true;
+  }
+
 
   return false;
 }

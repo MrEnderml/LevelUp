@@ -117,7 +117,7 @@ const infPerk = (perk) => {
   if(perk.id == 7 || perk.id == 10 || perk.id == 14)
     return;
 
-  hero.value.capInfPerks = hero.value.infTier;
+  hero.value.capInfPerks = hero.value.infTier + 1;
 
   if(perk.infStatus || hero.value.capInfPerks > perks.value.filter(p => p.infStatus).length){
     perk.infStatus = !perk.infStatus? true: false;

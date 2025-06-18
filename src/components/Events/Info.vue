@@ -870,6 +870,7 @@ const statSections = [
   },
   {
     title: 'IP',
+    id: 'only ip',
     content: [
       { desc: 'IP', value: '', color: 'gold',  uppercase: true, },
       {
@@ -888,8 +889,13 @@ const statSections = [
         color: 'orange',
       },
       {
+        desc: 'Discord support',
+        value: () => (200),
+        color: 'blue',
+      },
+      {
         desc: 'Total',
-        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + Object.values(hero.value.secrets).filter(v => v).length * 20),
+        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + 200 + Object.values(hero.value.secrets).filter(v => v).length * 20),
         color: 'gold',
       },
       { desc: 'IP MULT', value: '', color: 'gold',  uppercase: true, },
