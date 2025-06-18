@@ -117,7 +117,7 @@ const icons = {
 
 const eqUpsReq = {
     sword: 1,
-    armor: 6,
+    armor: 7,
     boots: 11,
     ring: 21,
     spRing: 1

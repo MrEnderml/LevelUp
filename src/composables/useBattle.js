@@ -153,7 +153,7 @@ export function useBattle(hero, enemy, buffs) {
         hero.value.activeBuffs = hero.value.spActiveBuffs;
         hero.value.spActiveBuffs = temp;
 
-        buffs.value[8].time = 0;
+        buffs.value[8].time = 0 + (buffs.value[8].tier >= 4? 250: 0);
         buffs.value[1].stun = 0;
         buffs.value[3].combo = 0;
 
@@ -2038,7 +2038,7 @@ export function useBattle(hero, enemy, buffs) {
   const overkillHandle = () => {
     var totalKills = 1
 
-    totalKills += (ascenPerks[21].level? 1: 0) + (ascenPerks[35].level) + (hero.value.mainInfTier >= 2? infBase(500, 7): 0) +
+    totalKills += (ascenPerks[21].level? 1: 0) + (ascenPerks[35].level) + (hero.value.mainInfTier >= 2? infBase(450, 7): 0) +
     (1 * (dimensions.value[19].infTier - 20)) + hero.value.eqUpsMult['boots'].overkill;
 
     if (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 1){
@@ -3175,9 +3175,13 @@ export function useBattle(hero, enemy, buffs) {
     
     //hero.value.singularity = 0;   
     //hero.value.eLevel = 700;
-    //hero.value.infEvents = -3;
+   
     //hero.value.stage = 20;
-    //hero.value.spCount = 24;              
+    //hero.value.spCount = 24;     
+    //hero.value.infTier = 6;
+   // dimensions.value[2].infTier = 6;   
+   //hero.value.eLevel = 700;
+    //dimensions.value[2].infTier = 0;
   }
 
   createEnemy();

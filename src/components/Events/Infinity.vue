@@ -85,7 +85,7 @@ const linearDiff = (base, mod = 1) => (((base + sBonus()) ** (inf.value / (sqrt(
 const minLevel = () => Math.floor(inf.value / (200 - (sBonus() > 0? 20: 0)));
 const pot = () => Math.floor(inf.value / (250 - (sBonus() > 0? 25: 0)));
 const danger = () => Math.floor(inf.value / (15 - (sBonus() > 0? 1: 0)));
-const overkill = () => Math.floor(inf.value / (500 - (sBonus() > 0? 50: 0)));
+const overkill = () => Math.floor(inf.value / (450 - (sBonus() > 0? 50: 0)));
 
 function unlimitBonus(){
   let total = (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) * 
