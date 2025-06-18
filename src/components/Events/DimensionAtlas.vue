@@ -637,7 +637,6 @@ function d_req(d){
   if (d.id === 'eternity') {
     const prev1 = d_data.value.find(dim => dim.id === 'corruption');
     const prev2 = d_data.value.find(dim => dim.id === 'hard');
-    return false;
     if (prev1.infTier < 35 || prev2.infTier < 15 || hero.value.mainInfTier < 100) return true;
   }
 
