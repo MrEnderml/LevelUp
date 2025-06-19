@@ -46,6 +46,12 @@ const enemy = ref({
     mutagen: 0,
     stardust: 0,
   },
+  totalSpaceStats: {
+    hp: 1,
+    def: 1,
+    dmg: 1
+  },
+  totalSpaceInfPenalty: 1,
 });
 
 const villainNames = [

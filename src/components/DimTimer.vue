@@ -57,6 +57,8 @@ function curTier(){
   let d = dimensions.value.find(d => d.id === hero.value.dId);
   if (!d) return '[?]';
   
+  if(hero.value.dId.startsWith('d-')) return `[${d.infTier}]`;
+
   if (hero.value.dId === 'main') return `[${hero.value.mainInfTier}]`;
   if (['unlimitted', 'abyss-d', 'survival-2'].includes(hero.value.dId))
     return `[${d.infTier}]`;

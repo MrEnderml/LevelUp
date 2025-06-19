@@ -77,7 +77,36 @@ const filterCursesTier = computed(() =>
 
 function tEffect(tier){
   return tier.effect.replace(/(\d+(\.\d+)?)/g, (match) => {
-    const newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2);
+    let newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2);
+    if(tier.effect.startsWith('Penetrate'))
+      newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 100)).toFixed(2)
+    else if(tier.effect.startsWith('Heal'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 0.5)).toFixed(2)
+    else if(tier.effect.startsWith('Block'))
+      newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 90)).toFixed(2)  
+    else if(tier.effect.endsWith('Attack Per Second'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 4)).toFixed(2) 
+    else if(tier.effect.endsWith('avoid attack'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.35, 1), 90)).toFixed(2)
+    else if(tier.effect.endsWith('avoid attack'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.35, 1), 90)).toFixed(2) 
+    else if(tier.effect.includes('to STUN for'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2)
+    else if(tier.effect.includes('to CRIT'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 1000)).toFixed(2)   
+    else if(tier.effect.startsWith('Each of your'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.2, 1), 90)).toFixed(2)   
+    else if(tier.effect.startsWith('Enemy gets'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.4, 1), 90)).toFixed(2) 
+    else if(tier.effect.endsWith('Max HP'))
+      newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2)  
+    else if(tier.effect.includes('to bleed by'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2) 
+    else if(tier.effect.startsWith('The Hero'))
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2)
+    else if(tier.effect.endsWith('Attack'))
+      newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2)     
+    
     return newVal;
   });
 }

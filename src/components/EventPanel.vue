@@ -24,7 +24,7 @@
       <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'EXP' }"><sup style="font-size: 8px">ℹ️</sup><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
     </div>
     <Tooltip style="text-align: center" :text="() => corrList()">
-      <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{(hero.corruption.toFixed(2))}}]</span>
+      <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{corruptionShow()}}]</span>
     </Tooltip>
     <h3>📜 Events</h3>
     <div class="wrapper-events">
@@ -198,6 +198,14 @@ function corrList() {
   str += `<span>Total: [${ (hero.value.corruption < 1? hero.value.corruption: hero.value.overcorruption + 1).toFixed(3)}]</span><br>`
 
   return str;
+}
+
+function corruptionShow(){
+  if(hero.value.dId == 'd-corruption'){
+    return (Math.max(hero.value.corruption, hero.value.overcorruption + 1)).toFixed(2);
+  } else {
+    return (hero.value.corruption).toFixed(2)
+  }
 }
 
 function eventReq (e){

@@ -27,7 +27,7 @@
         :y1="getPos(link.from).y"
         :x2="getPos(link.to).x"
         :y2="getPos(link.to).y"
-        :stroke="(link.id >= 27 && !d_req(getDimension(link.to))) ? '#f44336' : (!d_req(getDimension(link.to)) ? '#66ffcc' : '#444')"
+        :stroke="(dark_d.includes(link.id) && !d_req(getDimension(link.to))) ? '#f44336' : (!d_req(getDimension(link.to)) ? '#66ffcc' : '#444')"
         stroke-width="2"
         :style="{
           filter: !d_req(getDimension(link.to)) ? 'drop-shadow(0 0 4px #66ffcc)' : 'none',
@@ -151,7 +151,7 @@ const artifacts = [
   { id: 'void', x: 500, y: 300, color: '#00000088', radius: 20, label: 'Void' },
 ]
 
-
+const dark_d = [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 
 const dimensions = ref([
   { id: 'main', name: '🌍', x: 400, y: 300, color: '#4caf50' },
@@ -166,7 +166,7 @@ const dimensions = ref([
   { id: 'next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9' },
   { id: 'time', svg: getSvgIconHTML('galaxy3', '2em'), x: 400, y: -250, color: '#90caf9' },
   { id: 'noStats', svg: getSvgIconHTML('galaxy2', '2em'), x: 250, y: -250, color: '#90caf9' },
-  { id: 'noMinLevel', svg: getSvgIconHTML('galaxy7', '2em'), x: 50, y: -250, color: '#90caf9' },
+  { id: 'noMinLevel', svg: getSvgIconHTML('galaxy8', '2em'), x: 50, y: -250, color: '#90caf9' },
   { id: 'noBuffs', svg: getSvgIconHTML('galaxy10', '2em'), x: 500, y: -150, color: '#90caf9' },
   { id: 'danger', svg: getSvgIconHTML('galaxy14', '2em'), x: 700, y: -250, color: '#90caf9' },
   { id: 'damage', svg: getSvgIconHTML('galaxy1', '2em'), x: 650, y: -400, color: '#90caf9' },
@@ -178,7 +178,7 @@ const dimensions = ref([
   { id: 'corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
   { id: 'hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9' },
   { id: 'eternity', svg: getSvgIconHTML('galaxyEternity', '2em'), x: 300, y: -450, color: '#90caf9', status: true },
-  { id: 'abyss-d', svg: getSvgIconHTML('galaxy5', '2em'), x: 600, y: -250, color: '#90caf9' },
+  { id: 'abyss-d', svg: getSvgIconHTML('galaxy13', '2em'), x: 600, y: -250, color: '#90caf9' },
   { id: 'bh', svg: getSvgIconHTML('singularity', '2em'), x: -600, y: 50, color: '#90caf9', status: hero.value.rebirthPts >= 1e7 },
   { id: 'd-corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
   { id: 'd-hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9' },
@@ -189,9 +189,13 @@ const dimensions = ref([
   { id: 'd-noBuffs', svg: getSvgIconHTML('galaxy10', '2em'), x: 500, y: -150, color: '#90caf9' },
   { id: 'd-noMinLevel', svg: getSvgIconHTML('galaxy7', '2em'), x: 250, y: -250, color: '#90caf9' },
   { id: 'd-next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9' },
-  { id: 'd-noTree', svg: getSvgIconHTML('galaxy5', '2em'), x: 300, y: -50, color: '#90caf9' },
-  { id: 'd-noEq', svg: getSvgIconHTML('galaxy6', '2em'), x: 150, y: 50, color: '#90caf9' },
+  { id: 'd-unlimitted', svg: getSvgIconHTML('galaxy7', '2em'), x: 600, y: 50, color: '#90caf9' },
+  { id: 'd-noTree', svg: getSvgIconHTML('galaxy14', '2em'), x: 300, y: -50, color: '#90caf9' },
+  { id: 'd-noEq', svg: getSvgIconHTML('galaxy15', '2em'), x: 150, y: 50, color: '#90caf9' },
   { id: 'd-noSpace', svg: getSvgIconHTML('galaxy18', '2em'), x: 150, y: 125, color: '#90caf9' },
+  { id: 'radiation', svg: getSvgIconHTML('galaxy16', '2em'), x: 200, y: -450, color: '#90caf9' },
+  { id: 'noMaxLevel', svg: getSvgIconHTML('galaxy17', '2em'), x: 200, y: -350, color: '#90caf9' },
+  { id: 'eternity-2', svg: getSvgIconHTML('galaxy18', '2em'), x: -100, y: -600, color: '#90caf9' },
 ].map(dim => ({
   ...dim,
   status: dim.status ?? d_data.value.find(d => d.id === dim.id)?.status ?? false
@@ -235,8 +239,12 @@ const links = ref([
   { id: 35, from: 'd-noBuffs', to: 'd-noMinLevel' },
   { id: 36, from: 'd-noBuffs', to: 'd-next' },
   { id: 37, from: 'd-next', to: 'd-noTree' },
-  { id: 38, from: 'd-noTree', to: 'd-noEq' },
-  { id: 39, from: 'd-noEq', to: 'd-noSpace' },
+  { id: 38, from: 'd-next', to: 'd-unlimitted' },
+  { id: 39, from: 'd-noTree', to: 'd-noEq' },
+  { id: 40, from: 'd-noEq', to: 'd-noSpace' },
+  { id: 41, from: 'eternity', to: 'radiation' },
+  { id: 42, from: 'radiation', to: 'noMaxLevel' },
+  { id: 43, from: 'radiation', to: 'eternity-2' },
 ].map(link => ({
   ...link,
   status: link.status ?? d_data.value.find(d => d.id === link.to)?.status ?? false
@@ -308,6 +316,22 @@ const endDrag = () => {
 
 const getPos = (id) => dimensions.value.find(d => d.id === id)
 
+const dimensionGraph = {
+  26: [26],
+  27: [27],
+  28: [28, 26, 27],
+  29: [29, 28, 27, 26],
+  30: [30, 29, 28, 27, 26],
+  31: [31, 28, 27, 26],
+  32: [32, 31, 28, 27, 26],
+  33: [33, 32, 31, 28, 27, 26],
+  34: [34, 32, 31, 28, 27, 26],
+  35: [35, 34, 32, 31, 28, 27, 26],
+  36: [36, 35, 34, 32, 31, 28, 27, 26],
+  37: [37, 36, 35, 34, 32, 31, 28, 27, 26],
+  38: [38, 34, 32, 31, 28, 27, 26],
+};
+
 const selectDimension = (dimension) => {
   if(hero.value.isSingularity) return;
   const id = dimension.id;
@@ -348,6 +372,13 @@ const selectDimension = (dimension) => {
     });
   }
 
+  if(newD.id.startsWith('d-'))
+    selectDarkD(newD);
+  else 
+    hero.value.darkId = [];
+  console.log(hero.value.darkId);
+
+
   if(hero.value.dId == newD.id && hero.value.dId !== 'time')
     return;
 
@@ -373,6 +404,24 @@ const selectDimension = (dimension) => {
   hero.value.dId = newD.id;
 
   performD(newD, currentD);
+}
+
+const selectDarkD = (newD) => {
+  const darkDimensions = d_data.value.filter(d => d.id.startsWith('d-'));
+  const newActiveIdx = dimensionGraph[newD.idx] || [];
+  const newActiveIds = newActiveIdx
+    .map(idx => d_data.value.find(d => d.idx === idx))
+    .filter(d => d && d.id.startsWith('d-'))
+    .map(d => d.id);
+
+  for (const id of newActiveIds) {
+    if (!hero.value.darkId.includes(id)) {
+      hero.value.darkId.push(id);
+    }
+  }
+
+  hero.value.darkId = hero.value.darkId.filter(id => newActiveIds.includes(id));
+
 }
 
 const viewBoxXOffset = computed(() => {
@@ -453,18 +502,16 @@ function darkDimensions(d){
 
   if(d_req(d)) str += `<span style="color: red">${d.c}</span><br>`;
 
-  if(d.id == 'eternity' && d.status == false) str += `Enter the Dark Side of the Dimensions. The Dark Dimensions have an unlimited Infinity Cap, but you need to reach level 1400 to gain the next tier. The next Infinity Tier is harder than previous one. The Infinity Penalty reduction does not apply between these dimensions. The dimensions are linked to each other: the next dimension takes power from the previous dimension. `;
+  if(d.id == 'eternity' && d.status == false) str += `Enter the Dark Side of the Dimensions. The Dark Dimensions have an unlimited Infinity Cap, but you need to reach level 1400 to gain the next tier. The next Infinity Tier is harder than previous one. The Infinity Penalty reduction does not apply between these dimensions. The dimensions are linked to each other: the next dimension takes a part of power from the previous dimension. <br>`;
   else str += `<span>${d.d}</span><br><br>`;
 
-  if(d.id != 'eternity') str += `<span style="color: gold">Infinity [T${hero.value.infTier}]</span><br><br>`
+  if(d.id != 'eternity') str += `<span style="color: gold">Infinity [T${d.infTier}]</span><br><br>`
 
 
   if(d.id == 'eternity' && d.status == false) str += ``;
   else str += `Reward: <span>${d.r}</span><br>`;
 
 
-
-  if(d.sp != '') str += `Special Reward: <span>${d.sp}</span><br>`;
   if(d.id == hero.value.dId) str += `<span style="color: green">[You are here now]</span><br>`
   if(hero.value.isSingularity) str += `<span style="color: #66ffcc">You are in Singularity right now</span><br>`
 
@@ -640,6 +687,7 @@ function d_req(d){
     if (prev1.infTier < 35 || prev2.infTier < 15 || hero.value.mainInfTier < 100) return true;
   }
 
+
   if (d.id === 'd-corruption') {
     return false;
   }
@@ -688,6 +736,23 @@ function d_req(d){
     return true;
   }
 
+  if (d.id === 'd-unlimitted') {
+    return true;
+  }
+
+  if (d.id === 'radiation') {
+    return true;
+  }
+
+  if (d.id === 'noMaxLevel') {
+    return true;
+  }
+
+  if (d.id === 'eternity-2') {
+    return true;
+  }
+
+  
 
   return false;
 }

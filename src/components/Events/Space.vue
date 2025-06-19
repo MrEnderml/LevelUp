@@ -59,14 +59,11 @@ function switchTab(tab) {
 }
 
 function stats(id){
-  let inf = hero.value.infTier - hero.value.infPenalty/2;
-  let abyssPenalty = (hero.value.abyssDStages >= 160 && hero.value.spCount >= 15? Math.max(1 / (1.01 ** (hero.value.abyssDStages - 159)), 0.1): 1);
-  let corruption = (hero.value.dId == 'corruption'? 3: 1);
   switch(id){
-    case 1: return formatNumber(spEnemy[hero.value.spCount].stats.hp * (1 + inf * 0.1) * corruption * abyssPenalty);
-    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + inf * 0.25) * corruption * abyssPenalty);
-    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + inf * 0.5) * corruption * abyssPenalty);
-    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + inf * 0.02) * (1 - 0.02 * hero.value.survivalLevel) * abyssPenalty).toFixed(2);
+    case 1: return formatNumber(spEnemy[hero.value.spCount].stats.hp * (1 + enemy.value.totalSpaceInfPenalty * 0.1) * enemy.value.totalSpaceStats.hp);
+    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + enemy.value.totalSpaceInfPenalty * 0.25) * enemy.value.totalSpaceStats.dmg);
+    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + enemy.value.totalSpaceInfPenalty * 0.5) * enemy.value.totalSpaceStats.def);
+    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + enemy.value.totalSpaceInfPenalty * 0.02) * (1 - 0.02 * hero.value.survivalLevel)).toFixed(2);
   }
 }
 

@@ -247,24 +247,24 @@ export const cursed = [
         icon: "🔰",
         tier: [
             {
-                effect: "Enemies gets 2% DEF from Max HP",
+                effect: "Enemy gets 2% DEF from Max HP",
                 bonus: 6
             },
             {
-                effect: "Enemies gets 4% DEF from Max HP",
+                effect: "Enemy gets 4% DEF from Max HP",
                 bonus: 12
             },
             {
-                effect: "Enemies gets 6% DEF from Max HP",
+                effect: "Enemy gets 6% DEF from Max HP",
                 bonus: 24
             },
             {
-                effect: "Enemies gets 8% DEF from Max HP",
+                effect: "Enemy gets 8% DEF from Max HP",
                 bonus: 48,
                 status: false
             },
             {
-                effect: "Enemies gets 12% DEF from Max HP",
+                effect: "Enemy gets 12% DEF from Max HP",
                 bonus: 96,
                 status: false
             }

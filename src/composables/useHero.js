@@ -267,6 +267,7 @@ const hero = ref({
   timeKiller: 0,
   maxInfPenalty: 0,
   infEvents: 0,
+  darkId: [],
 });
 
 export function useHero() {
