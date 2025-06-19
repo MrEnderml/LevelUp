@@ -52,6 +52,7 @@ const enemy = ref({
     dmg: 1
   },
   totalSpaceInfPenalty: 1,
+  d_damagePenalty: 1,
 });
 
 const villainNames = [

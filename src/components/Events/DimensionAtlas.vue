@@ -317,19 +317,19 @@ const endDrag = () => {
 const getPos = (id) => dimensions.value.find(d => d.id === id)
 
 const dimensionGraph = {
-  26: [26],
-  27: [27],
-  28: [28, 26, 27],
-  29: [29, 28, 27, 26],
-  30: [30, 29, 28, 27, 26],
-  31: [31, 28, 27, 26],
-  32: [32, 31, 28, 27, 26],
-  33: [33, 32, 31, 28, 27, 26],
-  34: [34, 32, 31, 28, 27, 26],
-  35: [35, 34, 32, 31, 28, 27, 26],
-  36: [36, 35, 34, 32, 31, 28, 27, 26],
-  37: [37, 36, 35, 34, 32, 31, 28, 27, 26],
-  38: [38, 34, 32, 31, 28, 27, 26],
+  26: [],
+  27: [],
+  28: [26, 27],
+  29: [28, 27, 26],
+  30: [29, 28, 27, 26],
+  31: [28, 27, 26],
+  32: [31, 28, 27, 26],
+  33: [32, 31, 28, 27, 26],
+  34: [32, 31, 28, 27, 26],
+  35: [34, 32, 31, 28, 27, 26],
+  36: [35, 34, 32, 31, 28, 27, 26],
+  37: [36, 35, 34, 32, 31, 28, 27, 26],
+  38: [34, 32, 31, 28, 27, 26],
 };
 
 const selectDimension = (dimension) => {
@@ -697,19 +697,19 @@ function d_req(d){
   }
 
   if (d.id === 'd-damage') {
-    return true;
+    return false;
   }
 
   if (d.id === 'd-overstage') {
-    return true;
+    return false;
   }
 
   if (d.id === 'd-survival-2') {
-    return true;
+    return false;
   }
 
   if (d.id === 'd-danger') {
-    return true;
+    return false;
   }
 
   if (d.id === 'd-noBuffs') {
@@ -955,6 +955,9 @@ function performD(d, prev) {
 
   hero.value.afkSoulBoost = 1;
   hero.value.soulD = false;
+
+  hero.value.damageStage = 0;
+  enemy.value.d_damagePenalty = 0;
 
   if(hero.value.gcnpSetting){
       hero.value.isLocked = true;

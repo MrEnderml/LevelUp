@@ -268,6 +268,7 @@ const hero = ref({
   maxInfPenalty: 0,
   infEvents: 0,
   darkId: [],
+  damageStage: 1,
 });
 
 export function useHero() {

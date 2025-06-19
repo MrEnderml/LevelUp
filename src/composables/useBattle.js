@@ -244,7 +244,9 @@ export function useBattle(hero, enemy, buffs) {
 
           if(hero.value.dId == 'damage') hero.value.dKills++;
           else hero.value.dKills = 0;
-         
+
+          enemy.value.d_damagePenalty = (hero.value.dId == 'd-damage' || hero.value.darkId.includes('d-damage')? enemy.value.d_damagePenalty + 1: 0);
+          hero.value.damageStage = (dimensions.value[28].infTier > 0? hero.value.damageStage + 1: 0);
 
           if(enemy.value.boss.isBoss){
             if(hero.value.infTier >= 2 || hero.value.infEvents >= 2)
@@ -1267,6 +1269,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills+3)**1.25: 1) *
     (hero.value.dId == 'damage'? (1.005 * (1.0000 + 0.00075 * (dimensions.value[20].infTier - 20))) ** hero.value.dKills: 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(100 - (hero.value.overcorruption + 1) ** 2, 1): 1) *
+    (hero.value.darkId.includes('d-damage')? Math.max(1.01 - 0.00035 * dimensions.value[28].infTier, 1) ** enemy.value.d_damagePenalty: 1) *
     (hero.value.dId == 'd-corruption'? 1.5 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) * 
@@ -1300,6 +1303,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills + 3) ** 1.2: 1) *
     (hero.value.dId == 'damage'? (1.01 * (1.000 + 0.00175 * (dimensions.value[20].infTier - 20))) ** hero.value.dKills: 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(10000 - (hero.value.overcorruption + 1) ** 4, 1): 1) *
+    (hero.value.darkId.includes('d-damage')? Math.max(1.015 - 0.00075 * dimensions.value[28].infTier, 1.001) ** enemy.value.d_damagePenalty: 1) *
     (hero.value.dId == 'd-corruption'? 2.5 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) * 
@@ -1344,8 +1348,11 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.isSingularity && dimensions.value[10].infTier == dimensions.value[10].maxInfTier? 2: 1) *
     (ascenPerks[48].level? 1 + 0.05 * dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length: 1) * 
     (1.04 ** (dimensions.value[20].infTier - 20)) * 
-    (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1)
+    (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1) * 
+    ((1.005 + 0.0025 * dimensions.value[28].infTier) ** Math.sqrt(hero.value.damageStage))
 
+    //d-damage
+    hero.value.attack /= (hero.value.dId == 'd-damage'? (1.02 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.5 + 0.01 * dimensions.value[28].infTier))): 1);
     //first stirke
     
     hero.value.attack *= (hero.value.activeBuffs.includes(1) && buffs.value[1].tier >= 1 && !buffs.value[1].used)? 2: 1
@@ -1386,6 +1393,8 @@ export function useBattle(hero, enemy, buffs) {
     (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1) * (1 + 0.05 * buffs.value[6].charges.life) * 
     (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) * (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1);
     
+    //d-damage
+    hero.value.maxHp /= (hero.value.dId == 'd-damage'? (1.015 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.25 + 0.01 * dimensions.value[28].infTier))): 1);
 
     hero.value.maxHp *= (hero.value.activeFormation == 0? 2: 1);
     hero.value.maxHp *= (hero.value.activeFormation == 1? 0.5: 1);
@@ -1402,6 +1411,8 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) * (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1) *
     buffs.value[0].def * (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.0125) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
 
+    //d-damage
+    hero.value.def /= (hero.value.dId == 'd-damage'? (1.0145 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.2 + 0.01 * dimensions.value[28].infTier))): 1);
 
     hero.value.def *= (hero.value.activeFormation == 2? 2: 1);
     hero.value.def *= (hero.value.activeFormation == 1? 0.5: 1);
@@ -2033,6 +2044,8 @@ export function useBattle(hero, enemy, buffs) {
       if (hero.value.zone > 5) {
         hero.value.zone = 1;
         hero.value.stage++;
+
+        hero.value.damageStage = 0;
         
         if(hero.value.dId == 'next')
           hero.value.stage = Math.min(hero.value.stage, 30);
@@ -2441,6 +2454,10 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.afkSoulBoost = 1.05 ** Math.sqrt(hero.value.afkKills);
       if(hero.value.dId == 'damage')
         hero.value.dKills += hero.value.afkKills;
+
+      if(hero.value.dId == 'd-damage')
+        enemy.value.d_damagePenalty += hero.value.afkKills;
+
       if(perks.value[0].status)
         perks.value[0].kills += hero.value.afkKills * (overkillHandle() + 1);
 
@@ -2834,7 +2851,7 @@ export function useBattle(hero, enemy, buffs) {
 
     if(d.idx >= 26 && d.idx < 38){
       if(hero.value.level >= 1400)
-        dInfHandle();
+        dInfHandle(d);
 
       return;
     }
@@ -2842,11 +2859,11 @@ export function useBattle(hero, enemy, buffs) {
     if(!notAllowdId.includes(hero.value.dId) && d.infTier < d.maxInfTier && hero.value.level >= 700){
       if(hero.value.dId == 'hard' && hero.value.stage < 100 + 5 * (d.infTier - 15)) return;
 
-      dInfHandle();
+      dInfHandle(d);
     }
   }
 
-  const dInfHandle = () => {
+  const dInfHandle = (d) => {
     hero.value.infTier++;
     d.infTier++;
     performInf();
@@ -2966,6 +2983,8 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.shardsPerformMult = 0;
     hero.value.dKills = 0;
     killHistory.length = 0;
+    hero.value.damageStage = 0;
+    enemy.value.d_damagePenalty = 0;
   }
 
   const performAscension = () => {
@@ -3219,7 +3238,8 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.eLevel = 700;
     //hero.value.stage = 20;
     //dimensions.value[27].infTier = 15;
-    //hero.value.eLevel = 700;
+    //hero.value.eLevel = 700;s
+    //hero.value.infTier = 4;
   }
 
   createEnemy();

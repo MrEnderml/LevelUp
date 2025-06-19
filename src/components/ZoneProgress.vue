@@ -650,6 +650,8 @@ const perform = () => {
   hero.value.travellPenalty = 1;
   hero.value.isTravell = false;
   hero.value.dKills = 0;
+  hero.value.damageStage = 0;
+  enemy.value.d_damagePenalty = 0;
 
   if(hero.value.gcnpSetting){
     hero.value.isLocked = true;

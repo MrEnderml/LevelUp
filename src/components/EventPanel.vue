@@ -201,7 +201,7 @@ function corrList() {
 }
 
 function corruptionShow(){
-  if(hero.value.dId == 'd-corruption'){
+  if(hero.value.dId == 'd-corruption' || hero.value.darkId.includes('d-corruption')){
     return (Math.max(hero.value.corruption, hero.value.overcorruption + 1)).toFixed(2);
   } else {
     return (hero.value.corruption).toFixed(2)

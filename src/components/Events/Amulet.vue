@@ -81,7 +81,7 @@ function tEffect(tier){
     if(tier.effect.startsWith('Penetrate'))
       newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 100)).toFixed(2)
     else if(tier.effect.startsWith('Heal'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 0.5)).toFixed(2)
+      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 50)).toFixed(2)
     else if(tier.effect.startsWith('Block'))
       newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 90)).toFixed(2)  
     else if(tier.effect.endsWith('Attack Per Second'))
