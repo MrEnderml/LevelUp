@@ -192,7 +192,7 @@ const exportGame = () => {
     cursed: cursed,
     radPerks: radPerks,
     space: space,
-    goals: goals.value,
+    infGoals: goals.value,
     auto: auto.value,
     dimensions: dimensions.value,
     hKill: killHistory,
