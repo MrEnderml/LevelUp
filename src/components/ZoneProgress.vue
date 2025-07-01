@@ -814,9 +814,8 @@ function formatNumber(num, f = false) {
 .ascend-tooltip {
   display: none;
   position: absolute;
-  top: -100%;
-  left: 100%;
-  transform: translateY(-50%);
+  top: calc(100% + 30px);
+  left: -50%;
   width: 230px;
   background: #1e1e1e;
   color: #fff;
@@ -864,9 +863,8 @@ function formatNumber(num, f = false) {
 .rebirth-tooltip, .abyss-tooltip, .inf-tooltip, .soul-tooltip, .singularity-tooltip {
   display: none;
   position: absolute;
-  
-  left: 100%;
-  transform: translateY(-50%);
+  top: calc(100% + 30px);
+  left: -50%;
   width: 230px;
   background: #1e1e1e;
   color: #fff;
@@ -883,14 +881,14 @@ function formatNumber(num, f = false) {
 }
 
 .abyss-shadow {
-  top: 180%;
+  top: calc(100% + 30px);
   box-shadow: 0 0 10px rgba(225, 0, 255, 0.8);
   overflow-y: auto;
   max-height: 300px;
 }
 
 .inf-shadow {
-  top: 180%;
+  top: calc(100% + 30px);
   box-shadow: 0 0 10px rgb(238, 255, 0);
   max-height: 300px;
   overflow: auto;
