@@ -895,7 +895,7 @@ function formatNumber(num, f = false) {
 }
 
 .singularity-shadow {
-  top: 180%;
+  top: calc(100% + 30px);
   box-shadow: 0 0 12px 4px #66ffcc;
   max-height: 300px;
   overflow: auto;
