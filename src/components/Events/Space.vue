@@ -3,11 +3,32 @@
     <div class="toggle-tabs">
       <button :class="{ active: currentTab === 'battle' }" @click="switchTab('battle')">Space</button>
       <button :class="{ active: currentTab === 'rewards' }" @click="switchTab('rewards')">Space Power</button>
+      <button v-if="hero.bhTier >= 3" :class="{ active: currentTab === 'shop' }" @click="switchTab('shop')">Astralis</button>
+      <span class="settings-icon" @click="showSpSettings = !showSpSettings">⚙️</span>
     </div>
 
+    <div v-if="showSpSettings" class="settings-panel">
+      <div class="settings-title">Settings</div>
+      <label v-if="hero.infTier >= 5 || hero.infEvents >= 5 || hero.singularity >= 5">
+        <input type="checkbox" v-model="hero.isSpaceAuto" />
+        Auto battle
+      </label>
+      <label>
+        <input type="checkbox" v-model="hero.repeatOnDefeat" />
+        Retry on defeat
+      </label>
+      <label>
+        <input type="checkbox" v-model="hero.nextEnemyOnWin" />
+        Next enemy on win
+      </label>
+      <label>
+        <input type="checkbox" v-model="hero.noBattleWindowChanges" />
+        No battle window changes
+      </label>
+    </div>
    
     <div v-if="currentTab === 'battle'" class="battle-view">
-      <div class="progress-bar">
+      <div class="progress-bar" v-if="!hero.isInfSpace">
         <div class="progress-gradient" :style="{ width: progressPercent + '%' }"></div>
       </div>
 
@@ -18,20 +39,47 @@
         | DEF: {{ stats(3) }} | ApS: {{ stats(4) }}</p>
         <p v-if="spEnemy[hero.spCount].type == 'boss'">{{spEnemy[hero.spCount].stats.curses.join(' ')}}</p>
       </div>
+
+      <div class="enemy-info" v-else-if="hero.isInfSpace">
+        <h2>Infinity Warden - {{hero.spsCount}}</h2>
+        <p>HP: {{ stats(1) }} | ATK: {{ stats(2) }} 
+        | DEF: {{ stats(3) }} | ApS: {{ stats(4) }}</p>
+      </div>
+
       <div v-else style="text-align: center" @click="hero.eLink = { set: 'Info', info: 'Space' }"><sup style="font-size: 12px">ℹ️</sup>Celestials dont see you</div>
 
-      <div class="bottom-bar" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount">
-        <button v-if="enemy.isSpaceFight == 0" class="attack-button" @click="attackEnemy">⚔️ Attack</button>
-        <button v-if="enemy.isSpaceFight == 2" class="attack-button" @click="LeaveEnemy">Leave</button>
-        <button v-if="hero.infTier >= 5 || hero.infEvents >= 5 || hero.singularity >= 5" class="auto-button" :class="{ active: hero.isSpaceAuto }" @click="autoEnemy">AUTO</button>
+      <div class="bottom-bar" v-if="spEnemy[hero.spCount].status && hero.spCount < hero.spMaxCount || hero.isInfSpace">
+        <button 
+          v-if="!hero.isSpaceFightCooldown && enemy.isSpaceFight <= 0" 
+          class="attack-button" 
+          @click="attackEnemy"
+        >
+          <Tooltip :text="autoSpaceCondition" position="top">⚔️ Attack</Tooltip>
+        </button>
+
+        <button 
+          v-else-if="hero.isSpaceFightCooldown"
+          class="attack-button" 
+          disabled
+        >
+          {{ Math.floor(hero.spaceFightCooldown + 1) }}s
+        </button>
+
+        <button 
+          v-if="enemy.isSpaceFight === 2" 
+          class="attack-button" 
+          @click="LeaveEnemy"
+        >
+          Leave
+        </button>
       </div>
     </div>
 
     
-    <div v-else class="reward-layout">
+    <div v-else-if="currentTab === 'rewards'" class="reward-layout">
         <div class="reward-column">
             <h3 @click="hero.eLink = { set: 'Info', info: 'Space' }">✨ <sup style="font-size: 12px">ℹ️</sup>Space Power(SP) - {{hero.baseSp}} <span v-if="hero.sp > hero.baseSp">(+{{hero.sp - hero.baseSp}})</span></h3>
-            <h3>🌟Star(ST) - {{hero.st}}</h3>
+            <h3>🌟Star(ST) - {{hero.stBosses}} <span v-if="hero.st - hero.stBosses > 0">(+{{hero.st - hero.stBosses}})</span></h3>
             <ul>
             <li v-for="(reward, i) in sortedRewards" :key="reward.id" :class="{ 'boss-reward': reward.boss }">
                 {{ formatReward(reward) }}
@@ -39,20 +87,57 @@
             </ul>
         </div>
     </div>
+  
+    <div v-else-if="currentTab === 'shop' && hero.bhTier >= 3" class="shop-layout">
+      <div class="head-wrapper">
+        <span>Stardust: {{ formatNumber(hero.stardust) }}✨</span><br>
+        <span>Infinity Warden: {{hero.spsCountMax}}</span>
+      </div>
+
+      <div class="shop-grid">
+        <div v-for="perk in spaceShopFilter" :key="perk.id" 
+            :class="['perk-card', { bought: perk.status }]">
+          <h4 class="perk-title">{{ perk.title || 'Unknown Perk' }}</h4>
+          <p class="perk-desc" v-html="highlightKeyword(perk.d, 'Infinity Warden')"></p>
+
+          <button 
+            class="perk-button"
+            :disabled="spsPerkUnlocked(perk) || perk.status || hero.stardust < perk.cost"
+            @click="buyPerk(perk)"
+          >
+            <template v-if="spsPerkUnlocked(perk)">
+              🔒 Req: {{ perk.req }} Infinity Warden
+            </template>
+            <template v-else-if="perk.status">
+              ✅ Acquired
+            </template>
+            <template v-else>
+              {{ formatNumber(perk.cost) }} ✨
+            </template>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, watchEffect, reactive } from 'vue'
 import { spacePower as sp } from '../../data/spacePower.js';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { spEnemy } from '../../data/spaceEnemy.js';
 import { perks as ascension } from '../../data/ascension.js';
+import { spaceShop } from '../../data/spaceShop.js'
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
-const currentTab = ref('battle')
+
+const currentTab = ref('battle');
+const showSpSettings = ref(false);
 
 function switchTab(tab) {
   currentTab.value = tab
@@ -60,12 +145,26 @@ function switchTab(tab) {
 
 function stats(id){
   switch(id){
-    case 1: return formatNumber(spEnemy[hero.value.spCount].stats.hp * (1 + enemy.value.totalSpaceInfPenalty * 0.1) * enemy.value.totalSpaceStats.hp);
-    case 2: return formatNumber(spEnemy[hero.value.spCount].stats.dmg * (1 + enemy.value.totalSpaceInfPenalty * 0.25) * enemy.value.totalSpaceStats.dmg);
-    case 3: return formatNumber(spEnemy[hero.value.spCount].stats.def * (1 + enemy.value.totalSpaceInfPenalty * 0.5) * enemy.value.totalSpaceStats.def);
-    case 4: return (spEnemy[hero.value.spCount].stats.AS * (1 + enemy.value.totalSpaceInfPenalty * 0.02) * (1 - 0.02 * hero.value.survivalLevel)).toFixed(2);
+    case 1: return formatNumber(enemy.value.totalSpaceStats.hp);
+    case 2: return formatNumber(enemy.value.totalSpaceStats.dmg);
+    case 3: return formatNumber(enemy.value.totalSpaceStats.def);
+    case 4: return (spEnemy[hero.value.spCount].stats.AS).toFixed(2);
   }
 }
+
+
+function autoSpaceCondition () {
+  if(hero.value.isSpaceAuto)
+    return hero.value.autoSpaceCondition;
+  
+  return;
+}
+
+const spaceShopFilter = computed(() => {
+  return Array.isArray(spaceShop.value)
+    ? [...spaceShop.value].sort((a, b) => a.idx - b.idx)
+    : [];
+});
 
 
 function formatReward(reward) {
@@ -84,6 +183,9 @@ const sortedRewards = computed(() => {
 const progressPercent = computed(() => ((hero.value.spCount%6) / 6) * 100)
 
 function attackEnemy() {
+  if(hero.value.dId == 'bh')
+    return;
+  
   enemy.value.isSpaceFight = 1;
 }
 
@@ -91,9 +193,6 @@ function LeaveEnemy(){
   enemy.value.isSpaceFight = 4;
 }
 
-function autoEnemy(){
-  hero.value.isSpaceAuto = !hero.value.isSpaceAuto? true: false;
-}
 
 const  formatNumber = (num, f = false) => {
     if(f && num < 100) return num.toFixed(2);
@@ -107,7 +206,23 @@ const  formatNumber = (num, f = false) => {
     const scaled = num / scale;
   
     return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+}
+
+function spsPerkUnlocked(perk){
+  return !(hero.value.spsCountMax >= perk.req);
+}
+
+function buyPerk(perk) {
+  if (hero.value.stardust >= perk.cost && !perk.status) {
+    hero.value.stardust -= perk.cost;
+    perk.status = true;
   }
+}
+
+function highlightKeyword(text, keyword) {
+  const regex = new RegExp(`(${keyword}s?)`, 'gi');
+  return text.replace(regex, `<span style="color:#ffdd55;font-weight:bold;">$1</span>`);
+}
 </script>
 
 <style scoped>
@@ -228,7 +343,7 @@ const  formatNumber = (num, f = false) => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Награды */
+
 .reward-layout {
   display: flex;
   justify-content: space-between;
@@ -328,5 +443,157 @@ const  formatNumber = (num, f = false) => {
   transform: scale(1.05);
 }
 
+
+
+
+.settings-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 1.5em;
+  color: #f0a500;
+}
+
+.settings-panel {
+  position: absolute;
+  z-index: 200;
+  right: 0;
+  background: #0f0f0f;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: fit-content;
+}
+
+.settings-title {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+  color: #f0ebd8;
+  text-align: center;
+}
+
+.settings-panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f0ebd8;
+  font-size: 1em;
+}
+
+.settings-panel input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #888;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.settings-panel input[type="checkbox"]:checked {
+  background: #f0ebd8;
+  border-color: #f0ebd8;
+}
+
+.settings-panel input[type="checkbox"]:checked::after {
+  content: '✔';
+  position: absolute;
+  top: -2px;
+  left: 3px;
+  font-size: 14px;
+  color: #0f0f0f;
+}
+
+.spaceShop {
+  max-height: 600px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(223, 226, 40) transparent;
+}
+
+
+
+
+.shop-layout {
+  padding: 1rem;
+  max-height: 60vh;
+  max-width: 95vh;
+  overflow-y: auto;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.perk-card {
+  background: linear-gradient(145deg, #0b0b1f, #1a1a2f);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 180px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.7), 0 0 12px #6600ff40 inset;
+}
+
+.perk-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.8), 0 0 20px #aa33ff60 inset;
+}
+
+.perk-card.bought {
+  background: linear-gradient(145deg, #101020, #1f1f3f);
+  border: 2px solid #33ff88;
+  opacity: 0.95;
+}
+
+.perk-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
+}
+
+.perk-desc {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  flex-grow: 1;
+}
+
+.perk-button {
+  margin-top: auto;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(90deg, #ff9900, #ffcc33);
+  color: #1b1b1b;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.perk-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ffaa22, #ffee55);
+}
+
+.perk-button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.head-wrapper {
+  font-size: 1.2em;
+  text-align: center;
+  font-weight: bold;
+}
 
 </style>

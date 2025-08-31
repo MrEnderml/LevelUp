@@ -3,30 +3,38 @@
     <div class="left-panel">
       <h2 @click="hero.eLink = { set: 'Info', info: 'Rebirth' }">♻️ <sup style="font-size: 12px">ℹ️</sup>Rebirth [T{{hero.rebirthTier}}]</h2>
       
-      <p v-if="hero.infTier < 3">Cap: {{ Math.min(100 + hero.rebirthTier * 10, 300) }}</p>
-      <p><strong class="pot"><span style="color: gold" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Potential' }"><sup style="font-size: 12px">ℹ️</sup>Potential: {{hero.potential - radPerks[6].level}}</span>
-      <span class="radPot" v-if="radPerks[6].level > 0">(+{{radPerks[6].level}})</span></strong><br>
+      <p>
+        <strong class="pot"><span style="color: gold" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Potential' }"><sup style="font-size: 12px">ℹ️</sup>Potential: {{hero.potential}}</span></strong><br>
         <strong><span style="color: lightgreen">+0.5 HP per 10 Potential</span></strong>
         <strong><span style="color: #eb4e4e">+0.2 DMG per 20 Potential</span></strong>
         <strong><span style="color: orange">+0.1 DEF per 30 Potential</span></strong>
       </p>
-      <p style="font-weight: bold">Enemy EVO<br>
+      <p style="font-weight: bold">
+        <Tooltip :text="enemyEvo" boxShadow="0 0 10px lightgreen" position="right">
+          <span>*Enemy EVO</span>
+        </Tooltip>
         <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
         <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
-        <span :title="'EXP, WEAPON CHANCE'">*LOOT - [{{enemy.rebirthEnemy["drop"]}}] </span>
-        <span :title="'Enemy weakness(low HP & DMG). Also works in Abyss and Singularity. Depends on Ascension Shards'"style="color: #062e9f" v-if="hero.abyssTier >= 2">*ASCENSION AFFECT: {{Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.ascensionShards + 3), 0.01).toFixed(2)}}</span>
+        <Tooltip :text="rebirthLootHandle" boxShadow="0 0 10px lightgreen" position="right">
+          <span>*LOOT - [{{formatNumber(enemy.rebirthEnemy["drop"])}}] </span>
+        </Tooltip>
       </p>
+
+      <Tooltip :text="ascendEffectHandle" boxShadow="0 0 10px #062e9f" position="right">
+        <span v-if="hero.abyssTier >= 2" style="color: #062e9f; font-weight: bold">*ASCENSION AFFECT</span>
+      </Tooltip>
+
       <p class="rebirthTiers">
-        <span v-if="hero.rebirthTier >= 5">T[5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 10">T[10] - 50% curse Bonus. +1 Max Curse</span>
-        <span v-if="hero.rebirthTier >= 15">T[15] - +1 max Buff in Abyss</span>
-        <span v-if="hero.rebirthTier >= 20">T[20] - Get Rebirth Pts as if you had 25 more Levels</span>
-        <span v-if="hero.rebirthTier >= 30">T[30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
-        <span v-if="hero.rebirthTier >= 40">T[40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
-        <span v-if="hero.rebirthTier >= 50">T[50] - Equipment Chance based on Rebirth Tier [{{(1.03 ** hero.rebirthTier).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 60">T[60] - Space Boss appearance based on Rebirth Tier [{{(1.02 ** hero.rebirthTier).toFixed()}}]</span>
-        <span v-if="hero.rebirthTier >= 70">T[70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 80">T[80] - Max Level Mult based on Rebirth Tier [{{(1.015 ** (Math.min(hero.rebirthTier, 125) - 79)).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 5">[T5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 10">[T10] - 50% curse Bonus. +1 Max Curse</span>
+        <span v-if="hero.rebirthTier >= 15">[T15] - +1 max Buff in Abyss</span>
+        <span v-if="hero.rebirthTier >= 20">[T20] - Get Rebirth Pts as if you had 25 more Levels</span>
+        <span v-if="hero.rebirthTier >= 30">[T30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
+        <span v-if="hero.rebirthTier >= 40">[T40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
+        <span v-if="hero.rebirthTier >= 50">[T50] - Equipment Chance based on Rebirth Tier [{{formatNumber(1.03 ** hero.rebirthTier)}}]</span>
+        <span v-if="hero.rebirthTier >= 60">[T60] - Space Boss appearance based on Rebirth Tier [{{formatNumber(1.02 ** hero.rebirthTier)}}]</span>
+        <span v-if="hero.rebirthTier >= 70">[T70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
+        <span v-if="hero.rebirthTier >= 80">[T80] - Max Level Mult based on Rebirth Tier [{{(0.02 * (Math.min(hero.rebirthTier, 200) - 79)).toFixed(2)}}]</span>
       </p>
     </div>
 
@@ -65,6 +73,49 @@ const { enemy } = useEnemy();
 const rewardsFilter = computed(() => 
   rewards.filter(r => r.points <= (hero.value.singularity >= 8? 1e7: 1e5))
 )
+
+function ascendEffectHandle() {
+  let effect = Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 3), 0.01);
+  let text = `Enemy weakness. Depends on Ascension Shards [${effect.toFixed(2)}]`;
+
+  return text;
+}
+
+function rebirthLootHandle() {
+  let text = `Rebirth [Loot] affects:<br>
+    - <span style="color: #4CAF50">EXP</span><br>
+    - <span style="color:rgb(33, 243, 233)">Equipment Drop Chance</span><br>
+    - <span style="color: #FF9800">20 Rebirth Pts</span>: Chance of <span style="color:rgb(189, 30, 233)">Soul</span> appearance<br>
+    - <span style="color: #FF9800">100 Rebirth Pts</span>: <span style="color: lightgreen">Rebirth Pts</span> gain<br>
+    - <span style="color: #FF9800">2500 Rebirth Pts</span>: Gain <span style="color:rgb(57, 125, 234)">Ascension Shards</span> when you Ascend<br>
+    - <span style="color: #FF9800">50000 Rebirth Pts</span>: <span style="color: orange">Buff EXP</span>
+  `;
+  
+  return text;
+}
+
+function enemyEvo() {
+  let text = `Each Rebirth Tier increases Enemy Power and increases Loot Drops.`;
+
+  return text;
+}
+
+const  formatNumber = (num, f = false) => {
+    if(f && num < 100) return num.toFixed(2);
+    if (num < 1000) return Math.floor(num).toString();
+  
+    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+    const tier = Math.floor(Math.log10(num) / 3);
+
+    if(tier >= units)
+      return "999d";
+  
+    const suffix = units[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = num / scale;
+  
+    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+  }
 
 </script>
 

@@ -78,6 +78,7 @@ import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/ascension.js';
 import { computed, ref } from 'vue';
 import { perks as radPerks } from '../../data/radPerks.js';
+import { perks as treePerks } from '../../data/perks.js';
 import { dimensions } from '../../data/dimensions.js';
 import ascensionIcon from '../../assets/ascension.png';
 import ascensionDIcon from '../../assets/ascnesion-d.png';
@@ -116,11 +117,28 @@ const selectTier = (tier) => {
   }
 };
 
-const filteredPerks = computed(() =>
-  currentTier.value === 7
-    ? perks.filter(p => p.tier === currentTier.value && 38 + hero.value.singularity > p.id)
-    : (currentTier.value === 6? perks.filter(p => p.tier === currentTier.value && p.infStatus === true) : perks.filter(p => p.tier === currentTier.value))
-);
+const filteredPerks = computed(() => {
+  if (currentTier.value === 8) {
+    return perks.filter(
+      (p) => p.tier === 8 && 58 + dimensions.value[34].infTier  > p.id
+    );
+  }
+
+  if (currentTier.value === 7) {
+    return perks.filter(
+      (p) => p.tier === 7 && 38 + hero.value.singularity > p.id
+    );
+  }
+
+  if (currentTier.value === 6) {
+    return perks.filter(
+      (p) => p.tier === 6 && p.infStatus === true
+    );
+  }
+
+  return perks.filter((p) => p.tier === currentTier.value);
+});
+
 
 const getCost = (perk) => {
   let iPenalty = 1 - 0.01 * dimensions.value[1].infTier; 
@@ -148,9 +166,12 @@ const upgradePerk = (perk) => {
   const cost = getCost(perk);
   if(perk.tier == 8 && hero.value.dsTotal >= cost && perk.level < perk.max){
     hero.value.dsSpend += cost;
-    perk.level;
+    perk.level++;
+    
+    if(perk.id == 64)
+      swordCheck()
   }
-  if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
+  else if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
     hero.value.ascensionShards -= cost;
     perk.level++;
   }
@@ -159,14 +180,35 @@ const upgradePerk = (perk) => {
 function dsHandle(){
   hero.value.dsSpend = 0 + (perks[53].level == 1? 3: 0);
 
+  swordCheck();
+
   perks.forEach(perk => {
     if (perk.tier === 8 && perk.id !== 54) perk.level = 0;
   })
+
+  checkRadiationPerksLimit();
 }
+
+const checkRadiationPerksLimit = () => {
+  const maxActivePerks = (radPerks[7].level ? 1 : 0) + (perks[64].level ? 1 : 0);
+  const activeCount = treePerks.value.filter(p => p.status).length;
+
+  if (activeCount > maxActivePerks) {
+    treePerks.value.forEach(p => {
+      p.status = false;
+      p.kills = 0;
+    });
+  }
+};
+
+const swordCheck = () => {
+  hero.value.eqUps['sword'] = 0;
+}
+
 
 function getPerkDescription(perk) {
   if (perk.id === 28) {
-    return `Enemies weakness based on Corruption weakness [${ Math.max(1 / (1 + Math.max(hero.value.corruption - 0.1, 0))).toFixed(2)}]. Also works in The Abyss`
+    return `Enemies weakness based on Corruption weakness [${ Math.max(1 / (2 + Math.max(hero.value.corruption, 0))).toFixed(2)}]. Also works in The Abyss`
   }
   if (perk.id === 30) {
     return `Gain Ascension Shards based on SP - [${(1 + 0.04 * hero.value.sp).toFixed(2)}]. Ascension Affect scales better`

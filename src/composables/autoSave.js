@@ -12,6 +12,7 @@ import { goals } from '../data/infGoals.js';
 import { auto } from "../composables/autoProgression.js";
 import { dimensions } from "../data/dimensions.js";
 import { killHistory } from '../composables/afkHandle.js';
+import { spaceShop } from '../data/spaceShop.js';
 
 export function useAutoSave() {
   let interval;
@@ -35,6 +36,7 @@ export function useAutoSave() {
       auto: auto.value,
       dimensions: dimensions.value,
       hKill: killHistory,
+      spaceShop: spaceShop.value,
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
     localStorage.setItem('lastOnline', Date.now().toString());
@@ -68,6 +70,7 @@ export function saveGame() {
     auto: auto.value,
     dimensions: dimensions.value,
     hKill: killHistory,
+    spaceShop: spaceShop.value,
   };
   localStorage.setItem('gameSave', JSON.stringify(data));
   localStorage.setItem('lastOnline', Date.now().toString());

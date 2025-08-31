@@ -5,19 +5,19 @@
        <h2 @click="hero.eLink = { set: 'Info', info: 'Equipment' }"><sup style="font-size: 12px">ℹ️</sup>EQUIPMENT
         <span class="tooltip-container">ℹ️
           <span class="tooltip-text" v-if="heroComputed">
-              Chance to drop equipment:<br>
-              <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% <span v-if="hero.spCount/6 < 4">- [MAX - {{heroComputed.eqTierReq['sword']}}]</span></span><br>
-              <span>Body[T{{heroComputed.equipmentTiers['armor'] + 1}}]: {{ heroComputed.dropChance['armor'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['armor']}}]</span><br>
-              <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['boots']}}]</span><br>
+              Chance to drop the equipment:<br>
+              <span>Sword[T{{heroComputed.equipmentTiers['sword'] + 1}}]: {{ heroComputed.dropChance['sword'].toFixed(2) }}% <span v-if="hero.spCount/6 < 4"> | [MAX: {{heroComputed.eqTierReq['sword']}}]</span></span><br>
+              <span>Body[T{{heroComputed.equipmentTiers['armor'] + 1}}]: {{ heroComputed.dropChance['armor'].toFixed(2) }}% | [MAX: {{heroComputed.eqTierReq['armor']}}]</span><br>
+              <span>Boots[T{{heroComputed.equipmentTiers['boots'] + 1}}]: {{ heroComputed.dropChance['boots'].toFixed(2) }}% | [MAX: {{heroComputed.eqTierReq['boots']}}]</span><br>
               <span v-if="heroComputed.eqTierReq['ring'] > 0">Ring[T{{heroComputed.equipmentTiers['ring'] + 1}}]: 
-              {{ heroComputed.dropChance['ring'].toFixed(2) }}% - [MAX - {{heroComputed.eqTierReq['ring']}}]</span><br>
+              {{ heroComputed.dropChance['ring'].toFixed(2) }}% | [MAX: {{heroComputed.eqTierReq['ring']}}]</span><br>
               <span>Collect the set to get a bonus: </span><br>
               <span v-if="hero.rebirthPts < 25">Reach 25 Rebirth Pts<br></span>
-              <span v-else>(T3, T3, T3) - +3 Min Level, +3 Max Level<br></span>
+              <span v-else>(T3, T3, T3): +3 Min Level, +3 Max Level<br></span>
               <span v-if="hero.rebirthPts < 200">Reach 200 Rebirth Pts<br></span>
-              <span v-else>(T4, T4, T4, T4) - +4 Min Level, +4 Max Level<br></span>
+              <span v-else>(T4, T4, T4, T4): +4 Min Level, +4 Max Level<br></span>
               <span v-if="hero.rebirthPts < 4000">Reach 4000 Rebirth Pts<br></span>
-              <span v-else>(T5, T5, T5, T5) - +5 Min Level, +5 Max Level<br></span>
+              <span v-else>(T5, T5, T5, T5): +5 Min Level, +5 Max Level<br></span>
           </span>        
         </span>
       </h2>
@@ -31,8 +31,16 @@
       >
         <div class="icon">{{ icons[item.type] }}</div>
         <div class="info">
-          <p class="item-name" v-if="item.type != 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{Math.min(hero.eqUps[item.type], hero.equipmentTiers[item.type] + hero.freeEnchances )}})</span>
-          <span v-if="hero.awakened[item.type] > 0" class="awakened-txt">[{{hero.awakened[item.type]}}]</span><button v-if="awakenedTierReq(item.type)" @click="awakened(item.type)" class="awakened-button">⚡</button></p>
+          <p class="item-name" v-if="item.type != 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{hero.eqUps[item.type]}})</span>
+            <span v-if="hero.awakened[item.type] > 0" class="awakened-txt">[{{hero.awakened[item.type]}}]</span>
+            <Tooltip 
+              :text="'Increase the enhance power of this weapon. Your enhances will be reset.'"
+              position="left"
+              boxShadow="0 0 10px rgba(100,255,204)"
+            >
+              <button v-if="awakenedTierReq(item.type)" @click="awakened(item.type)" class="awakened-button">⚡</button>
+            </Tooltip>
+          </p>
           <p class="item-name" v-if="item.type == 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{hero.eqUps[item.type]}})</span></p>
           <span class="stat">+{{ item.bonusDisplay + Math.floor(hero.eqUpsMult[item.type].cap) }} Max Level</span>
           <span class="stat">+{{ (item.ownProperty + hero.eqUpsMult[item.type].bonus).toFixed(2) }} {{ item.stat }}</span>
@@ -44,44 +52,54 @@
           <span class="stat" v-if="hero.spCount/6 >= 7 && item.type == 'boots'">P: +{{(hero.eqUpsMult['boots'].overkill).toFixed(2)}} Overkill</span>
           <span class="stat" v-if="hero.spCount/6 >= 8 && item.type == 'ring'">S: *{{(hero.eqUpsMult['ring'].level).toFixed(2)}} Level requirement</span>
           <span class="stat" v-if="hero.spCount/6 >= 8 && item.type == 'ring'">P: *{{(1 + hero.eqUpsMult['ring'].multLevel).toFixed(2)}} MULT Max Level</span>
+          <span class="stat" v-if="spaceShop[10].status && item.type == 'spRing'">S: +{{(hero.eqUpsMult['spRing'].potential)}} Potential</span>
+          <span class="stat" v-if="spaceShop[10].status && item.type == 'spRing'">P: +{{(hero.eqUpsMult['spRing'].infPoints)}} IP</span>
         </div>
       </div>
     </div>
 
     <div class="starforge-panel" v-if="hero.spCount >= 1">
-      <h3>⭐ Star Forge</h3>
-      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Stardust' }">✨ <sup style="font-size: 12px">ℹ️</sup>Stardust: {{ formatNumber(hero.stardust) }} <span v-if="stardustCost > 0">  - {{formatNumber(stardustCost)}}</span></p>
+      <h3>⭐ Star Forge <span>[T{{hero.forgeTier}}]</span></h3>
+
+      <Tooltip :text="() => getForgeTooltipText()">
+        <div class="forge-progress-bar" style="width: 250px; height: 10px; border-radius: 8px; background: #333; cursor: help;">
+          <div
+            class="forge-progress-fill"
+            :style="{ width: globalProgressPercent + '%', height: '100%', borderRadius: '8px 0 0 8px', background: 'linear-gradient(to right, #facc15, #f97316)', transition: 'width 0.3s ease' }"
+          ></div>
+        </div>
+      </Tooltip>
+
+      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Stardust' }">✨ <sup style="font-size: 12px">ℹ️</sup>Stardust: {{ formatNumber(hero.stardust) }} </p>
+      <p v-if="hero.bhTier >= 2" class="auto-forge-info">
+        <button
+          @click="hero.isAutoForge = !hero.isAutoForge"
+          :class="{ active: hero.isAutoForge }"
+        >
+          {{ hero.isAutoForge ? 'Auto Forge: ON' : 'Auto Forge: OFF' }}
+        </button>
+      </p>
       <p>Select equipment to enhance its power.</p>
       <div>{{capitalizeFirst(selectedType)}}</div>
       <div v-if="selectedType && hero.spCount >= eqUpsReq[selectedType]" class="forge-info">
-        <p>Lvl: {{ hero.eqUps[selectedType] }} <span v-if="selectedType != 'spRing'">/ {{hero.equipmentTiers[selectedType] + hero.freeEnchances}}</span></p>
-        <div style="display: flex">
-          <span>Enhance chance: {{ getUpgradeChance(selectedType) }} <span v-if="bonusChance > 0"> + ({{bonusChance.toFixed(2)}})</span>%</span>
-          <div v-if="upgradeResult" :class="['upgrade-message', upgradeResult]">
-            {{ upgradeResult === 'success' ? '✨ Successful!' : '❌ Failed' }}
-          </div>
-        </div>
+        <p>
+          Lvl: {{ hero.eqUps[selectedType] }}{{ getMaxEquipmentSuffix(selectedType) }}
+        </p>
+        <p v-if="hero.multEnchance > 0">Extra enhance: {{formatNumber(hero.multEnchance)}}%</p>
+        <div style="display: flex; gap: 55px">
           <button
-          @mousedown="startForge"
-          @mouseup="stopForge"
-          @mouseleave="stopForge"
-          @click="forgeUpgrade">
-            Enhance ✨{{eqUpCost()}}
+            @mousedown="startForge"
+            @mouseup="stopForge"
+            @mouseleave="stopForge"
+            @click="forgeUpgrade">
+              Enhance ✨{{totalCostShow()}}
           </button>
-        <div class="bonus-buttons">
-        <p>Boost Chance:</p>
-        <button 
-          v-for="val in [0, 10, 25, 50, 100]" 
-          :key="val" 
-          @click="setBonusChance(val)"
-          :class="{ active: bonusChance === val }"
-        >
-          {{ val }}%
-        </button>
-        <button @click="autoEnchance()">Auto</button>
+          <Tooltip :text="'Spend all your Stardust on your chosen weapon to enhance it to the maximum.'">
+            <button @click="autoEnchance()">Max</button>
+          </Tooltip>
+        </div>
       </div>
-      </div>
-      <div v-else-if="selectedType">You need {{eqUpsReq[selectedType]}} SP</div>
+      <div v-else-if="selectedType">You need {{eqUpsReqSp[selectedType]}} SP</div>
     </div>
   </div>
 
@@ -93,18 +111,48 @@ import { useHero } from '../../composables/useHero.js';
 import { equipment } from '../../data/equipment.js';
 import { perks } from '../../data/ascension.js';
 import { dimensions } from '../../data/dimensions.js';
+import { spaceShop } from '../../data/spaceShop.js';
 
 const { hero } = useHero();
 const upgradeResult = ref('');
-const bonusChance = ref(0);
-const stardustCost = ref(0);
 const heroComputed = computed(() => hero.value);
 const selectedType = ref('');
 
+
+function getForgeTooltipText() {
+  const total = hero.value.totalEnhances || 0;
+  const tier = (hero.value.forgeTier || 0) + 1;
+  const req = hero.value.forgeTierReq || 50;
+  const target = tier * req;
+  const forgeBonusPercent = (selectedType.value == 'spRing'? '0.00': ((tier - 1) * 1).toFixed(2));
+
+  let text = `Enhances: ${total}/${target}\nEnhancement Power [Forge Tier]: ${forgeBonusPercent}%`;
+
+  if (selectedType.value) {
+    const awakenedTier = hero.value.awakened[selectedType.value] + 1 || 0;
+    const minVal = 0.0035;
+    const maxVal = 0.1;
+    const current = minVal * awakenedTier;
+
+    const awakenedBonus = Math.max(0, Math.min(100, ((current - minVal) / (maxVal - minVal)) * 100)).toFixed(2);
+
+    text += `\nEnhancement Power [Awaken]: ${awakenedBonus}%`;
+  }
+
+  return text;
+}
+
+
+const globalProgressPercent = computed(() => {
+  const total = hero.value.totalEnhances || 0;
+  const req = hero.value.forgeTierReq || 50;
+  return Math.min(100, (total % req) * 2);
+});
+
+
+
 const setSelectedType = (type) => {
   selectedType.value = type;
-  bonusChance.value = 0;
-  stardustCost.value = 0;
 };
 
 const icons = {
@@ -120,8 +168,16 @@ const eqUpsReq = {
     armor: 7,
     boots: 11,
     ring: 21,
-    spRing: 1
+    spRing: 12
 };
+
+const eqUpsReqSp = {
+  sword: 1,
+  armor: 7,
+  boots: 15,
+  ring: 42,
+  spRing: 1
+}
 
 const getStatName = (type) => {
   switch (type) {
@@ -170,96 +226,86 @@ function awakened(type){
 
 function awakenedTierReq(type){
   let tier = 20 + 10 * hero.value.awakened[type] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-  (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0);
+  (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0) - 
+  (spaceShop.value[7].status? 1 * Math.floor(hero.value.spsCount / 5): 0);
+  
   return hero.value.singularity >= 7 && Math.min(hero.value.equipmentTiers[type], 50) >= tier;
 }
 
 function autoEnchance(){
-  const totalUps = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
-  while (hero.value.stardust > 0 && 
-  (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')){
-    setBonusChance(100);
-    if(eqUpCost() > hero.value.stardust || bonusChance.value + getUpgradeChance(selectedType.value) < 100)
-      break;
-    hero.value.stardust -= (eqUpCost() + stardustCost.value);
-    hero.value.eqUps[selectedType.value]++;
+  let totalUps;
+
+  if(selectedType.value == 'spRing') totalUps = 500;
+  else if(selectedType.value == 'sword' && perks[63].level) totalUps = (hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances) * 2;
+  else totalUps = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
+
+
+  while (true) {
+    const currentUps = hero.value.eqUps[selectedType.value];
+    const cost = totalCost(); 
+
+    if (hero.value.stardust < cost) break;
+    if (currentUps >= totalUps) break;
+
+    hero.value.stardust -= cost;
+    if(handleExtraEnhanceChance() == -1) break;
   }
-  stardustCost.value = 0;
-  bonusChance.value = 0;
-}
-
-function setBonusChance(value) {
-  let stardustUp = eqUpCost();
-  bonusChance.value = 0;
-  stardustCost.value = 0;
-  if(value == 0)
-    return;
-
-
-  let chance = getUpgradeChance(selectedType.value);
-  let penalty = Math.max(1 - 0.04 * Math.max(((hero.value.eqUps[selectedType.value] - 50) / 10), 0), 0.01) + 
-  (hero.value.spCount >= 37 ?0.02 * (hero.value.spCount / 6): 0);
-
-  let minD = 0;
-  let maxD = (hero.value.stardust - stardustUp);
-  let resultD = 0;
-
-  let bChance = Math.max(0.01, (1 - (1.035 ** (hero.value.eqUps[selectedType.value]) - 1)));
-
-  while (maxD - minD > 0.001) { 
-    let d = (minD + maxD) / 2;
-    let totalChance = (value == 100? getUpgradeChance(selectedType.value): 0) + ((bChance * d) ** penalty);
-
-    if (totalChance < value) {
-      minD = d;
-    } else if (totalChance > value + 1) {
-      maxD = d;
-    } else {
-      resultD = d;
-      break;
-    }
-    resultD = d;
-  }
-
-
-  stardustCost.value = resultD;
-  bonusChance.value = (bChance * resultD) ** penalty;
 }
 
 function eqUpCost(){
-  return Math.floor((hero.value.eqUps[selectedType.value]+1) * 10 * (1 + 1.25 * Math.floor(hero.value.eqUps[selectedType.value]/10)));
+  let dark_d_penalty = (hero.value.dId == 'd-noEq'? (Math.E * (dimensions.value[36].infTier + 1)) ** 1.3: 1);
+  dark_d_penalty = (hero.value.darkId.includes('d-noEq')? Math.max(Math.E ** (1.3 - 0.015 * dimensions.value[36].infTier), 1): dark_d_penalty);
+
+  let power = 1 + 0.2 * Math.floor(hero.value.eqUps[selectedType.value]/25) - (hero.value.spCount >= 37 ? 0.075 * (hero.value.spCount / 6) : 0) - 
+  (spaceShop.value[2].status? 0.0125 * hero.value.spsCount: 0);
+
+  power = (selectedType.value == 'sword' && perks[63].level? power * 1.5: power);
+  power = Math.max(power, 1);
+
+  let weaponPenalty = (selectedType.value !== 'spRing'? Math.E ** (hero.value.eqUps[selectedType.value]/6): 1);
+
+  return Math.floor((hero.value.eqUps[selectedType.value]+1) * 20 * weaponPenalty * (1 + 10 * (hero.value.eqUps[selectedType.value]/10)) ** power * dark_d_penalty);
 }
 
-function getUpgradeChance(type) {
-  const tier = hero.value.eqUps[type];
-  const minBase = 5 + (hero.value.spCount >= 28? 5: 0) + (perks[44].level? 5: 0);
-  const base = Math.max(0 ,minBase - 0.1 * tier);
-  return Math.floor(base);
+function totalCost(){
+  return eqUpCost();
 }
 
-
+function totalCostShow(){
+  return formatNumber(totalCost(), true);
+}
 
 function forgeUpgrade() {
-  const chance = getUpgradeChance(selectedType.value) + bonusChance.value;
-  const success = Math.random() * 100 < chance;
   const totalUps = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
-  if (eqUpCost() > hero.value.stardust) return;
+  if (totalCost() > hero.value.stardust) return;
 
-
-  hero.value.stardust -= eqUpCost();
-  hero.value.stardust -= stardustCost.value;
-  if (success && (hero.value.eqUps[selectedType.value] < totalUps || selectedType.value == 'spRing')) {
-    hero.value.eqUps[selectedType.value]++; 
-    upgradeResult.value = 'success';
-  } else {
-    upgradeResult.value = 'fail';
+  if ((hero.value.eqUps[selectedType.value] < totalUps || 
+  selectedType.value == 'spRing' || 
+  selectedType.value == 'sword' && perks[63].level)) {
+    hero.value.stardust -= totalCost();
+    handleExtraEnhanceChance();
   }
-  stardustCost.value = 0;
+}
 
-  setTimeout(() => {
-    upgradeResult.value = '';
-  }, 1000);
-  bonusChance.value = 0;
+function handleExtraEnhanceChance() {
+  hero.value.eqUps[selectedType.value] += 1 + Math.floor(hero.value.multEnchance/100) + (Math.random() * 100 + hero.value.multEnchance%100 >= 100? 1: 0); 
+
+  if(selectedType.value == 'spRing'){
+    let spRingMax = 500;
+    hero.value.eqUps['spRing'] = Math.min(hero.value.eqUps['spRing'], spRingMax);
+
+    if(hero.value.eqUps['spRing'] >= spRingMax) return -1;
+  } else if(selectedType.value == 'sword' && perks[63].level){
+    let swordMax = (hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances) * 2;
+    hero.value.eqUps['sword'] = Math.min(hero.value.eqUps['sword'], swordMax);
+
+    if(hero.value.eqUps['sword'] >= swordMax) return -1;
+  } else {
+    let maxEnhances = hero.value.equipmentTiers[selectedType.value] + hero.value.freeEnchances;
+    hero.value.eqUps[selectedType.value] = Math.min(hero.value.eqUps[selectedType.value], maxEnhances);
+  }
+
+  return 1;
 }
 
 function capitalizeFirst(str) {
@@ -267,12 +313,26 @@ function capitalizeFirst(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function getMaxEquipmentSuffix(type) {
+    let max = 0;
+    if (type === 'spRing') return '';
+
+    if (type === 'sword' && perks[63].level) max = (this.hero.equipmentTiers[type] + this.hero.freeEnchances) * 2;
+    else max = this.hero.equipmentTiers[type] + this.hero.freeEnchances;
+
+
+    return max ? ` / ${max}` : '';
+  }
+
 function formatNumber(num) {
   if (num < 100) return num.toFixed(2);
   if (num < 1000) return Math.floor(num).toString();
 
   const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
   const tier = Math.floor(Math.log10(num) / 3);
+
+  if(tier >= units)
+    return "999d";
 
   const suffix = units[tier];
   const scale = Math.pow(10, tier * 3);
@@ -288,6 +348,7 @@ function startForge() {
   holdTimeout = setTimeout(() => { 
     forgeInterval = setInterval(() => {
       if(hero.value.dId === 'unlimitted' ||
+        hero.value.dId.startsWith('d-') && hero.value.level < 1400 ||
         (hero.value.dId === 'main') ||
         (hero.value.dId !== 'main' && hero.value.level < 700))
         forgeUpgrade();
@@ -473,6 +534,28 @@ function stopForge() {
   box-shadow: 0 0 10px #ffeb3b, 0 0 20px #ffeb3b70;
 }
 
+.auto-forge-info button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #666;
+  background: #222;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auto-forge-info button:hover {
+  background: #333;
+}
+
+.auto-forge-info button.active {
+  border-color: gold;
+  background: linear-gradient(90deg, #ffd700, #ffae00);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
 .upgrade-message {
   font-size: 1rem;
   font-weight: bold;
@@ -530,4 +613,7 @@ function stopForge() {
 .awakened-txt{
   color: #66ffcc;
 }
+
+
+
 </style>

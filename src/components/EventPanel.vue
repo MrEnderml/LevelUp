@@ -4,13 +4,18 @@
       <div class="tooltip-wrapper-lvl" >
           <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Level' }"><sup style="font-size: 8px">ℹ️</sup>
             <span class="info-button-lvl"></span> 
+
             <span style="font-size: 12px" :class="{'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
-            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel, false, true) }}<span v-if="hero.trueLevel > 300 && hero.dId != 'unlimitted'">[{{formatNumber(hero.trueLevel, false, true)}}]</span></span>
+            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel, false, true) }}
+            <span v-if="hero.trueLevel >= 70000 && hero.dId == 'main'" style="color: cyan">[{{ hero.transcendence >= 10 ? Math.floor(hero.transcendence) : hero.transcendence.toFixed(2) }}]</span>
+            <span v-else-if="hero.trueLevel > 300 && hero.dId != 'unlimitted'">[{{formatNumber(hero.trueLevel, false, true)}}]</span>
+            </span>
           </p>
           <div class="tooltip-lvl">
             Every level gives you {{(2 + 0.5 * Math.floor(hero.potential/10)).toFixed(1)}} HP, {{(1 + 0.2 * Math.floor(hero.potential/20)).toFixed(1)}} DMG, 
             {{(0.5 + 0.1 * Math.floor(hero.potential/30)).toFixed(1)}} DEF<br>
-            <span v-if="hero.eLevel > 700">Getting Double Stats After Level 700</span>
+            <span v-if="hero.eLevel > 700">Getting Double Stats After Level 700</span><br>
+            <span v-if="hero.rebirthPts >= 1e7">Reach 70000 True Level in main dimension to get first <span style='color: cyan'>transcendence</span></span>
           </div>
         </div>
       
@@ -23,9 +28,11 @@
       </div>
       <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'EXP' }"><sup style="font-size: 8px">ℹ️</sup><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
     </div>
-    <Tooltip style="text-align: center" :text="() => corrList()">
-      <span v-if="hero.abyssTier >= 3" class="corruption-text-lvl">*CORRUPTION [{{corruptionShow()}}]</span>
-    </Tooltip>
+
+    <p v-if="hero.abyssTier >= 3" style="text-align: center" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Corrupt.' }"><sup style="font-size: 8px">ℹ️</sup>
+      <span class="corruption-text-lvl">CORRUPTION [{{corruptionShow()}}]</span>
+    </p>
+
     <h3>📜 Events</h3>
     <div class="wrapper-events">
       <div
@@ -99,11 +106,11 @@ const icons = {
 }
 
 const extraIcons = [
-  '☄️', '👁️‍🗨️', '♊', '🧠', '🌑', '💥', '❄️', '💎', '🍀', '🌫️', '🔪', '🏹', '🩸', '⛓️', '🩹'
+  '☄️', '👁️‍🗨️', '♊', '🧠', '🌑', '💥', '❄️', '💎', '🍀', '🌫️', '🔪', '🏹', '🩸', '⛓️', '🩹', '💖'
 ]
 
 watchEffect(() => {
-  if (enemy.value.isSpaceFight == 1) {
+  if (enemy.value.isSpaceFight == 1 && !hero.value.noBattleWindowChanges) {
     emit('update:modelValue', 'Combat')
   }
   if(hero.value.windowUpdate){
@@ -159,6 +166,9 @@ function formatNumber(num, f = false, lvl = false) {
 ];
   const tier = Math.floor(Math.log10(num) / 3);
 
+  if(tier >= units)
+    return "∞";
+
   const suffix = units[tier];
   const scale = Math.pow(10, tier * 3);
   const scaled = num / scale;
@@ -166,43 +176,10 @@ function formatNumber(num, f = false, lvl = false) {
   return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 
-const corrListHandle = computed(() => {
-  let base = 0.1 + (dimensions.value[22].infTier - 25) * 0.1;
-  let space = (hero.value.spCount >= 22? 1.002 ** hero.value.sp - 1: 0);
-  let radiation = (rawPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0);
-  let abyssD = (hero.value.spCount >= 15 && hero.value.abyssDStages >= 40? 1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15)): 0);
-  let rebirth = (hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0);
-  let inf = (hero.value.mainInfTier >= 5? ((1.01 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
-
-  return {
-    base: base,
-    space: space,
-    radiation: radiation,
-    abyssD: abyssD,
-    rebirth: rebirth,
-    inf: inf
-  }
-})
-
-function corrList() {
-  let e = corrListHandle.value;
-  
-  let str = ``;
-
-  str += `<span>Base: [${e.base.toFixed(3)}]</span><br>`;
-  str += `<span>Space: [${e.space.toFixed(3)}]</span><br>`;
-  str += `<span>Radiation: [${e.radiation.toFixed(3)}]</span><br>`;
-  str += `<span>Abyss D: [${e.abyssD.toFixed(3)}]</span><br>`;
-  str += `<span>Rebirth: [${e.rebirth.toFixed(3)}]</span><br>`;
-  str += `<span>Infinity: [${e.inf.toFixed(3)}]</span><br>`;
-  str += `<span>Total: [${ (hero.value.corruption < 1? hero.value.corruption: hero.value.overcorruption + 1).toFixed(3)}]</span><br>`
-
-  return str;
-}
 
 function corruptionShow(){
   if(hero.value.dId == 'd-corruption' || hero.value.darkId.includes('d-corruption')){
-    return (Math.max(hero.value.corruption, hero.value.overcorruption + 1)).toFixed(2);
+    return (hero.value.overcorruption).toFixed(2);
   } else {
     return (hero.value.corruption).toFixed(2)
   }
@@ -222,6 +199,7 @@ function eventReq (e){
   if(hero.value.dId == 'noEq' && e == 'Equipment') return true;
   if(hero.value.dId == 'noBuffs' && e == 'Buff') return true;
   if(hero.value.dId == 'noSpace' && e == 'Space') return true;
+  if(hero.value.dId == 'radiation' && e == 'Radiation') return true;
 
   if(e == 'Soul' && hero.value.dId == 'soulD') return false;
 
@@ -235,7 +213,7 @@ function eventReq (e){
   if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
   if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
   if(e == 'Radiation') return hero.value.spCount < 5;
-  if(e == 'Infinity') return (hero.value.dId == 'main' && (hero.value.infTier < 1 && hero.value.infEvents < 1) && hero.value.level < 700);
+  if(e == 'Infinity') return (hero.value.dId == 'main' && (hero.value.infTier < 1 && hero.value.infEvents < 2) && hero.value.level < 700);
   if(e == 'D-Atlas') return hero.value.abyssDStages < 80;
   if(e == 'Info') return hero.value.maxStage < 1;
   if(e == 'Settings') return hero.value.maxStage < 1;
@@ -264,6 +242,9 @@ function eventReqD (e){
   }
   if(hero.value.dId == 'noSpace' && e == 'Space'){
    return 'The Unknown';
+  }
+  if(hero.value.dId == 'radiation' && e == 'Radiation'){
+    return `The Unknown`;
   }
 
   if(e == 'Equipment') return 'Stage 2';
@@ -305,7 +286,6 @@ function eventReqD (e){
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 1rem;
 }
 
 .level-bar p {

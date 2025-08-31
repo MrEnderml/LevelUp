@@ -17,6 +17,21 @@
       </button>
     </div>
 
+    <div class="layout-switcher">
+      <div v-for="(layout, index) in hero.buffLayouts" :key="index">
+        <button
+          :class="{ selected: index === hero.selectedLayoutIndex }"
+          @click="layout.unlocked && applyLayout(index)"
+          @dblclick="layout.unlocked && openLayoutEditor(index)"
+          :disabled="!layout.unlocked"
+        >
+        <Tooltip :text="layoutUnlocked(layout)" boxShadow="0 0 10px orange">
+          {{ layout.name }}
+        </Tooltip>
+        </button>
+      </div>
+    </div>
+
     <div class="buffs-grid">
       <div
         class="buff-card"
@@ -30,37 +45,106 @@
         @click="toggleBuff(buff.id)"
       >
         <h3 class="buff-name">
-        <strong>{{ buff.name }} [T{{ buff.tier }}]</strong>
+          <strong>{{ buff.name }} [T{{ buff.tier }}]</strong>
+            <Tooltip :text="'This buff cannot affect some high-tier creatures'" maxWidth="125px" position="left" boxShadow="0 0 10px orange">
+              <span v-if='buff.id == 16'>⚠️</span>
+            </Tooltip>
+            <Tooltip :text="'You gain the loot from only first killed enemy'" maxWidth="100px" position="left" boxShadow="0 0 10px orange">
+              <span v-if='buff.id == 7'>⚠️</span>
+            </Tooltip>
         </h3>
         <div class="exp-bar">
             <div class="exp-fill" :style="{ width: (buff.exp / buff.maxExp[buff.tier-1]) * 100 + '%' }"></div>
             <div class="exp-text">{{formatNumber(buff.exp)}}/{{formatNumber(buff.maxExp[buff.tier-1])}}</div>
         </div>
         <transition name="fade" mode="out-in">
-        <div :key="buff.tier" class="buff-description">
+          <div :key="buff.tier" class="buff-description">
             <p>
-              <strong>T[{{ buff.tier }}] - {{ buffD(buff)}}</strong>
+              <strong>[T{{ buff.tier }}]: {{ buffD(buff) }}</strong>
             </p>
             <p>
-              T[{{ buff.tier + 1 }}] - {{ buffCharge(buff, 1) }}
+              [T{{ buff.tier + 1 }}]: {{ buffNextTierD(buff) }}
             </p>
-        </div>
+          </div>
         </transition>
        </div> 
     </div>
   </div>
+
+  <div v-if="showLayoutEditor" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Edit Layout <span v-if="editLayout" style="color: lightgreen">[Edit buffs...]</span></h3>
+      
+      <input
+        v-model="layoutNameInput"
+        maxlength="15"
+        placeholder="Layout name (max 15 chars)"
+        @input="validateInput"
+      />
+      <p class="input-warning" v-if="inputError">{{ inputError }}</p>
+
+      <p><strong>Normal Buffs:</strong></p>
+      <div class="buff-columns">
+        <div class="column" v-for="col in splitBuffs(hero.buffLayouts[layoutBeingEdited]?.buffs)">
+          <div v-for="id in col" :key="'buff-' + id">
+            • {{ getBuffName(id) }}
+          </div>
+        </div>
+      </div>
+
+      <p><strong>Space Buffs:</strong></p>
+      <div class="buff-columns">
+        <div class="column" v-for="col in splitBuffs(hero.buffLayouts[layoutBeingEdited]?.spBuffs || [])">
+          <div v-for="id in col" :key="'spbuff-' + id">
+            • {{ getBuffName(id) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button @click="confirmLayoutEdit" :disabled="!!inputError">✅ Save</button>
+        <button @click="editLayoutEdit">✏️ Edit</button>
+        <button @click="cancelLayoutEdit">❌ Cancel</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
-import { reactive, computed, ref } from 'vue';
+import { reactive, computed, ref, watchEffect, watch } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { useBuff } from '../../data/buffs.js';
 import { dimensions } from '../../data/dimensions.js';
+import { perks } from '../../data/ascension.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
 const { buffs } = useBuff();
+
+
+
+const selectedLayoutIndex = ref(0);
+const showLayoutEditor = ref(false);
+const layoutBeingEdited = ref(null);
+const editLayout = ref(false);
+const layoutNameInput = ref('');
+const inputError = ref('');
+
+function layoutUnlocked(layout) {
+  if (layout.unlocked) return "";
+
+  if (layout.id === 1 && hero.value.singularity < 5) {
+    return "Unlock at Singularity [T5]";
+  }
+  if (layout.id === 2 && hero.value.mainInfTier < 30) {
+    return "Unlock at Infinity [T30]";
+  }
+
+  return "";
+}
+
 
 const filterBuffs = computed(() => 
     buffs.value.filter(b => b.active === true)
@@ -73,11 +157,37 @@ const getActiveDescriptions = (buff) => {
 function buffD(buff){
   if(buff.id == 6)
     return buffCharge(buff)
+
+  specialBuffs(buff)
+  
+  return buff.description[buff.tier-1];
+}
+
+function buffNextTierD(buff) {
+  if (buff.id == 6)
+    return buffCharge(buff, 1);
+
+  specialBuffs(buff)
+
+  const nextTier = buff.tier;
+  const maxTier = buff.maxTier;
+
+  if (nextTier >= buff.description.length - 1)
+    return "Max Tier";
+
+  if (nextTier >= maxTier && buff.maxTier < buff.description.length && buff.nextTierReq)
+    return `Next Tier Requirement: ${buff.nextTierReq}`;
+
+
+  return buff.description[nextTier] || '';
+}
+
+function specialBuffs(buff){
   if(buff.id == 7 && buff.tier == 4)
     return `${10 + 5 * (dimensions.value[19].infTier == dimensions.value[19].maxInfTier? 1: 0)}% to gain EXP and WEAPON CHANCE for each overkilled Enemy`
+  
   if(buff.id == 10 && buff.tier == 1)
     buff.description[0] = `${35 + 5 * dimensions.value[4].infTier}% to RISE UP after death with 50% HP. Does not work on the same enemy twice.`
-  return buff.description[buff.tier-1];
 }
 
 function buffCharge(buff, tier = 0){
@@ -89,14 +199,15 @@ function buffCharge(buff, tier = 0){
 }
 
 const toggleBuff = (id) => {
-  if(hero.value.isSpaceBuff && enemy.value.isSpaceFight == 0){
+  if(hero.value.isSpaceBuff && enemy.value.isSpaceFight <= 0){
     const index = hero.value.spActiveBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.spActiveBuffs.splice(index, 1);
     } else if (hero.value.spActiveBuffs.length < hero.value.maxBuffs - (hero.value.rebirthTier >= 15 && hero.value.isAbyss? 1: 0) + (hero.value.spCount >= 43? 1: 0)) {
       hero.value.spActiveBuffs.push(id);
     }
-  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier && !hero.value.isTravell && (!hero.value.soulD || hero.value.dId == 'soulD')){
+  } else if(hero.value.stage < 10 + 10 * hero.value.abyssTier && !hero.value.isTravell && (!hero.value.soulD || hero.value.dId == 'soulD') || 
+  perks[57].level){
     const index = hero.value.activeBuffs.indexOf(id);
     if (index !== -1) {
       hero.value.activeBuffs.splice(index, 1);
@@ -109,6 +220,113 @@ const toggleBuff = (id) => {
 function spaceSwitch() {
   hero.value.isSpaceBuff = !hero.value.isSpaceBuff? true: false;
 }
+
+
+
+//-------layout edit
+function openLayoutEditor(index) {
+  layoutBeingEdited.value = index;
+  layoutNameInput.value = hero.value.buffLayouts[index].name;
+  showLayoutEditor.value = true;
+}
+
+function confirmLayoutEdit() {
+  if (layoutBeingEdited.value !== null && layoutNameInput.value.trim() !== '') {
+    hero.value.buffLayouts[layoutBeingEdited.value].name = layoutNameInput.value.trim();
+  }
+  showLayoutEditor.value = false;
+  editLayout.value = false;
+
+  saveCurrentToLayout();
+}
+
+function cancelLayoutEdit() {
+  showLayoutEditor.value = false;
+}
+
+const editLayoutEdit = () => {
+  editLayout.value = true;
+  cancelLayoutEdit();
+};
+
+function getBuffName(id) {
+  const buff = buffs.value.find(b => b.id === id);
+  return buff ? buff.name : `Unknown [${id}]`;
+}
+
+function splitBuffs(buffIds) {
+  const half = Math.ceil(buffIds.length / 2);
+  return [buffIds.slice(0, half), buffIds.slice(half)];
+}
+
+
+function validateInput() {
+  const name = layoutNameInput.value.trim();
+  if (!name) {
+    inputError.value = 'Name cannot be empty.';
+  } else if (/[^a-zA-Z0-9 _-]/.test(name)) {
+    inputError.value = 'Only letters, numbers, spaces, _ and - allowed.';
+  } else if (name.length > 15) {
+    inputError.value = 'Max 10 characters.';
+  } else {
+    inputError.value = '';
+  }
+}
+
+
+function applyLayout(index) {
+  if(hero.value.selectedLayoutIndex == index)
+    return;
+
+  hero.value.selectedLayoutIndex = index;
+  const layout = hero.value.buffLayouts[index];
+
+  const availableIds = buffs.value.filter(b => b.active).map(b => b.id);
+
+  const validBuffs = layout.buffs.filter(id => availableIds.includes(id));
+  const validSpBuffs = layout.spBuffs.filter(id => availableIds.includes(id));
+
+  const maxNormal = hero.value.maxBuffs;
+  const maxSp = maxNormal - (hero.value.rebirthTier >= 15 && hero.value.isAbyss ? 1 : 0) + (hero.value.spCount >= 43 ? 1 : 0);
+
+  hero.value.activeBuffs = validBuffs.slice(0, maxNormal);
+  hero.value.spActiveBuffs = validSpBuffs.slice(0, maxSp);
+}
+
+
+function saveCurrentToLayout() {
+  const layout = hero.value.buffLayouts[hero.value.selectedLayoutIndex];
+  layout.buffs = [...hero.value.activeBuffs];
+  layout.spBuffs = [...hero.value.spActiveBuffs];
+}
+
+watchEffect(() => {
+  if(editLayout.value)
+    return;
+
+  const layout = hero.value.buffLayouts[hero.value.selectedLayoutIndex];
+
+  const unlocked = buffs.value.filter(b => b.active).map(b => b.id);
+
+  const maxNormal = hero.value.maxBuffs;
+  const maxSp = maxNormal - (hero.value.rebirthTier >= 15 && hero.value.isAbyss ? 1 : 0) + (hero.value.spCount >= 43 ? 1 : 0);
+
+  const missingNormal = layout.buffs.filter(id =>
+    unlocked.includes(id) && !hero.value.activeBuffs.includes(id)
+  );
+
+  const missingSp = layout.spBuffs.filter(id =>
+    unlocked.includes(id) && !hero.value.spActiveBuffs.includes(id)
+  );
+
+  if (hero.value.activeBuffs.length < maxNormal)
+    hero.value.activeBuffs.push(...missingNormal.slice(0, maxNormal - hero.value.activeBuffs.length));
+
+  if (hero.value.spActiveBuffs.length < maxSp)
+    hero.value.spActiveBuffs.push(...missingSp.slice(0, maxSp - hero.value.spActiveBuffs.length));
+});
+
+
 
 function formatNumber(num) {
   if (num < 1000) return Math.floor(num).toString();
@@ -400,4 +618,84 @@ function formatNumber(num) {
   gap: 1rem;
   flex-wrap: wrap;
 }
+
+
+
+
+
+.layout-switcher {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.layout-switcher button {
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.layout-switcher button.selected {
+  background: #0ff;
+  color: #000;
+}
+
+
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px;
+  color: white;
+}
+
+.modal-box input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 4px 6px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #111;
+  color: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.input-warning {
+  color: #ff6666;
+  font-size: 12px;
+  margin-top: -6px;
+  margin-bottom: 10px;
+}
+
+.buff-columns {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+
 </style>

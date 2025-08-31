@@ -7,6 +7,9 @@
 <button class="btn" @click="tool('abyss')">Abyss</button>
 <button class="btn" @click="tool('mutagen')">+mutagen</button>
 <button class="btn" @click="tool('RebirthTier')">+10 Rebirth Tier</button>
+<button class="btn" @click="tool('+10 Stage')">+10 stage</button>
+<button class="btn" @click="tool('+300 souls')">+300 souls</button>
+<button class="btn" @click="tool('Stardust')">Stardust</button>
 <div style="display: none">
 <button class="btn" @click="tool('levelPlus')">+1 Level</button>
     
@@ -19,7 +22,7 @@
     <button class="btn" @click="tool('ClearStage')">Clear stage</button>
     <button class="btn" @click="tool('StageBoss')">Clear until the boss</button>
     <button class="btn" @click="tool('FourEnemies')">Kill 4 Enemies</button>
-    <button class="btn" @click="tool('Souls')">Souls</button>
+    
 </div>
     
 </div>
@@ -83,6 +86,16 @@ function tool(str) {
     }
     if(str == "Souls"){
         hero.value.souls++;
+    }
+    if(str == "+10 Stage"){
+        hero.value.stage += 10;
+    }
+    if(str == "+300 souls"){
+        hero.value.souls += 300;
+        hero.value.soulsMax += 300;
+    }
+    if(str == "Stardust"){
+        hero.value.stardust += 1e12;
     }
 }
 

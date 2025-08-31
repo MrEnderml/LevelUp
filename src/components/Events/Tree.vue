@@ -1,6 +1,6 @@
 <template>
   <div class="perk-tree">
-    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TIER[{{hero.treeTier+1}}]</h2>
+    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TREE [T{{hero.treeTier+1}}]</h2>
     <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ Math.floor(hero.perkPoints) }}</p>
 
     <div class="auto-buttons" v-if="hero.infEvents >= 1 || hero.infTier >= 1 || hero.singularity >= 3">
@@ -44,9 +44,8 @@
         
         <span class="perk-desc">{{ descriptionPerks(perk) }}</span>
         <span class="perk-desc" v-if="!perk.status"><span v-if="perk.level > 0">{{calculate(perk)}}</span></span>
-        <span class="perk-desc" v-if="perk.status && perk.id == 1"><span>Total: 
-        [{{(1.01 ** Math.min(perk.kills,140) + (perk.kills >= 140? (perk.kills ** 0.09 - 1): 0)).toFixed(2)}}]</span></span>
-        <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(Math.min(0.1 * Math.floor(hero.stage / 5 - 1), 1.5)).toFixed(1)}}</span></span>
+        <span class="perk-desc" v-if="perk.status && perk.id == 1"><span>Total: [{{(hero.radAttack).toFixed(2)}}]</span></span>
+        <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(hero.radAPS).toFixed(2)}}</span></span>
 
         <div class="perk-footer">
           <button 
@@ -91,83 +90,103 @@ import { computed } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/perks.js';
 import { perks as radPerks} from '../../data/radPerks.js';
-import {dimensions} from '../../data/dimensions.js';
+import { dimensions } from '../../data/dimensions.js';
+import { perks as ascendPerks } from '../../data/ascension.js';
+import { perks as treePerks } from '../../data/perks.js';
 
 const { hero } = useHero();
-const MULT = (dimensions.value[6].infTier == dimensions.value[6].maxInfTier? 0.9: 1);
 
+const toInt = (n) => Math.max(0, Math.floor(n || 0));
 
 function toggleAuto() {
   hero.value.treeAuto = !hero.value.treeAuto? true: false;
 }
-
 
 const visiblePerks = computed(() => {
   return perks.value.filter(perk => perk.maxLevel?.[hero.value.treeTier] > 0);
 });
 
 const upgrade = (perk) => {
-  if (hero.value.perkPoints > 0 && perk.level < perk.maxLevel[hero.value.treeTier]) {
-    hero.value.perkPoints -= 1;
-    perk.level++;
+  const points = toInt(hero.value.perkPoints);
+  const maxLevel = toInt(perk.maxLevel[hero.value.treeTier]);
+  const currentLevel = toInt(perk.level);
+
+  if (points > 0 && currentLevel < maxLevel) {
+    hero.value.perkPoints = points - 1;
+    perk.level = currentLevel + 1;
   }
 };
 
 const infPerk = (perk) => {
-  if(perk.id == 7 || perk.id == 10 || perk.id == 14)
-    return;
+  if (perk.id === 7 || perk.id === 10 || perk.id === 14) return;
 
-  hero.value.capInfPerks = hero.value.infTier + 1;
+  hero.value.capInfPerks = toInt(hero.value.infTier) + 1;
 
-  if(perk.infStatus || hero.value.capInfPerks > perks.value.filter(p => p.infStatus).length){
-    perk.infStatus = !perk.infStatus? true: false;
-    hero.value.perkPoints += (perk.infStatus? perk.level: Math.floor(perk.baseCost * MULT) * perk.level)
+  const infActiveCount = perks.value.filter(p => p.infStatus).length;
+  if (perk.infStatus || hero.value.capInfPerks > infActiveCount) {
+    perk.infStatus = !perk.infStatus;
+    const level = toInt(perk.level);
+
+    if (perk.infStatus) {
+      hero.value.perkPoints = toInt(hero.value.perkPoints) + level;
+    } else {
+      hero.value.perkPoints = toInt(hero.value.perkPoints) + toInt(totalInfCost(perk)) * level;
+    }
+
     perk.level = 0;
   }
-  
-}
+};
 
 const infCost = (perk) => {
-  let cost = Math.floor(perk.baseCost * MULT);
-  //cost = Math.floor(cost * 0.9);
+  let cost = totalInfCost(perk);
   return `${cost}P`
 }
 
-const infUpgrade = (perk) => {
-  if (hero.value.perkPoints >= perk.baseCost) {
-    perk.level++;
-    hero.value.perkPoints -= Math.floor(perk.baseCost * MULT);
-  }
+const totalInfCost = (perk) => {
+  return Math.floor(perk.baseCost * getMult());
 }
+
+const infUpgrade = (perk) => {
+  const cost = totalInfCost(perk);
+  const points = toInt(hero.value.perkPoints);
+  if (points >= cost) {
+    perk.level = toInt(perk.level) + 1;
+    hero.value.perkPoints = points - cost;
+  }
+};
 
 const infMaxUpgrade = (perk) => {
-  let count = Math.floor(hero.value.perkPoints / Math.floor(perk.baseCost * MULT));
-  perk.level += count;
-  hero.value.perkPoints -= Math.floor(perk.baseCost * MULT) * count;
-}
+  const cost = totalInfCost(perk);
+  const points = toInt(hero.value.perkPoints);
+  if (points <= 0 || cost <= 0) return;
+  const count = toInt(points / cost);
+
+  perk.level = toInt(perk.level) + count;
+  hero.value.perkPoints = points - cost * count;
+};
 
 const maxUpgrade = (perk) => {
-  let maxUp = perk.maxLevel[hero.value.treeTier] - perk.level;
-  
-  perk.level += Math.min(maxUp, hero.value.perkPoints);
-  hero.value.perkPoints -= Math.min(maxUp, hero.value.perkPoints);
-  
-}
+  const maxUp = toInt(perk.maxLevel[hero.value.treeTier]) - toInt(perk.level);
+  const available = toInt(hero.value.perkPoints);
+
+  const up = Math.min(maxUp, available);
+  perk.level = toInt(perk.level) + up;
+  hero.value.perkPoints = available - up;
+};
 
 const resetPerks = () => {
-  let refundedPoints = 0;
-
   for (const perk of perks.value) {
-    if(perk.name == "Invisible" || perk.name == "Traveller")
-      perk.level = perk.level;
-    else {
+    if (perk.name !== "Invisible" && perk.name !== "Traveller") {
       perk.level = 0;
     }
   }
 
-  hero.value.perkPoints = hero.value.freeTreePoints + hero.value.eLevel * (hero.value.infTier >= 1 || hero.value.infEvents >= 1? 2: 1);
-};
+  const basePoints = toInt(hero.value.freeTreePoints) +
+    toInt(hero.value.eLevel) *
+    ((hero.value.infTier >= 1 || hero.value.infEvents >= 1) ? 2 : 1);
 
+  hero.value.perkPoints = Math.max(0, basePoints);
+};
 
 const calculate = (perk) => {
   if(perk.id == 1 && !perk.infStatus)
@@ -198,31 +217,53 @@ const calculate = (perk) => {
 }
 
 function descriptionPerks(perk) {
+let softAttack = 1.01 ** (139.3 + 10 * (dimensions.value[40].infTier - 40));
+let healEffect = Math.min(1 + 1 * (dimensions.value[40].infTier - 40), 10);
+
+let stunEffect = 30 + 1 * (dimensions.value[40].infTier - 40);
+let stunDuration = (0.5 + 0.05 * (dimensions.value[40].infTier - 40));
+
+let levelUp = 10 + 1 * (dimensions.value[40].infTier - 40);
+let maxLevelMult = 1.1 + 0.01 * (dimensions.value[40].infTier - 40);
+let aps = 0.1 + 0.01 * (dimensions.value[40].infTier - 40);
+
 let radDescription = [
-    `+1.01 MULT DMG per each killed enemy [Softcap - 4]`,
-    "+1% HEAL per second when battle starts [MAX - 10%]",
-    "When you were attacked, 30% TO STUN ENEMY FOR 0.5 SECONDS",
-    "Level up if your Level is below 10% of MAX Level.(S)",
-    "x1.1 Max Level Mult",
-    "+0.1 Attack per Second for each boss killed [Max - 1.5]"
+    `+1.01 MULT DMG per each killed enemy [Softcap - ${softAttack.toFixed(2)}]`,
+    `+${healEffect}% HEAL from Max HP per second`,
+    `When you were attacked, ${stunEffect}% TO STUN ENEMY FOR ${stunDuration.toFixed(2)} SECONDS`,
+    `Level Rush - +${levelUp}%.(S)`,
+    `x${maxLevelMult.toFixed(2)} Global Max Level Mult`,
+    `+${aps.toFixed(2)} Attack per Second for each boss killed [Max - 1.5]`
   ]
 
   return perk.status? radDescription[perk.id - 1]: perk.description;
 }
 
 const radiationPerks = (perk) => {
-  if(!perk.status && !radPerks[7].perkStatus){
+  const maxActivePerks = (radPerks[7].level? 1: 0) + (ascendPerks[64].level? 1: 0); 
+
+  const activeCount = treePerks.value.filter(p => p.status).length;
+
+  if (!perk.status) {
+    if (activeCount < maxActivePerks) {
       perk.status = true;
-      radPerks[7].perkStatus = true;
       hero.value.perkPoints += perk.level;
       perk.level = 0;
-  } else if(perk.status){
-      perk.status = false;
-      radPerks[7].perkStatus = false;
-      perk.kills = 0
+    }
+  } else {
+    perk.status = false;
+    perk.kills = 0;
   }
+};
 
-  //radPerks[7].perkStatus = false;
+
+function getMult() {
+  let mult = (dimensions.value[6] && dimensions.value[6].infTier === dimensions.value[6].maxInfTier) ? 0.9 : 1;
+  mult *= 1 - dimensions.value[35].infTier * 0.01;
+  mult *= (hero.value.dId == 'd-noTree'? 2 + 0.25 * dimensions.value[35].infTier : 1);
+  mult *= (hero.value.darkId.includes('d-noTree')? 2 - 0.02 * dimensions.value[35].infTier: 1);
+
+  return mult;
 }
 </script>
 

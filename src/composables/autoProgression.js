@@ -68,12 +68,12 @@ export const autoProgress = () => {
       auto.value.stop.enabled = false;
     }
     
-    if(hero.value.mainInfTier < 2) {
+    if(hero.value.mainInfTier < 1) {
       auto.value.ascension.minShards = 0;
       auto.value.ascension.minStage = 0;
       auto.value.ascension.enabled = false;
     }
-    if(hero.value.mainInfTier < 3){
+    if(hero.value.mainInfTier < 2){
       auto.value.rebirth.minPts = 0;
       auto.value.rebirth.minLevel = 0;
       auto.value.rebirth.minLevelNext = 0;

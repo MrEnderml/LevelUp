@@ -12,14 +12,44 @@
       class="star"
       :style="star"
     ></div>
-    <button class="reset-button" @click="resetView('main')">
+    <button v-if="hero.dimDisplayMode === 'map'" class="reset-button" @click="selectDimension(dimensions[0])">
       🌍 main
     </button>
-    <button v-if="hero.rebirthPts >= 1e7" class="reset-button reset-button-bh" @click="resetView('bh')">
+    <button v-if="hero.dimDisplayMode === 'map'" class="progression-button" @click="toggleProgressionCircles">
+      Progression
+    </button>
+    <button v-if="hero.dimDisplayMode === 'map' && hero.rebirthPts >= 1e7" class="reset-button reset-button-bh" @click="resetView('bh')">
       🌑 Black Hole
     </button>
 
-    <svg class="atlas-map" :viewBox="viewBox">
+    <div class="atlas-header">
+      <button @click="hero.dimDisplayMode = 'map'">🗺 Map</button>
+      <button @click="hero.dimDisplayMode = 'grid'">🔲 Grid</button>
+      <button
+        @click="toggleOtherDimensions"
+        :disabled="!isEternityUnlocked"
+        :class="{ disabled: !isEternityUnlocked }"
+      >
+        🌌 Dark Dimensions
+      </button>
+
+      <input
+        v-if="hero.dimDisplayMode === 'grid'"
+        v-model="searchQuery"
+        type="text"
+        class="dimension-search small"
+        placeholder="🔍 Search..."
+      />
+
+      <select v-if="hero.dimDisplayMode === 'grid'" v-model="filterStatus" class="dimension-filter small">
+          <option value="all">🌐 All</option>
+          <option value="completed">✅ Completed</option>
+          <option value="inprogress">⚡ In Progress</option>
+          <option value="blocked">⛔ Blocked</option>
+      </select>
+    </div>
+
+    <svg v-if="hero.dimDisplayMode === 'map'" class="atlas-map" :viewBox="viewBox">
       <line
         v-for="link in fLinks"
         :key="link.id"
@@ -42,14 +72,21 @@
         @mouseleave="hovered = null"
         @click="selectDimension(dimension)"
       >
-        <circle
-          :cx="dimension.x"
-          :cy="dimension.y"
-          :r="30"
-          fill="transparent"
-          pointer-events="visible"
-        />
-
+      <circle
+        :cx="dimension.x"
+        :cy="dimension.y"
+        :r="20"
+        :fill="hero.showProgressionCircles ? getInfColor(getDimension(dimension.id)) : 'transparent'"
+        :stroke="hero.showProgressionCircles ? '#aaa' : 'transparent'"
+        stroke-width="2"
+        pointer-events="visible"
+        :style="{
+          filter: hero.showProgressionCircles && !d_req(getDimension(dimension.id))
+            ? 'drop-shadow(0 0 2px ' + getInfColor(getDimension(dimension.id)) + ')'
+            : 'none',
+          transition: 'fill 0.3s, filter 0.3s'
+        }"
+      />
         <foreignObject
           v-if="dimension.svg"
           :x="dimension.x - 16"
@@ -100,6 +137,27 @@
       </g>
     </svg>
 
+    <div v-if="hero.dimDisplayMode === 'grid'" class="dimension-grid-wrapper">
+      <div class="dimension-grid">
+        <div
+          v-for="dimension in filteredDimensions"
+          :key="dimension.id"
+          class="dimension-card"
+          :style="{ borderColor: getInfColor(dimension) }"
+        >
+          <div 
+            class="dimension-icon" 
+            v-html="dimension.svg || dimension.name"
+            :style="{ color: getInfColor(dimension) }"
+          ></div>
+          <div class="dim-description-scroll">
+            <p v-html="dimensionD(dimension)"></p>
+          </div>
+          <button class="enter-button" @click="selectDimension(dimension)">Enter</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tooltip -->
     <div
       v-if="hovered"
@@ -136,6 +194,61 @@ const { hero } = useHero();
 const { buffs } = useBuff();
 const { enemy } = useEnemy();
 
+const searchQuery = ref('');
+const filterStatus = ref("all"); // all | completed | inprogress | blocked
+
+const isEternityUnlocked = computed(() => {
+  return hero.value.mainInfTier >= 35;
+});
+
+function toggleOtherDimensions() {
+  const newD = d_data.value.find(d => d.id === 'eternity');
+  if (!newD) return;
+
+  newD.status = !newD.status;
+
+  d_data.value.forEach(d => {
+    if (d.idx < 24 || d.idx >= 26) {
+      d.status = !d.status;
+    }
+  });
+
+  dimensions.value = dimensions.value.map(dim => {
+    if (['eternity', 'bh'].includes(dim.id)) return dim;
+    return {
+      ...dim,
+      status: d_data.value.find(d => d.id === dim.id)?.status ?? false
+    };
+  });
+
+  links.value = links.value.map(link => {
+    if (['eternity', 'bh'].includes(link.id)) return link;
+
+    return {
+      ...link,
+      status: d_data.value.find(d => d.id === link.to)?.status ?? false
+    };
+  });
+}
+
+const filteredDimensions = computed(() =>
+  fDimensions.value.filter(dim => {
+    const query = searchQuery.value.toLowerCase();
+    const nameMatch =
+      dim.id.toLowerCase().includes(query) ||
+      (dim.title || "").toLowerCase().includes(query);
+    const descMatch = (dimensionD(dim) || "").toLowerCase().includes(query);
+    const matchesSearch = nameMatch || descMatch;
+
+
+    const status = getInfStatus(dim);
+    const matchesStatus =
+      filterStatus.value === "all" || filterStatus.value === status;
+
+    return matchesSearch && matchesStatus;
+  })
+);
+
 const zoom = 1
 const offsetX = 0
 const offsetY = 0
@@ -151,7 +264,7 @@ const artifacts = [
   { id: 'void', x: 500, y: 300, color: '#00000088', radius: 20, label: 'Void' },
 ]
 
-const dark_d = [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+const dark_d = [27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]
 
 const dimensions = ref([
   { id: 'main', name: '🌍', x: 400, y: 300, color: '#4caf50' },
@@ -180,6 +293,7 @@ const dimensions = ref([
   { id: 'eternity', svg: getSvgIconHTML('galaxyEternity', '2em'), x: 300, y: -450, color: '#90caf9', status: true },
   { id: 'abyss-d', svg: getSvgIconHTML('galaxy13', '2em'), x: 600, y: -250, color: '#90caf9' },
   { id: 'bh', svg: getSvgIconHTML('singularity', '2em'), x: -600, y: 50, color: '#90caf9', status: hero.value.rebirthPts >= 1e7 },
+  { id: 'advanceBH', svg: getSvgIconHTML('advanceBH', '2em'), x: -1000, y: 50, color: '#90caf9', status: hero.value.bhTier >= 4 },
   { id: 'd-corruption', svg: getSvgIconHTML('galaxy3', '2em'), x: 500, y: -500, color: '#90caf9' },
   { id: 'd-hard', svg: getSvgIconHTML('galaxy12', '2em'), x: 500, y: -350, color: '#90caf9' },
   { id: 'd-damage', svg: getSvgIconHTML('galaxy1', '2em'), x: 650, y: -400, color: '#90caf9' },
@@ -191,11 +305,12 @@ const dimensions = ref([
   { id: 'd-next', svg: getSvgIconHTML('galaxy9', '2em'), x: 400, y: -150, color: '#90caf9' },
   { id: 'd-unlimitted', svg: getSvgIconHTML('galaxy7', '2em'), x: 600, y: 50, color: '#90caf9' },
   { id: 'd-noTree', svg: getSvgIconHTML('galaxy14', '2em'), x: 300, y: -50, color: '#90caf9' },
+  { id: 'd-noAps', svg: getSvgIconHTML('galaxy7', '2em'), x: 400, y: 50, color: '#90caf9' },
   { id: 'd-noEq', svg: getSvgIconHTML('galaxy15', '2em'), x: 150, y: 50, color: '#90caf9' },
   { id: 'd-noSpace', svg: getSvgIconHTML('galaxy18', '2em'), x: 150, y: 125, color: '#90caf9' },
   { id: 'radiation', svg: getSvgIconHTML('galaxy16', '2em'), x: 200, y: -450, color: '#90caf9' },
   { id: 'noMaxLevel', svg: getSvgIconHTML('galaxy17', '2em'), x: 200, y: -350, color: '#90caf9' },
-  { id: 'eternity-2', svg: getSvgIconHTML('galaxy18', '2em'), x: -100, y: -600, color: '#90caf9' },
+  { id: 'dimMerge', svg: getSvgIconHTML('galaxy18', '2em'), x: -100, y: -600, color: '#90caf9' },
 ].map(dim => ({
   ...dim,
   status: dim.status ?? d_data.value.find(d => d.id === dim.id)?.status ?? false
@@ -241,10 +356,11 @@ const links = ref([
   { id: 37, from: 'd-next', to: 'd-noTree' },
   { id: 38, from: 'd-next', to: 'd-unlimitted' },
   { id: 39, from: 'd-noTree', to: 'd-noEq' },
-  { id: 40, from: 'd-noEq', to: 'd-noSpace' },
-  { id: 41, from: 'eternity', to: 'radiation' },
-  { id: 42, from: 'radiation', to: 'noMaxLevel' },
-  { id: 43, from: 'radiation', to: 'eternity-2' },
+  { id: 40, from: 'd-noTree', to: 'd-noAps' },
+  { id: 41, from: 'd-noEq', to: 'd-noSpace' },
+  { id: 42, from: 'eternity', to: 'radiation' },
+  { id: 43, from: 'radiation', to: 'noMaxLevel' },
+  { id: 44, from: 'radiation', to: 'dimMerge' },
 ].map(link => ({
   ...link,
   status: link.status ?? d_data.value.find(d => d.id === link.to)?.status ?? false
@@ -314,6 +430,50 @@ const endDrag = () => {
   dragging = false
 }
 
+function getInfColor(dim) {
+  let id = dim.id;
+  let d = {};
+  for(let ds of d_data.value){
+    if(ds.id == id){
+      d = ds;
+      break;
+    }
+  }
+
+  if (d_req(d)) return '#f44336'; // 🔴 blocked
+  
+  const tier = d.infTier ?? 0;
+  const max = d.maxInfTier ?? Infinity;
+
+  if (tier >= max) return '#66ff66'; // 🟢 completed
+  if (tier >= 0 && tier < max) return '#ffcc00'; // 🟡 in progress
+  return '#444'; // ⚫ default (не начато)
+}
+
+function getInfStatus(dim) {
+  let id = dim.id;
+  let d = {};
+  for(let ds of d_data.value){
+    if(ds.id == id){
+      d = ds;
+      break;
+    }
+  }
+
+  if (d_req(d)) return "blocked";
+  const tier = d.infTier ?? 0;
+  const max = d.maxInfTier ?? Infinity;
+  if (tier >= max) return "completed";
+  if (tier >= 0) return "inprogress";
+  return "default";
+}
+
+
+
+function toggleProgressionCircles() {
+  hero.value.showProgressionCircles = !hero.value.showProgressionCircles;
+}
+
 const getPos = (id) => dimensions.value.find(d => d.id === id)
 
 const dimensionGraph = {
@@ -330,6 +490,7 @@ const dimensionGraph = {
   36: [35, 34, 32, 31, 28, 27, 26],
   37: [36, 35, 34, 32, 31, 28, 27, 26],
   38: [34, 32, 31, 28, 27, 26],
+  39: [35, 34, 32, 31, 28, 27, 26]
 };
 
 const selectDimension = (dimension) => {
@@ -376,7 +537,7 @@ const selectDimension = (dimension) => {
     selectDarkD(newD);
   else 
     hero.value.darkId = [];
-  console.log(hero.value.darkId);
+  //console.log(hero.value.darkId);
 
 
   if(hero.value.dId == newD.id && hero.value.dId !== 'time')
@@ -384,14 +545,15 @@ const selectDimension = (dimension) => {
 
   if (newD.id === 'ascension' || newD.id === 'ascension-2') {
     for (let perk in ascension) {
-      newD.ascension[perk] = ascension[perk].level;
-      ascension[perk].level = 0;
+      hero.value.transferAscensionArray[perk] = ascension[perk].level; 
+      ascension[perk].level = 0; 
     }
   }
 
   if (currentD.id === 'ascension' || currentD.id === 'ascension-2') {
     for (let perk in ascension) {
-      ascension[perk].level = currentD.ascension[perk] ?? 0;
+      ascension[perk].level = hero.value.transferAscensionArray[perk] || 0; 
+      hero.value.transferAscensionArray[perk] = 0; 
     }
   }
 
@@ -401,7 +563,15 @@ const selectDimension = (dimension) => {
     ? (hero.value.mainInfTier ?? 0)
     : newD.infTier;
 
-  hero.value.dId = newD.id;
+  hero.value.dId = (newD.id == 'eternity'? hero.value.dId: newD.id);
+  
+  if(newD.id == 'eternity')
+    return;
+
+  if(newD.id == 'bh'){
+    hero.value.transcendenceBH = Math.floor(hero.value.transcendence);
+    d_data.value[25].infTier = 50 + 5 * hero.value.bhTier;
+  }
 
   performD(newD, currentD);
 }
@@ -456,17 +626,22 @@ function dimensionD(hovered) {
     }
   }
 
+  if(d.id == 'bh')
+    return bhChallenge();
+
+  if(d.id == 'advanceBH')
+    return advanceBH();
+
   if(d_data.value[24].status == false)
     return darkDimensions(d);
 
 
-  let filtered = ['unlimitted', 'main', 'time', 'abyss-d', 'survival-2', 'eternity']
-  let dInfFiltered = ['time', 'abyss-d', 'survival-2', 'eternity']
+  let filtered = ['unlimitted', 'main', 'time', 'abyss-d', 'survival-2', 'eternity', 'dimMerge']
+  let dInfFiltered = ['time', 'abyss-d', 'survival-2', 'eternity', 'dimMerge']
 
   if(d.id == 'unlimitted')
     d.r = unlimittedDescription();
-  if(d.id == 'bh')
-    return `Reach Level 10000`;
+  
 
   let str = `<span><strong>Dimension: ${d.name} [${d.idx}]</strong></span><br>`
 
@@ -483,7 +658,7 @@ function dimensionD(hovered) {
   else if(d.id == 'time') str += dTime();
   else if(d.id == 'danger') str += `Max Danger: +${Math.floor(1.45 ** (d.infTier - 10) - 1)}<br>`
   else if(d.id == 'damage') str += `Damage MULT: ${(1.04 ** (d.infTier - 20)).toFixed(2)}<br>`
-  else if(d.id == 'survival-2') str += `You will get double stats until Level(not includeing Min Level) ${Math.floor(hero.value.survivalStage ** 1.175)}<br>`
+  else if(d.id == 'survival-2') str += `Max stage: ${hero.value.survivalStage}<br>You will get double stats until Level(not includeing Min Level) ${Math.floor(hero.value.survivalStage ** 1.175)}<br>`
   else if(d.r != '') str += `Reward: <span>${d.r}</span><br>`;
 
   if(d.sp != '') str += `Special Reward: <span>${d.sp}</span><br>`;
@@ -502,20 +677,107 @@ function darkDimensions(d){
 
   if(d_req(d)) str += `<span style="color: red">${d.c}</span><br>`;
 
-  if(d.id == 'eternity' && d.status == false) str += `Enter the Dark Side of the Dimensions. The Dark Dimensions have an unlimited Infinity Cap, but you need to reach level 1400 to gain the next tier. The next Infinity Tier is harder than previous one. The Infinity Penalty reduction does not apply between these dimensions. The dimensions are linked to each other: the next dimension takes a part of power from the previous dimension. <br>`;
+  if(d.id == 'eternity' && d.status == false) str += dark_dimensions_handle();
+  else if(d.id == 'd-danger') str += d_danger_des_handle(d);
+  else if(d.id == 'd-noSpace') str += d_noSpace_des_hanlde(d);
   else str += `<span>${d.d}</span><br><br>`;
 
   if(d.id != 'eternity') str += `<span style="color: gold">Infinity [T${d.infTier}]</span><br><br>`
 
 
   if(d.id == 'eternity' && d.status == false) str += ``;
-  else str += `Reward: <span>${d.r}</span><br>`;
+  else if(d.id == 'd-overstage') str += dark_energy_reward(d);
+  else if(d.id == 'd-unlimitted') str += d_unlimitted_handle(d);
+  else if(d.id == 'd-noBuffs') str += d_buffs_handle(d);
+  else if(d.id == 'd-danger') str += d_danger_reward_handle(d);
+  else if(d.id == 'd-noSpace') str += d_noSpace_reward_handle(d);
+  else if(d.id == 'd-damage') str += d_damage_reward_handle(d);
+  else str += `<span style="color: #9cedd2">Reward: ${d.r}</span><br>`;
+
+  if(d.debuff !== '') str += `<span style="color: #e74c61">Dimension Intervention: ${d.debuff}</span><br>`;
 
 
   if(d.id == hero.value.dId) str += `<span style="color: green">[You are here now]</span><br>`
   if(hero.value.isSingularity) str += `<span style="color: #66ffcc">You are in Singularity right now</span><br>`
 
   return str;
+}
+
+function dark_dimensions_handle(){
+  return `Enter the Dark Side of the Dimensions. 
+  The Dark Dimensions have an unlimited Infinity Cap, but you must reach level 1400 to unlock the next tier. 
+  Each subsequent Infinity Tier is more challenging than the previous one. 
+  Infinity Penalty Reduction does not apply across these dimensions. 
+  The dimensions are linked: each next dimension inherits a portion of the power from the previous one.<br>`
+}
+
+const bhReq = [1, 3, 8, 30, 100, 250, 1000, 100, 100, 100, 100];
+function bhChallenge() {
+  let str = ``;
+  
+  const tier = hero.value.bhTier;
+
+  if(hero.value.transcendence >= bhReq[tier])
+    hero.value.isBhBoss = true;
+
+  if (!hero.value.isBhBoss) {
+    str += `<span style="color: #a3ffe0">Reach transcendence ${bhReq[tier]}, to enter the Black Hole</span><br>`;
+    if (tier === 0) {
+      str += `<span style="color: yellow">Reach 70,000 True Level in main dimension</span>`;
+    }
+    return str;
+  }
+
+  
+
+ 
+  str += `<span style="color: cyan; font-weight: bold">Black Hole [T${tier}]</span><br><br>`;
+
+  str += `<span style="color: #cccccc">
+      Dive into the darkness of the Black Hole ruled by <span style="color: cyan">[D-Gravity]</span> to face the 
+      <span style="color: cyan">Singulars</span>. 
+      Each of their attacks is stronger than the previous. 
+      When you die, your <span style="color: cyan">transcendence</span> will be destroyed, 
+      and you will return to the main dimension.
+  </span><br><br>`;
+
+  const baseRewards = [
+    `<span style="color: rgb(111, 245, 200)">+75 Singularity Levels</span>`,
+    `<span style="color: gold">+0.05 IP MULT</span>`,
+    `<span style="color: lightblue">Lever Rush & Stage Rush: +5%</span>`,
+  ];
+
+  const uniqueRewards = {
+    0: `<span style="color: red">BUFF: Black Impulse [T1]</span><br>
+        <span style="color: lime">+0.1 Max Level MULT</span> per each <span style="color: cyan">transcendence</span>
+        <span style="color: gold">You start with 10m stardust</span>`,
+    1: `<span style="color: red">BUFF: Black Impulse [T2]</span><br> 
+        <span style="color: lime">+1.05</span> <span style="color: red">DMG</span> MULT per each <span style="color: cyan">transcendence</span>
+        <span style="color: gold">Unlock Auto-Forge</span>`,
+    2: `<span style="color: red">BUFF: Black Impulse [T3]</span><br> 
+        <span style="color: lightgreen">+1 MIN LEVEL per each <span style="color: cyan">transcendence</span></span>
+        <span style="color: gold">Unlock Space-INF</span>`,
+    3: `<span style="color: red">BUFF: Black Impulse [T4]</span><br> 
+        <span style="color: lime">+0.005</span> <span style="color: orange">IP MULT</span> per each <span style="color: cyan">transcendence</span><br> 
+        <span style="color: gold">Unlock Timeline</span>`
+  };
+
+  str += `<span style="color: #a3ffe0">Rewards:</span><br>`;
+  [...baseRewards, uniqueRewards[tier]].forEach(r => {
+    str += `${r}<br>`;
+  });
+
+  return str;
+}
+
+function advanceBH() {
+  let text = `<span style="color: gold">Timeline</span><br><br>
+  Journey into the past, to the era of the ancient titans. Master the laws of existence and open new paths to power.<br><br>
+
+  <span style="color: red">This feature will be unlocked in the update 0.6 [Dimensional Merge]</span>
+  `;
+
+  return text;
 }
 
 function dTime(){
@@ -553,21 +815,160 @@ function unlimittedDescription(){
   let infBonus = Math.floor((hero.value.unlimitLevel - 1000) / 500);
   infBonus = Math.max(0, infBonus);
 
+  let expBoost = Math.max(Math.max(hero.value.unlimitLevel - 700, 0) / 100, 1);
+
   let unlimitD = `
   <span>
-  Exp boost ${Math.max(Math.max(hero.value.unlimitLevel - 700, 0) / 100, 1).toFixed(2)} - 
-  Max Level MULT ${((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75))).toFixed(2)} - 
-  MIN Level ${Math.max(Math.floor((hero.value.unlimitLevel - 700) / 100 ), 0)}
+  Exp boost ${expBoost.toFixed(2)} - 
+  Max Level MULT ${(hero.value.unlimitMaxLevel).toFixed(2)} - 
+  MIN Level ${hero.value.unlimitMinLevel}
   </span><br>
-  </span><br><span>Max Level: ${hero.value.unlimitLevel}</span><br>
-  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${(2.25 ** (infBonus + 1)).toFixed(2)}</span><br>
-  <span>Reach Level 2000 to unclock new Infinity Goal</span><br>
+  </span><br><span>Max Level: ${hero.value.unlimitLevel}</span>/<span>[${hero.value.unlimitLevelMax}]</span><br>
+  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${formatNumber((infBonus * 5 + 1) ** 2)}</span><br>
+  <span>Reach Level 2000 to unlock new Infinity Goal</span><br>
   `
 
   return unlimitD;
 }
 
+function d_buffs_handle(d) {
+  let buffTiers = [1, 4, 6, 8, 12, 16, 20, 25];
+  let maxCount = 7;
+  let count = Math.min(getBuffIntervalPosition(buffTiers, d.infTier), maxCount);
+
+  const wrap = (text) => `<span style="color:#9cedd2">Reward: ${text}</span><br>`;
+
+  switch(count) {
+    case 1: return wrap(`Reach Infinity [T1] to unlock Juggernaut [T4]`);
+    case 2: return wrap(`Reach Infinity [T4] to unlock Berserk [T4]`);
+    case 3: return wrap(`Reach Infinity [T6] to unlock First Strike [T4]`);
+    case 4: return wrap(`Reach Infinity [T8] to unlock Traveller [T4]`);
+    case 5: return wrap(`Reach Infinity [T12] to unlock Flexible [T4]`);
+    case 6: return wrap(`Reach Infinity [T16] to unlock Flash [T4]`);
+    default: return wrap(`All possible buffs are taken.`);
+  }
+}
+
+function getBuffIntervalPosition(arr, num) {
+    if (num <= 0) return 1; 
+  
+    let pos = 1;
+    for (let i = 0; i < arr.length; i++) {
+      if (num >= arr[i]) {
+        pos = i + 2; 
+      } else {
+        break;
+      }
+    }
+    return pos;
+}
+
+function d_danger_des_handle(d) {
+  let danger = 1000 + 500 * d.infTier;
+  let stage = 100 + 10 * d.infTier;
+
+  return `
+    Enter the dimension where <span style='color: orange'>[D-Space]</span> stays its presence within <span style='color: orange'>Dimension Colossuses</span>. 
+    You will encounter this entity in Stage <span style='color: gold'>[${stage}+]</span>, Danger <span style='color: gold'>[${danger}+]</span>. 
+    Defeat it to unlock the path to the next Infinity Tier and awaken a new dimension dark creature.
+    <br><br>
+  `
+}
+
+function d_danger_reward_handle(d) {
+  let warp = (text) => `<span style="color:#9cedd2">Dark Creature: <span style="color:red">${text}</span><br> | 
+  Danger Power is weaker by [^${1 - 0.01 *d.infTier}] | Increase The cap of Dark Creatures</span><br>`;
+
+  switch(d.infTier){
+    case 0: return warp('Dreadfang');
+    case 1: return warp('Voidborn Might');
+    case 2: return warp('Overseer Prime');
+    case 3: return warp('Baselurker');
+    case 4: return warp('Infinity Bane');
+    case 5: return warp('Crushdepth');
+    default: return warp('All Dark Creatures are found.');
+  }
+}
+
+function d_unlimitted_handle(d) {
+  let current = Math.floor(3000 + (12 * d.infTier) ** 1.25);
+  let next = Math.floor(3000 + (12 * (d.infTier + 1)) ** 1.25);
+  let expMult = Math.max((Math.E * d.infTier) ** 0.6, 1).toFixed(2);
+
+  
+
+  let text = `Reward: Weakens <span style='color: rgb(255, 88, 88)'>[D-Ultimatum]</span> <span style='color: gold'>[T${d.infTier}]</span>
+    <span style='color: rgb(204, 102, 255)'>${current}</span>  -> <span style='color: gold'>[T${d.infTier + 1}]</span>
+    <span style='color: rgb(204, 102, 255)'>${next}</span><br>
+    
+    EXP MULT for dimension [5] [S5-Ω3t]: <span style='color: rgb(204, 102, 255)'>${expMult}</span>
+  `;
+  if(d.infTier < 10)
+    return text += `Reach <span style="color: gold">Infinity [T10]</span> to unlock new feature`;
+  else text += `Min Level in dimension [5] [S5-Ω3t] scales better with Infinity Tier`;
+
+  let wrap = (text) => `<br><span style="color: #9cedd2">${text}</span><br>`;
+
+  return wrap(text);
+}
+
+function d_noSpace_des_hanlde(d) {
+  const base = d.d; 
+  const required = 6 + (d.infTier * 6);
+
+  return base.replace(/\d+\s+Celestials?/, `${required} Celestials`) + `<br><br>`;
+}
+
+function d_noSpace_reward_handle(d) {
+  const base = d.r; 
+  const weaker = 1 - 0.01 * d.infTier;     
+  const stardust = Math.max((Math.E * d.infTier) ** 0.45, 1).toFixed(2);  
+
+  let warp = (text) => `<span style="color:#9cedd2">Reward: ${text}</span><br>`;
+
+  return warp(base
+    .replace(/\[\^1\]/, `[^${weaker}]`)
+    .replace(/\[1\]/, `[${stardust}]`));
+}
+
+function dark_energy_reward(d){
+  let text = ``;
+
+  let percent = d.infTier;
+
+  if(d.infTier < 10)
+    text += `Reach <span style="color: gold">Infinity [T10]</span> to unlock new influence of Dark Energy<br>`;
+  else text += `Dark Energy is gathering the power of infinities from all dark dimensions and empowers itself with <span style="color: gold">${percent}%</span> of the total infinities. This effect increases with each Infinity Tier<br>`;
+
+  text += `<span style="color: #9cedd2">Reward: Max Level [^${(enemy.value.darkEnergy.deTotal).toFixed(4)}]</span><br>`
+
+  return text;
+}
+
+function d_damage_reward_handle(d){
+  let text = ``;
+  if(d.infTier >= 20)
+    text = `You have a 50% chance not to receive a stack of <span style="color: red">doom</span> when hit.<br><br>`;
+  else if(d.infTier >= 10)
+    text = `You have a 25% chance not to receive a stack of <span style="color: red">doom</span> when hit.<br>
+    Reach <span style="color: gold">Infninity [T20]</span> to unlock new feature<br><br>`;
+  else text = `Reach <span style="color: gold">Infninity [T10]</span> to unlock new feature<br><br>`;
+
+
+  let warp = (text) => `<span style="color:#9cedd2">Reward: ${text}</span><br>`;
+
+  return text + warp(d.r);
+}
+
+
 function d_req(d){
+  if(d.id == 'bh') {
+    if(!hero.value.isBhBoss) return true;
+  }
+
+  if(d.id == 'advanceBH')
+    return true;
+
   if (d.id === 'ascension') {
     if (hero.value.mainInfTier < 10) return true;
   }
@@ -684,71 +1085,75 @@ function d_req(d){
   if (d.id === 'eternity') {
     const prev1 = d_data.value.find(dim => dim.id === 'corruption');
     const prev2 = d_data.value.find(dim => dim.id === 'hard');
-    if (prev1.infTier < 35 || prev2.infTier < 15 || hero.value.mainInfTier < 100) return true;
+    if (prev1.infTier < 35 || prev2.infTier < 25 || hero.value.mainInfTier < 35) return true;
   }
 
 
   if (d.id === 'd-corruption') {
-    return false;
+    if(hero.value.mainInfTier < 35) return true;
   }
 
   if (d.id === 'd-hard') {
-    return false;
+    if(hero.value.mainInfTier < 35) return true;
   }
 
   if (d.id === 'd-damage') {
-    return false;
+    if(hero.value.mainInfTier < 36) return true;
   }
 
   if (d.id === 'd-overstage') {
-    return false;
+    if(hero.value.mainInfTier < 40) return true;
   }
 
   if (d.id === 'd-survival-2') {
-    return false;
+    if(hero.value.mainInfTier < 42) return true;
   }
 
   if (d.id === 'd-danger') {
-    return false;
+    if(hero.value.mainInfTier < 38) return true;
   }
 
   if (d.id === 'd-noBuffs') {
-    return true;
+    if(hero.value.mainInfTier < 39) return true;
   }
 
   if (d.id === 'd-noMinLevel') {
-    return true;
+    if(hero.value.mainInfTier < 60) return true;
   }
 
   if (d.id === 'd-next') {
-    return true;
+    if(hero.value.mainInfTier < 42) return true;
   }
 
   if (d.id === 'd-noTree') {
-    return true;
+    if(hero.value.mainInfTier < 45) return true;
   }
 
   if (d.id === 'd-noEq') {
-    return true;
+    if(hero.value.mainInfTier < 50) return true;
   }
 
   if (d.id === 'd-noSpace') {
-    return true;
+    if(hero.value.mainInfTier < 55) return true;
   }
 
   if (d.id === 'd-unlimitted') {
-    return true;
+    if(hero.value.mainInfTier < 53) return true;
+  }
+
+  if (d.id === 'd-noAps') {
+    if(hero.value.mainInfTier < 48) return true;
   }
 
   if (d.id === 'radiation') {
-    return true;
+    if (hero.value.mainInfTier < 40) return true;
   }
 
   if (d.id === 'noMaxLevel') {
-    return true;
+    if (hero.value.mainInfTier < 50) return true;
   }
 
-  if (d.id === 'eternity-2') {
+  if (d.id === 'dimMerge') {
     return true;
   }
 
@@ -758,13 +1163,14 @@ function d_req(d){
 }
 
 function performD(d, prev) {
-  if(hero.value.dId == 'eternity') return;
   hero.value.perform = true;
   
   hero.value.dKills = 0;
   hero.value.eLevel = 1;
   hero.value.exp = 0;
-  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (d_data.value[19].infTier - 20): 0);
+  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (d_data.value[19].infTier - 20) - heor.value.minStage: 0) + 
+  hero.value.minStage;
+  
   hero.value.maxLevel = 30;
   hero.value.zone = 1;
   hero.value.kills = 0;
@@ -785,8 +1191,9 @@ function performD(d, prev) {
 
   hero.value.activeBuffs = [];
   hero.value.spActiveBuffs = [];
-  hero.value.stardust = 0;
+  hero.value.stardust = 0 + (hero.value.bhTier >= 1? 1e7: 0);
   hero.value.spCount = 0;
+  hero.value.spsCount = 0;
   hero.value.sp = 0;
   hero.value.st = 0;
 
@@ -818,7 +1225,6 @@ function performD(d, prev) {
   (hero.value.rebirthPts >= 5.5e5? 1: 0) + (hero.value.rebirthPts >= 1.5e6? 1: 0);
   hero.value.isAbyss = (hero.value.dId == 'abyss-d'? true: false);
 
-  hero.value.isSpaceAuto = false;
   hero.value.spaceFight = false;
   hero.value.isSpaceBuff = false;
 
@@ -839,7 +1245,6 @@ function performD(d, prev) {
   radPerks[6].description = 'REBUILD REBIRTH SYSTEM THAT ALLOWS YOU TO SPEND MUTAGEN TO UP YOUR POTENTIAL';
   radPerks[6].max = 1;
 
-  radPerks[7].perkStatus = false;
   radPerks[10].status = false;
   radPerks[10].max = 1;
 
@@ -934,13 +1339,13 @@ function performD(d, prev) {
 
   hero.value.maxStage = 1;
   hero.value.souls = 0;
-  hero.value.mutagen = 0;
+  hero.value.mutagen = (hero.value.mainInfTier >= 35 && hero.value.dId != 'bh'? 1e4: hero.value.mutagen);
   hero.value.mutations = 0;
 
   const notAllowedIds = ['main', 'unlimitted'];
   hero.value.infProgress = notAllowedIds.includes(hero.value.dId);
 
-  hero.value.treeAuto = false;
+  hero.value.autoTreeCooldown = 3;
   enemy.value.weakStack = 0;
   enemy.value.rebirthEnemy["drop"] = 1;
 
@@ -958,6 +1363,10 @@ function performD(d, prev) {
 
   hero.value.damageStage = 0;
   enemy.value.d_damagePenalty = 0;
+  enemy.value.soulBuff.soulsStardustReq = 0;
+  enemy.value.soulBuff.soulsMutagenReq = 0;
+  
+  hero.value.survivalLife = d_data.value[30].infTier;
 
   if(hero.value.gcnpSetting){
       hero.value.isLocked = true;
@@ -966,6 +1375,8 @@ function performD(d, prev) {
       hero.value.isLocked = false;
       hero.value.isStage = true;
     }
+  
+  hero.value.hp = hero.value.maxHp;
 }
 
 function randomStarStyle() {
@@ -1007,6 +1418,7 @@ function formatNumber(num, f = false) {
   border-radius: 12px;
   overflow: hidden;
   cursor: grab;
+  margin-left: 120px;
 }
 
 .atlas-map {
@@ -1043,7 +1455,7 @@ function formatNumber(num, f = false) {
   padding: 6px 10px;
   font-size: 0.875rem;
   text-align: center;
-  max-width: 220px;
+  max-width: 280px;
   border-radius: 8px;
   pointer-events: none;
   z-index: 10;
@@ -1052,7 +1464,7 @@ function formatNumber(num, f = false) {
   box-shadow: 0 0 6px #000;
 }
 
-.reset-button {
+.reset-button, .progression-button {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -1068,6 +1480,10 @@ function formatNumber(num, f = false) {
 }
 .reset-button:hover {
   background: #333;
+}
+
+.progression-button {
+  right: 220px;
 }
 
 .reset-button-bh{
@@ -1088,5 +1504,119 @@ function formatNumber(num, f = false) {
     opacity: 1;
   }
 }
+
+
+
+.atlas-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  flex-wrap: wrap;
+}
+
+.dimension-search.small {
+  width: 180px;
+  padding: 0.3em 0.6em;
+  font-size: 0.8em;
+}
+
+.dimension-grid-wrapper {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1em;
+}
+
+.dimension-grid-wrapper {
+  height: 100vh;
+  overflow-y: auto;
+  background: #0e0e17;
+  padding: 1em;
+  box-sizing: border-box;
+}
+
+.dimension-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1em;
+}
+
+.dimension-card {
+  background: #1c1c25;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 1em;
+  color: #f0f0f0;
+  box-shadow: 0 0 6px #0008;
+  transition: transform 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 25vh;
+  overflow: hidden;
+}
+
+.dimension-card:hover {
+  background: #29293d;
+  transform: scale(1.02);
+}
+
+.dimension-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.5em;
+  align-self: center;
+}
+
+.dim-description-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  font-size: 0.8em;
+  opacity: 0.85;
+}
+
+.dim-description-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.dim-description-scroll::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.enter-button {
+  margin-top: 0.5em;
+  padding: 0.4em;
+  width: 100%; /* на всю ширину */
+  background: #444cf7;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.enter-button:hover {
+  background: #626bff;
+}
+
+button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dimension-filter.small {
+  font-size: 14px;        
+  padding: 4px 8px;      
+  height: 32px;           
+  line-height: 1;       
+  border-radius: 8px;     
+  border: 1px solid #ccc; 
+  background: #1a1a1a;   
+  color: #fff;            
+  box-sizing: border-box;
+}
+
 
 </style>

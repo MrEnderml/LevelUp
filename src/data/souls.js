@@ -53,32 +53,32 @@ export const soulNames = [
 
   export const rewards = [
     [
-      "Ascend Shards MULT When you Ascend - 1.5",
-      "BUFF EXP MULT - 1.5",
+      "Ascension Shard multiplier increased by 1.5x when Ascended",
+      "Buff Exp multiplier - 1.5",
       "BUFF - Overkill (P)",
-      "Weapon Chance per SOUL TIER - +75%"
+      "Increase the chance of equipment on 75% per SOUL TIER"
     ],
     [
-      "Ascend Shards MULT When you Ascend - 1.5",
-      "BUFF EXP MULT - 1.5",
-      "BUFF - Blood Art (P)",,
-      "AMULET[T2] SLOT (P)",
+      "Ascension Shard multiplier increased by 1.5x when Ascended",
+      "Buff Exp multiplier - 1.5",
+      "BUFF - Blood Art (P)",
+      "Unlock Amulet [T2] (P)",
       "Stage requirement scales better"
     ],
     [
-      "Ascend Shards MULT When you Ascend - 1.5",
-      "BUFF EXP MULT - 1.5",
+      "Ascension Shard multiplier increased by 1.5x when Ascended",
+      "Buff Exp multiplier - 1.5",
       "BUFF - Sniper (P)",
-      "AMULET[T2] Suffix (P)",
-      "+5% extra EXP per found soul",
-      "Your HP is full when special enemy appears (P)"
+      "Unlock the Suffix for Amulet [T2] (P)",
+      "+5% extra Exp for each soul found",
+      "Your HP is full when a special enemy appears (P)"
     ],
     [
-      "Rebirth Pts MULT - 1.5",
+      "Rebirth Pts multiplier - 1.5",
       "BUFF - Berserk (P)",
-      "AMULET[T2] Prefix (P) ",
-      "Increases your level while your level is below 10% of max level (P)(S)",
-      "Unlock Formation[T3] (P)",
-      "Strength power scales better per tree tier (P)"
+      "Unlock the Prefix for Amulet [T2] (P) ",
+      "*Level Rush - +10% (P)(S)",
+      "Unlock Formation [T3] (P)",
+      "Strength Power scales better per tree tier (P)"
     ]
   ];

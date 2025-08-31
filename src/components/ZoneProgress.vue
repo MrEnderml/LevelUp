@@ -1,7 +1,77 @@
 <template>
   <div class="zone-progress">
+    <div class="zone-progress-header">
+      <div class="left-icons">
+        
+      </div>
+
+      <div class="progress-center" v-if="!hero.dId.startsWith('d-')">
+        <span class="progress-icon">🌍</span>
+        <span class="progress-text">Progress</span>
+      </div>
+        <div class="right-icons tooltip-content" >
+        
+        <Tooltip :text="darkSpaceHandle" boxShadow="0 0 10px gold">
+          <span v-if="hero.dId == 'd-noSpace'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('celestials', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="unlimitedDimHandle" boxShadow="0 0 10px red">
+          <span v-if="hero.dId == 'd-unlimitted'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('maxLevelReduction', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="noEqDimHandle" boxShadow="0 0 10px orange">
+          <span v-if="hero.dId == 'd-noEq' || hero.darkId.includes('d-noEq')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('forge', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="apsHandle" boxShadow="0 0 10px red">
+          <span v-if="hero.dId == 'd-noAps'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('apsPenalty', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="dInfTreeHandle" boxShadow="0 0 10px lightgreen">
+          <span v-if="hero.dId == 'd-noTree' || hero.darkId.includes('d-noTree')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('infTree', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="dBuffsHandle" boxShadow="0 0 10px yellow">
+          <span v-if="hero.darkId.includes('d-noBuffs')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('dBuffs', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="dHardHandle" boxShadow="0 0 10px purple">
+          <span v-if="hero.dId == 'd-hard' || hero.darkId.includes('d-hard')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('cursePower', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="corruptionHandle" boxShadow="0 0 10px purple">
+          <span v-if="hero.dId == 'd-corruption' || hero.darkId.includes('d-corruption')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('corruptionDim', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="bleedingVeilHandle" boxShadow="0 0 10px red">
+          <span v-if="hero.dId == 'd-survival-2'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('bleedingVeil', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="nextDimHandle" boxShadow="0 0 10px blue">
+          <span v-if="hero.dId == 'd-next' || hero.darkId.includes('d-next')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('nextDim2', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="darkEnergyHandle" boxShadow="0 0 10px purple">
+          <span v-if="hero.dId == 'd-overstage'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('darkEnergy', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="darkEnemyHandle" boxShadow="0 0 10px orange">
+          <span v-if="hero.dId == 'd-danger'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('darkDangerEnemy', '1.25em')"></span>
+        </Tooltip>  
+        <Tooltip :text="doomHandle" boxShadow="0 0 10px #af1b0b">
+          <span v-if="hero.dId == 'd-damage' || hero.darkId.includes('d-damage')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('doom', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="stageHardCap" boxShadow="0 0 10px rgb(0, 247, 255)">
+          <span v-if="hero.stage >= 300" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('singularity', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="deathRecovery" boxShadow="0 0 10px blue">
+          <span v-if="hero.stage > 100">☠️</span>
+        </Tooltip>
+        <Tooltip :text="infHandle" boxShadow="0 0 10px gold">
+          <span v-if="!hero.infProgress && hero.infEvents > 1" class="infinity-glow">∞</span>
+        </Tooltip>
+        <Tooltip :text="travellHandle" boxShadow="0 0 10px blue">
+          <span v-if="hero.travellPenalty > 1" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('traveller', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="spaceTimerHandle" boxShadow="0 0 10px gold">
+          <span v-if="enemy.isSpaceFight == 2" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('spaceTimer', '1.25em')"></span>
+        </Tooltip>
+      </div>
+    </div>
+
+
+
     <h3 class="progress-header">
-      <div v-if="hero.stage >= 10" class="ascend-wrapper">
+      <div class="ascend-wrapper staticIconPos" :class="{ hidden: hero.stage < 10 || hero.dId == 'bh' }">
         <button class="btnAscend" @click="performAscension">
         <img :src="ascensionIcon" width="24px" height="24px" style="vertical-align: -2px;"/>
           <div class="ascend-tooltip">
@@ -12,7 +82,7 @@
           </div>
         </button>
       </div>
-      <div v-if="hero.level >= 100 && !hero.isSingularity" class="rebirth-wrapper">
+      <div class="rebirth-wrapper staticIconPos" :class="{ hidden: hero.level < 100 || hero.isSingularity || hero.dId == 'bh' }">
         <button class="btnRebirth" @click="performRebirth">
         ♻️
           <div class="rebirth-tooltip">
@@ -22,7 +92,7 @@
             Rebirth to stage 1, but you will lose level, tree, equipment, souls.<br>
             Every tier provides stonger enemies and high rewards
             </p>
-            <p v-if="hero.infTier < 3 || hero.infEvents < 3">Next rebirth Tier: {{Math.min(100 + (10 * hero.rebirthTier), 300)}} Level</p>
+            <p v-if="hero.mainInfTier < 2">Next rebirth Tier: {{Math.min(100 + (10 * hero.rebirthTier), 300)}} Level</p>
             <p v-if="hero.infTier >= 3 || hero.infEvents >= 3">+{{Math.floor((hero.level - 90) / 10 > hero.rebirthTier? (hero.level - (90 + 10 * hero.rebirthTier)) / 10: 0)}} Rebirth Tier</p>
             <p v-if="(hero.rebirthTier + 1)%5 == 0 && hero.rebirthTier < 21">Unlock new Rebirth Affect</p>
             <p v-if="(hero.rebirthTier + 1)%10 == 0 && hero.rebirthTier >= 21 && hero.rebirthTier < 71">Unlock new Rebirth Affect</p>
@@ -30,7 +100,7 @@
           </div>
         </button>
       </div>
-      <div v-if="(hero.soulsMax >= 20 + 10 * hero.abyssTier || (hero.spCount >= 15)) && !hero.isSingularity && hero.dId != 'hard'" class="abyss-wrapper">
+      <div class="abyss-wrapper staticIconPos" :class="{ hidden: !isAbyssVisible }">
         <button class="btnAbyss" @click="performAbyss">
         🧿
           <div class="abyss-tooltip abyss-shadow">
@@ -45,24 +115,25 @@
           </div>
         </button>
       </div>
-      <div class="inf-wrapper" v-if="hero.infProgress && hero.dId == 'main' && !hero.isSingularity">
+      <div class="inf-wrapper staticIconPos" :class="{ hidden: !(hero.infProgress && hero.dId == 'main' && !hero.isSingularity) }">
         <button class="btnInf" @click="performInf" >
           <span class="infinity-glow">∞</span>
           <div class="inf-tooltip inf-shadow">
               <p><strong>Infinity [T{{hero.mainInfTier}}]</strong></p>
-              <p>You become The Omnipotent , but The Dimension tries to keep you from breaking the D-Rule.</p>
+              <p>You have become The Omnipotent ,but <span style="color: gold">[D-Infinity]</span> seeks to prevent you from shattering a fragment of its creation.</p>
               <p>{{infRewards[hero.infTier]}}</p>
-              <p>The Dimension is trying to destroy you. Reach Total Level 700 to get Infinity [T{{hero.mainInfTier+1}}] while your EXP Gain & Max Level ^{{(1 - 0.02 * (hero.infTier + 1) + hero.infPenalty).toFixed(2)}}. 
+              <p>The Dimension is trying to destroy you. Press the button, your progress will reset and you will face a Trial with EXP Gain & Max Level reduced by <span style='color: red'>^{{(hero.infPower).toFixed(2)}}</span>.
+              Overcoming it will grant you <span style='color: gold'>Infinity [T{{hero.mainInfTier+1}}]</span>.
               The Celestials succumb to D's will, becoming stronger. Corruption spreads its influence among all entities of this dimension, making them wild.</p> 
-              <p style="color: red" v-if="hero.infTier >= 20">The D-Rule tears the tissue of the universe, worsening the drop of stardust </p>
-              <p style="color: red" v-if="hero.infTier >= 25">The D-Rule destroys all Celestial making them insignificant, worsening the drop of mutagen </p>
+              <p style="color: red" v-if="hero.infTier >= 20">The [D-Infinity] tears the tissue of the universe, worsening the drop of stardust </p>
+              <p style="color: red" v-if="hero.infTier >= 25">The [D-Infinity] destroys all Celestial making them insignificant, worsening the drop of mutagen </p>
               <p style="color: red" v-if="hero.infTier >= 30">Dimensions are being consumed by the power of the multiverse. Curses are getting stronger</p>
-              <p style="color: red" v-if="hero.infTier >= 40">You feel the touch of the unknown, but you do not know how to get to it.</p>
-              <p>You will need {{trueLevelReq()}} True Max Level to reach 700 Max Level [Infinity T{{hero.mainInfTier + 1}}]</p>
+              <p style="color: red" v-if="hero.infTier >= 35">You feel the touch of the Perdition. Every 10 Infinity Tiers you will get +1 MAX Curse and +1 MIN Curse.</p>
+              <p style="color: red" v-if="hero.infTier >= 35">You feel the touch of the Perdition. Every 10 Infinity Tiers you will gain new Curse</p>
           </div>
         </button>
       </div>
-      <div class="soul-wrapper" v-if="(hero.infEvents >= 6 || hero.infTier >= 6) && !hero.isSingularity && hero.dId != 'soulD'">
+      <div class="soul-wrapper staticIconPos" :class="{ hidden: !((hero.infEvents >= 6 || hero.infTier >= 6) && !hero.isSingularity && hero.dId != 'soulD' && hero.dId != 'bh') }">
         <button class="btnSoul" @click="performSoulD" >
           <img :src="redSkull" width="24px" height="24px" v-if="hero.soulD" />
           <span v-if="!hero.soulD">💀</span>
@@ -70,17 +141,19 @@
               <p><strong>D-Soul</strong></p>
               <p>Enter the Dimension where souls have 100% appearence, but they are stronger than usual souls. Soul Loot scales better.</p>
               <p>Click to <span v-if="!hero.soulD">Enter</span><span  v-if="hero.soulD">Leave</span> The Dimension</p>
+              <p v-if="hero.selectedDivSkills.includes(11)">D-Soul is blocked due to <span style='color: #00ffea'>Soul Eclipse</span></p>
+              <p v-if="hero.selectedDivSkills.includes(6)">D-Soul is blocked due to <span style='color: #00ffea'>The basis of the Limit</span></p>
           </div>
         </button>
       </div>
-      <div class="singularity-wrapper" v-if="hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity">
+      <div class="singularity-wrapper staticIconPos" :class="{ hidden: !(hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity) }">
       <button class="btnSingularity" @click="performSingularity" >
           <SvgIcon name="singularity" size="1.4em" />
           <div class="singularity-tooltip singularity-shadow">
               <p v-if="hero.singularity < 8"><strong>Singularity [T{{hero.singularity}}]</strong></p>
               <p v-else><strong>Singularity-BH</strong></p>
-              <p>Face the hardest challenge of the universe to recreate the D-Rule</p>
-              <p>{{singularityD[hero.singularity]}}</p>
+              <p>Dive into the edge of the Black Hole ruled by <span style="color: cyan">[D-Gravity]</span>.</p>
+              <p v-html="singularityD[hero.singularity]"></p>
               <p>{{singularityR[hero.singularity]}}</p>
               <span v-if="hero.singularity >= 8 && hero.isSingularity">Total SP: {{totalSp()}}<br></span>
               <span v-if="hero.singularity >= 8">Max kills: {{hero.singularityKills}}</span>
@@ -89,23 +162,141 @@
           </div>
         </button>
       </div>
-  
-    <div>
-      <span class="progress-text">🌍 Progress</span>
-    </div>
-    <span style="opacity: 0">0</span>
     </h3>
-     <button
-      class="lock-stage-button"
-      @click="toggleLockStage"
-      >
-    <template v-if="hero.isLocked">
-        <span class="spinner" :class="{ paused: !hero.isLocked }"></span>
-    </template>
-    <template v-else>
-        <span class="spinner fspinner" :class="{ paused: !hero.isLocked }"></span>
-    </template>  
-    </button>
+
+   <div class="lock-stage-wrapper">
+      <!-- Idle system button -->
+      <Tooltip :text="'Idle system: Locks the stage to prevent automatic progression'">
+        <button class="lock-stage-button" @click="toggleLockStage">
+          <span v-if="hero.isLocked" class="spinner"></span>
+          <span v-else class="spinner fspinner"></span>
+          <span class="button-text">{{ hero.isLocked ? 'Locked' : 'Unlocked' }}</span>
+        </button>
+      </Tooltip>
+
+      <Tooltip :text="'Travel to specific stage'">
+        <button v-if="dimensions[3].infTier == dimensions[3].maxInfTier" class="lock-stage-button" @click="showStageModal = !showStageModal">
+          <span class="icon">🌍</span>
+          <span class="button-text">Stage</span>
+        </button>
+      </Tooltip>
+
+       <Tooltip :text="'AFK rewards'">
+          <button v-if="dimensions[7].infTier == dimensions[7].maxInfTier" class="lock-stage-button" @click="showAfkModal = !showAfkModal">
+            <span class="icon">🕒</span>
+            <span class="button-text">AFK</span>
+          </button>
+        </Tooltip>
+
+        <Tooltip :text="'Auto Settings'">
+          <button v-if="hero.mainInfTier >= 1 || hero.infEvents >= 2" class="lock-stage-button" @click="showAutoModal = !showAutoModal">
+            ⚙️ Auto Settings
+          </button>
+        </Tooltip>
+
+        <Tooltip :text="'Pause or resume the game'">
+          <button class="lock-stage-button" @click="hero.isPaused = !hero.isPaused">
+            <span v-if="hero.isPaused">▶️ Resume</span>
+            <span v-else>⏸️ Pause</span>
+          </button>
+        </Tooltip>
+
+      <div>
+
+      </div>
+
+      <div v-if="showStageModal" class="stage-modal">
+        <h3>Stage Travel</h3>
+        <div class="stage-input-group">
+          <input type="number" v-model.number="targetStage" :max="hero.maxStage" />
+          <button @click="travelToStage">Travel</button>
+        </div>
+        <p class="stage-description">
+          Enter the stage you want to travel to. Max stage: {{ hero.maxStage }}
+        </p>
+        <p class="stage-description" >
+          During travel, enemies become 4 times stronger. Over time, their strength will return to normal.
+          Skipping stages and receiving ascension shards is blocked until the next reset.
+        </p>
+      </div>
+
+      <div v-if="showAfkModal" class="stage-modal">
+        <h3>🕒 AFK Reward</h3>
+
+        <div class="afk-bar-container">
+          <div class="afk-bar" :style="{ width: `${afkPercent}%` }"></div>
+          <span class="afk-time">{{ formatTime(Math.floor(hero.afkTimer)) }}</span>
+        </div>
+
+        <div class="afk-controls">
+          <label for="afkPercentInput">Use %:</label>
+          <input
+            id="afkPercentInput"
+            type="number"
+            v-model.number="hero.afkSpendPercent"
+            min="1"
+            max="100"
+          />
+          <button @click="useAfkTime">Use</button>
+        </div>
+      </div>
+
+      <div v-if="showAutoModal" class="auto-settings-modal">
+        <div class="auto-panel" v-if="hero.mainInfTier >= 2 || hero.infEvents >= 2">
+          <h4>🌌 Auto Ascension</h4>
+          <label>
+            Min Shards:
+            <input type="number" v-model.number="autoTemp.ascensionMinShards" />
+          </label>
+          <label>
+            Min Stage:
+            <input type="number" v-model.number="autoTemp.ascensionMinStage" />
+          </label>
+        </div>
+
+        <div class="auto-panel" v-if="hero.mainInfTier >= 3 || hero.infEvents >= 3">
+          <h4>♻️ Auto Rebirth</h4>
+          <label>
+            Min Rebirth Pts:
+            <input type="number" v-model.number="autoTemp.rebirthMinPts" />
+          </label>
+          <label>
+            Min Level(100+):
+            <input type="number" v-model.number="autoTemp.rebirthMinLevel" />
+          </label>
+          <label>
+            Level +:
+            <input type="number" v-model.number="autoTemp.rebirthMinLevelNext" />
+          </label>
+        </div>
+
+        <div class="auto-panel">
+          <h4>⚔️ Stop at Stage</h4>
+          <label>
+            Stage to Stop:
+            <input type="number" v-model.number="autoTemp.stopStage" />
+          </label>
+          <label>
+            Stage +:
+            <input type="number" v-model.number="autoTemp.stopStageNext" />
+          </label>
+          <label>
+            Stop Until Kills:
+            <input type="number" v-model.number="autoTemp.stopUntilKills" />
+          </label>
+        </div>
+
+        <div class="modal-buttons">
+          <button @click="applyAutoSettings">Apply</button>
+          <button @click="showAutoModal = false">Cancel</button>
+          <button @click="resetSettings">Reset</button>
+        </div>
+      </div>
+
+
+    </div>
+
+
     <div class="progress-bar-container">
       <div class="progress-bar-fill" :style="{ width: `${(kills / Math.floor(killsPerZone)) * 100}%` }"></div>
       <div class="progress-bar-text" v-if="!hero.isSingularity">
@@ -119,8 +310,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { ref, watch } from 'vue';
+import { computed, reactive, ref, watch} from 'vue';
 import { useHero } from '../composables/useHero.js';
 import { useEnemy } from '../composables/useEnemy.js';
 import { perks as radPerks } from '../data/radPerks.js';
@@ -132,8 +322,10 @@ import { useBuff } from '../data/buffs.js';
 import { spEnemy } from '../data/spaceEnemy.js';
 import { dimensions } from '../data/dimensions.js';
 import { killHistory } from '../composables/afkHandle.js';
+import { auto } from "../composables/autoProgression.js";
 import redSkull from '../assets/red-skull.png';
 import ascensionIcon from '../assets/ascension.png';
+import { getSvgIconHTML } from "../composables/svgIcon.js";
 
 const { hero } = useHero();
 const { buffs } = useBuff();
@@ -154,7 +346,7 @@ const singularityD = [
   `Enter the singularity, where Buff is locked`,
   `Enter the singularity, where Equipment is locked`,
   `Enter the singularity, where Rebirth is locked`,
-  `Enter the singularity, where enemies under curse of D-Rule. All enemies have curse [T5]`
+  `Enter the singularity, where enemies under curse of <span style='color: cyan'>[D-Gravity]</span>. All enemies have curse [T5]`
 ]
 
 const singularityR = [
@@ -194,7 +386,7 @@ const infRewards = [
   `Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
   `Reset everyting you've got(except Abyss D), but you will get Ascend Permission. You have 5 Infinity Ascension Perks to serve you forever even after Infinity Reset. Extra skip stages until +25% Max Stage (S). You can get Shards from Bosses. Auto-Ascension`,
   `Reset everyting you've got(except Abyss D), but you will get Integration of Rebirth. Your Rebirth Tier are unlimmited. Enemy Power equals to 1. Auto-Rebirth`,
-  `Reset everyting you've got(except Abyss D), but you will get Gamma Learning. Gain mutagens as if you have mutagen [T5]. Increase MAX Levels. Danger System scalles better. Danger System opens new Inf-Enemy`,
+  `Reset everyting you've got(except Abyss D), but you will get Gamma Learning. Gain mutagens as if you have mutagen [T5]. Increase MAX Levels of Radiation Perks. Danger System scales betterand opens Inf-Enemy.`,
   `Reset everyting you've got(except Abyss D), but you will get Expansion of Space. Unlock Space [T5]. x2 stardust. Auto-Fight`,
   `Reset everyting you've got(except Abyss D), but you will get Thirst for Souls . D-Soul gives you a 100% chance to meet a soul, but its power will be limitless. Every Soul Tier gives you +1 MIN Level. EXP CAP SOULS - +40`,
   `Reset everyting you've got(except Abyss D). Complete to open Singularity [T0]`,
@@ -211,52 +403,53 @@ const infRewards = [
 function abyssRwrd(tier) {
   if (tier < 3) return abyssRewards[tier];
 
-  let str = `<span>Reach Stage 20: High Tier Curses appear more often </span><br/>`;
+  let str = `<span><span style="color: #f942f9">Beat Stage 20</span>: High Tier Curses appear more often </span><br/>`;
 
   if (hero.value.abyssDStages >= 20)
-    str += `<span>Reach Stage 30: Level scales based on Max Stage in Abyss D</span>`; 
+    str += `<span><span style="color: #f942f9">Beat Stage 30</span>: Level scales based on Max Stage in Abyss D</span>`; 
   if (hero.value.abyssDStages >= 30){
     str += `<span>[*${Math.max(2 - (1.015 ** (hero.value.abyssDStages - 29)), 0.1).toFixed(2)}]</span><br/>`;
-    str += `<span>Reach Stage 40: Corruption weakness is based on Max Stage in Abyss D</span>`;
+    str += `<span><span style="color: #f942f9">Beat Stage 40</span>: Corruption weakness is based on Max Stage in Abyss D</span>`;
   }
   if (hero.value.abyssDStages >= 40){
     str += `<span>[+${Math.max(1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15)), 0.1).toFixed(2)}]</span><br/>`;
-    str += `<span>Reach Stage 50: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
+    str += `<span><span style="color: #f942f9">Beat Stage 50</span>: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
   }
   if (hero.value.abyssDStages >= 50){
     str += `<span>[*${((1.0125 ** Math.min(hero.value.abyssDStages - 49, 100))).toFixed(2)}]</span><br/>`;
-    str += `<span>Reach Stage 60: Stardust drop is better based on Max Stage in Abyss D</span>`; 
+    str += `<span><span style="color: #f942f9">Beat Stage 60</span>: Stardust drop is better based on Max Stage in Abyss D</span>`; 
   }
   if (hero.value.abyssDStages >= 60){
-    str += `<span >[*${((1.015 ** Math.min(hero.value.abyssDStages - 59, 120))).toFixed(2)}]</span><br/>`;
-    str += `<span>Reach Stage 70: Stage requirement scales better based on Max Stage in Abyss D</span><br/>`;
+    str += `<span >[*${(1 + 0.05 * (hero.value.abyssDStages - 59)).toFixed(2)}]</span><br/>`;
+    str += `<span><span style="color: #f942f9">Beat Stage 70</span>: Stage requirement scales better based on Max Stage in Abyss D</span><br/>`;
   }
   if (hero.value.abyssDStages >= 70){
-    str += `<span>Reach Stage 80: Open D-Atlas</span><br/>`;
+    str += `<span><span style="color: #f942f9">Beat Stage 80</span>: Open D-Atlas</span><br/>`;
   }
   if(hero.value.abyssDStages > 100){
-    str += `<span>Reach Stage 100: MULT to convert Curse [T4] to [T5] - </span>`;
+    str += `<span><span style="color: #f942f9">Beat Stage 100</span>: MULT to convert Curse [T4] to [T5] - </span>`;
     if (hero.value.abyssDStages >= 100) {
       str += `<span>[*${(1.01 ** (hero.value.abyssDStages - 99)).toFixed(2)}]</span><br/>`;
-      str += `<span>Reach Stage 120: Stage Requirement reduced for Dimension Shards</span>`;
+      str += `<span><span style="color: #f942f9">Beat Stage 120</span>: Stage Requirement reduced for Dimension Shards</span>`;
     }
     if (hero.value.abyssDStages >= 120) {
-      str += `<span>[-${Math.floor(Math.sqrt(hero.value.abyssDStages - 119))}]</span><br/>`;
-      str += `<span>Reach Stage 140: The Danger Power is weaker</span><br>`;
+      str += `<span>[-${Math.floor((hero.value.abyssDStages - 119) ** 0.65)}]</span><br/>`;
+      str += `<span><span style="color: #f942f9">Beat Stage 140</span>: The Danger Power is weaker</span>`;
     }
     if(hero.value.abyssDStages >= 140){
-      str += `<span>Reach Stage 160: Celestials are weaker</span>`;
+      str += `<span>[^${formatNumber((100 - Math.sqrt(hero.value.abyssDStages - 139)) * 0.01, true)}]</span><br>`
+      str += `<span><span style="color: #f942f9">Beat Stage 160</span>: Celestials are weaker</span>`;
     }
     if(hero.value.abyssDStages >= 160){
       str += `<span>[*${Math.max(1 / (1.01 ** (hero.value.abyssDStages - 159)), 0.1).toFixed(2)}]</span><br>`;
-      str += `<span>Reach Stage 180: Soul-D is weaker</span><br>`;
+      str += `<span><span style="color: #f942f9">Beat Stage 180</span>: Soul-D is weaker</span><br>`;
     }
     if(hero.value.abyssDStages >= 180){
-      str += `<span>Reach Stage 200: Max Level MULT</span>`;
+      str += `<span><span style="color: #f942f9">Beat Stage 200</span>: Max Level MULT</span>`;
     }
     if(hero.value.abyssDStages >= 200){
-     str += `<span>[*${(1.0125 ** (hero.value.abyssDStages - 199)).toFixed(2)}]</span><br>`;
-     str += `<span>Reach Stage 1000: Unlock new Dimensions</span><br>`;
+     str += `<span>[+${(0.025 * (hero.value.abyssDStages - 199)).toFixed(2)}]</span><br>`;
+     str += `<span><span style="color: red">Beat Stage 1000</span>: ???</span><br>`;
     }
   }
 
@@ -274,13 +467,18 @@ const toggleLockStage = () => {
     }
 };
 
+const isAbyssVisible = computed(() => {
+  const h = hero.value;
+
+  if (h.dId === 'bh') return false; 
+
+  return (
+    (h.abyssTier < 3 && h.soulsMax >= 20 + 10 * h.abyssTier) ||
+    h.spCount >= 15
+  ) && !h.isSingularity && h.dId !== 'hard';
+});
 function totalSp(){
   return formatNumber(Math.log(hero.value.kills + 3) ** 7.26 - Math.log(hero.value.singularityKills + 3) ** 7.26);
-}
-
-function trueLevelReq(){
-  let l = Math.round(700 ** (1 / Math.min(1 - 0.02 * (hero.value.mainInfTier + 1) + hero.value.infPenalty, 1)));
-  return (l < 1e5? l: `100k+`)
 }
 
 function dsGain() {
@@ -290,6 +488,13 @@ function dsGain() {
 
 
 const performSingularity = () => {
+  if(hero.value.eventDoubleClick){
+    const confirmed = window.confirm(
+      "Click OK to confirm to enter the Singularity."
+    )
+    if (!confirmed) return;
+  }
+
   if(!hero.value.isSingularity && hero.value.level < 700)
     return;
   
@@ -337,12 +542,11 @@ const performSingularity = () => {
   }
   hero.value.isSingularity = true;
 
-  hero.value.killsPerZone = 10000;
+  hero.value.killsPerZone = Math.min(1250 * (hero.value.singularity + 1), 10000);
   hero.value.stage = 1;
 
   if(hero.value.singularity >= 2){
     hero.value.treeAuto = false;
-    radPerks[7].perkStatus = false;
     for (let perk of tperks.value){
       if(perk.status !== 'undefined')
         perk.status = false;
@@ -382,6 +586,10 @@ const performSingularity = () => {
 }
 
 const performSoulD = () => {
+  if(hero.value.selectedDivSkills.includes(11) || hero.value.selectedDivSkills.includes(6)){
+    return;
+  }
+
   hero.value.soulD = hero.value.soulD? false: true;
   if(hero.value.soulD){
     hero.value.soulDStage = hero.value.stage;
@@ -391,20 +599,42 @@ const performSoulD = () => {
     hero.value.stage = hero.value.soulDStage;
     hero.value.kills = 0;
     hero.value.zone = 1;
+    enemy.value.soulBuff.active = false;
   }
 }
 
 const performAscension = () => {
+ if(hero.value.eventDoubleClick){
+    const confirmed = window.confirm(
+      "Click OK to confirm The Ascension"
+    )
+    if (!confirmed) return;
+  }
+
   hero.value.perform = true;
   hero.value.isAscend = true;
 };
 
 const performRebirth = () => {
+ if(hero.value.eventDoubleClick){
+    const confirmed = window.confirm(
+      "Click OK to confirm The Rebirth"
+    )
+    if (!confirmed) return;
+  }
+
   hero.value.perform = true;
   hero.value.isRebirth = true;
 }
 
 const performAbyss = () => {
+  if(hero.value.eventDoubleClick){
+    const confirmed = window.confirm(
+      "Click OK to confirm to enter the Abyss."
+    )
+    if (!confirmed) return;
+  }
+
   if(hero.value.dId == 'abyss-d') return;
 
   if(hero.value.isAbyss && hero.value.stage >= (20 + 10 * hero.value.abyssTier)){
@@ -419,7 +649,6 @@ const performAbyss = () => {
     hero.value.isAbyss = false;
     hero.value.perform = true;
     perform();
-    hero.value.activeBuffs = [];
     hero.value.souls = 0;
     return;
   }
@@ -427,7 +656,6 @@ const performAbyss = () => {
   if(hero.value.isAbyss && hero.value.stage < 20 + 10 * hero.value.abyssTier){
     hero.value.isAbyss = false;
     hero.value.perform = true;
-    hero.value.activeBuffs = [];
     perform();
     hero.value.souls = 0;
     return;
@@ -441,6 +669,13 @@ const performAbyss = () => {
 }
 
 const performInf = () => {
+  if(hero.value.eventDoubleClick){
+    const confirmed = window.confirm(
+      "Click OK to confirm The Infinity Trial"
+    )
+    if (!confirmed) return;
+  }
+
   hero.value.perform = true;
   hero.value.dTimer = 0;
   hero.value.infTier = hero.value.mainInfTier;
@@ -449,8 +684,9 @@ const performInf = () => {
   perform();
   hero.value.activeBuffs = [];
   hero.value.spActiveBuffs = [];
-  hero.value.stardust = 0;
+  hero.value.stardust = 0 + (hero.value.bhTier >= 1? 1e7: 0);
   hero.value.spCount = 0;
+  hero.value.spsCount = 0;
   hero.value.sp = 0;
   hero.value.st = 0;
 
@@ -466,6 +702,7 @@ const performInf = () => {
   hero.value.cursedBonus = 0;
   hero.value.rebirthTier = 0;
 
+  hero.value.autoTreeCooldown = 3;
   hero.value.activeCurse = [];
   hero.value.activeCuseTier = [];
   hero.value.curse = 0;
@@ -482,7 +719,6 @@ const performInf = () => {
   (hero.value.rebirthPts >= 5.5e5? 1: 0) + (hero.value.rebirthPts >= 1.5e6? 1: 0);
   hero.value.isAbyss = false;
 
-  hero.value.isSpaceAuto = false;
   hero.value.soulD = false;
   hero.value.spaceFight = false;
   hero.value.isSpaceBuff = false;
@@ -504,8 +740,6 @@ const performInf = () => {
   radPerks[6].baseCost = 2500;
   radPerks[6].description = 'REBUILD REBIRTH SYSTEM THAT ALLOWS YOU TO SPEND MUTAGEN TO UP YOUR POTENTIAL';
   radPerks[6].max = 1;
-
-  radPerks[7].perkStatus = false;
 
   for(let sp of spEnemy){
     if(sp.id%6 == 0){
@@ -606,17 +840,20 @@ const performInf = () => {
 
   hero.value.maxStage = 1;
   hero.value.souls = 0;
-  hero.value.mutagen = 0;
+  hero.value.mutagen = (hero.value.mainInfTier >= 35? 1e4: hero.value.mutagen);
   hero.value.mutations = 0;
   hero.value.infProgress = false; 
   killHistory.length = 0;
+  enemy.value.soulBuff.soulsStardustReq = 0;
+  enemy.value.soulBuff.soulsMutagenReq = 0;
   
 }
 
 const perform = () => {
   hero.value.eLevel = 1;
   hero.value.exp = 0;
-  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15): 0);
+  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15) - hero.value.minStage: 0) + 
+  hero.value.minStage;
   hero.value.zone = 1;
   hero.value.kills = 0;
   hero.value.killsPerZone = 5;
@@ -653,6 +890,8 @@ const perform = () => {
   hero.value.damageStage = 0;
   enemy.value.d_damagePenalty = 0;
 
+  hero.value.survivalLife = dimensions.value[30].infTier;
+
   if(hero.value.gcnpSetting){
     hero.value.isLocked = true;
     hero.value.isStage = false;
@@ -686,9 +925,340 @@ function formatNumber(num, f = false) {
   return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 
+
+const showStageModal = ref(false);
+const showAfkModal = ref(false);
+const showAutoModal = ref(false);
+const autoTemp = reactive({
+  ascensionMinShards: auto.value.ascension.minShards,
+  ascensionMinStage: auto.value.ascension.minStage,
+  rebirthMinPts: auto.value.rebirth.minPts,
+  rebirthMinLevel: auto.value.rebirth.minLevel,
+  rebirthMinLevelNext: auto.value.rebirth.minLevelNext,
+  stopStage: auto.value.stop.stage,
+  stopStageNext: auto.value.stop.stageNext,
+  stopUntilKills: auto.value.stop.untilKills
+})
+
+function applyAutoSettings() {
+  auto.value.ascension.minShards = autoTemp.ascensionMinShards;
+  auto.value.ascension.minStage = autoTemp.ascensionMinStage;
+
+  auto.value.rebirth.minPts = autoTemp.rebirthMinPts;
+  auto.value.rebirth.minLevel = autoTemp.rebirthMinLevel;
+  auto.value.rebirth.minLevelNext = autoTemp.rebirthMinLevelNext;
+
+  auto.value.stop.stage = autoTemp.stopStage;
+  auto.value.stop.stageNext = autoTemp.stopStageNext;
+  auto.value.stop.untilKills = autoTemp.stopUntilKills;
+}
+
+function resetSettings() {
+  auto.value.ascension.minShards = 0;
+  auto.value.ascension.minStage = 0;
+
+  autoTemp.ascensionMinShards = 0;
+  autoTemp.ascensionMinStage = 0;
+
+
+  auto.value.rebirth.minPts = 0;
+  auto.value.rebirth.minLevel = 0;
+  auto.value.rebirth.minLevelNext = 0;
+
+  autoTemp.rebirthMinPts = 0;
+  autoTemp.rebirthMinLevel = 0;
+  autoTemp.rebirthMinLevelNext = 0;
+
+
+  auto.value.stop.stage = 0;
+  auto.value.stop.stageNext = 0;
+  auto.value.stop.untilKills = 0;
+
+  autoTemp.stopStage = 0;
+  autoTemp.stopStageNext = 0;
+  autoTemp.stopUntilKills = 0;
+}
+
+const targetStage = ref(1);
+function travelToStage() {
+  if(hero.value.isSingularity) return;
+
+  if(targetStage.value == 1111) {
+    console.log('Secret-4');
+    hero.value.secrets.travell = true;
+  }
+  targetStage.value = Math.max(Math.min(targetStage.value, hero.value.maxStage), 1);
+
+  hero.value.stage = targetStage.value < 100? (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15): targetStage.value): targetStage.value; 
+  hero.value.travellPenalty = 4;
+  hero.value.isTravell = true;
+}
+
+const afkPercent = computed(() => (hero.value.afkTimer / hero.value.afkMaxTimer) * 100);
+
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${h}h ${m}m ${s}s - (${Math.floor((seconds / hero.value.afkMaxTimer)*100)}%)`;
+}
+
+function useAfkTime() {
+  if(hero.value.isSingularity) return;
+
+  const percent = Math.min(Math.max(hero.value.afkSpendPercent, 0), 100);
+  const usedTime = Math.floor((hero.value.afkMaxTimer * Math.min(percent, (hero.value.afkTimer / hero.value.afkMaxTimer) * 100)) / 100);
+  hero.value.afkTimer -= usedTime;
+  
+  let maxKill = hero.value.maxStage * 75;
+
+  let div = hero.value.enemyAfkHp * (usedTime ** 0.1) - hero.value.attack;
+  hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (hero.value.enemyAfkHp * (usedTime ** 0.1))) * usedTime: usedTime, maxKill);
+  hero.value.afkTime = usedTime;
+  hero.value.afkLocked = true;
+}
+
+function deathRecovery() {
+  let text = `At this stage, the world suppresses your excessive power, making recovery after death take longer by [${(hero.value.recoveryPenalty).toFixed(2)}] times`;
+
+  return text;
+}
+
+function infHandle() {
+  let penalty = Math.max(Math.min(hero.value.infPower, 1), 0);
+
+  return `Penalty for this trial: 
+  Max Level: <span style='color: red'>[^${penalty.toFixed(2)}]</span>
+  EXP Gain: <span style='color: red'>[^${penalty.toFixed(2)}]</span>`;
+}
+
+function darkEnergyHandle() {
+  let text = `Kill all <span style="color: rgb(30, 67, 64); font-weight: bold; text-shadow: 0 0 5px rgb(0, 0, 0);">[Obscurants]</span> to advance to the next <span style='color: gold'>Infinity Tier</span><br><br>`;
+  text += `<span style="color: rgb(30, 67, 64); font-weight: bold; text-shadow: 0 0 5px rgb(0, 0, 0);">[Obscurants]</span>: ${enemy.value.darkEnergy.totalBosses} / ${enemy.value.darkEnergy.maxBosses}<br>`;
+  
+
+  if(enemy.value.darkEnergy.totalBosses < enemy.value.darkEnergy.maxBosses)
+    text += `Stage: <span style='color: gold'>${100 + 5 * enemy.value.darkEnergy.totalBosses}</span>`
+  else text += `All <span style="color: rgb(30, 67, 64); font-weight: bold; text-shadow: 0 0 5px rgb(0, 0, 0);">[Obscurants]</span> are found`
+
+  return text;
+}
+
+function doomHandle() {
+  let text = `When you kill an enemy, you gain a stack of <span style="color: red">*Doom*</span>. Each stack reduces your stats.
+
+    Current stacks: ${enemy.value.d_damagePenalty}
+
+    DMG penalty: ${Math.floor(hero.value.d_damage_penalty.dmg)}
+    HP penalty: ${Math.floor(hero.value.d_damage_penalty.hp)}
+    DEF penalty: ${Math.floor(hero.value.d_damage_penalty.def)}
+  `;
+
+  if(dimensions.value[28].infTier >= 20)
+    text += `<br>You have a 50% chance not to receive a stack of <span style="color: red">*Doom*</span> when you kill.`;
+  else if(dimensions.value[28].infTier >= 10)
+    text += `<br>You have a 75% chance not to receive a stack of <span style="color: red">*Doom*</span> when you kill.`;
+  
+  return text;
+}
+
+function darkEnemyHandle() {
+  let danger = 1000 + 500 * dimensions.value[31].infTier;
+  let stage = 100 + 10 * dimensions.value[31].infTier;
+  return `Find <span style="color: orange">Dimension Colossuses</span> to advance to the next <span style="color: gold">Infinity Tier</span>
+  
+  Requirement: 
+  Danger: <span style="color: gold">[${danger}+]</span>
+  Stage: <span style="color: gold">[${stage}+]</span>
+  `
+}
+
+function nextDimHandle() {
+  let stage = Math.max(30 - dimensions.value[34].infTier, 1);
+  let maxStage = 30 + 10 * dimensions.value[34].infTier;
+  if(hero.value.dId == 'd-next')
+    return `This world has been shattered by gravity. Your maximum possible stage is <span style="color: red">${stage}</span>.`;
+  if(hero.value.darkId.includes('d-next'))
+    return `You Max possible Stage is <span style="color: gold">${maxStage}</span>`;
+
+  return "";
+}
+
+function bleedingVeilHandle() {  
+  return `<span style='color: #c31414'>[Bleeding Veil]</span>
+
+    Each second, you will take DMG equal to <span style='color: #c31414'>[${hero.value.bleedvealValue}]</span>
+    The power of <span style='color: #c31414'>[Bleeding Veil]</span> increases with each stage passed.
+  `
+}
+
+function corruptionHandle() {
+  let text = `<span style="color: violet">While you are affected by corruption:</span><br>`;
+
+  text += `<span style="color: orange">Celestials Power: *</span> <span style="color: gold">${formatNumber(hero.value.dCorruptionEffect)}</span><br>`;
+
+  // Enemy DMG
+  if (hero.value.dId == 'd-corruption') {
+    text += `<span style="color: red">Enemy DMG: *</span> <span style="color: gold">${formatNumber(Math.floor(Math.max(
+      100 - hero.value.overcorruption ** (2 - 0.025 * dimensions.value[26].infTier),
+      10
+    ) * 1.05 ** dimensions.value[26].infTier))}</span><br>`;
+  } else if (hero.value.darkId.includes('d-corruption')) {
+    text += `<span style="color: red">Enemy DMG: *</span> <span style="color: gold">${Math.floor(
+      Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10)
+    )}</span><br>`;
+  }
+
+  // Enemy HP
+  if (hero.value.dId == 'd-corruption') {
+    text += `<span style="color: lightgreen">Enemy HP: *</span> <span style="color: gold">${formatNumber(Math.floor(Math.max(
+      10000 - hero.value.overcorruption ** (4 - 0.05 * dimensions.value[26].infTier),
+      100
+    ) * 1.5 ** dimensions.value[26].infTier))}</span><br>`;
+  } else if (hero.value.darkId.includes('d-corruption')) {
+    text += `<span style="color: lightgreen">Enemy HP: *</span> <span style="color: gold">${Math.floor(
+      Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100)
+    )}</span><br>`;
+  }
+
+  // Decrease Max Level
+  if (hero.value.dId == 'd-corruption') {
+    text += `<span style="color: lightblue">Decrease your Max Level by</span> <span style="color: red">${(
+      hero.value.overcorruption /
+      (10 + 2.5 * dimensions.value[26].infTier)
+    ).toFixed(2)}</span>`;
+  }
+
+  return text;
+}
+
+function dHardHandle() {
+  let text = `Curse Power: <span style="color: red">*${(hero.value.curseMult).toFixed(2)}</span>`;
+
+  return text;
+}
+
+function dBuffsHandle() {
+  let descrease = Math.min(Math.log(1 + dimensions.value[32].infTier) ** 4 , 80);
+
+  let text = `Buffs appearance chance: <span style='color: yellow'>${(100 - descrease).toFixed(2)}</span>`;
+
+  return text;
+}
+
+function dInfTreeHandle() {
+  let mult = 1;
+
+  if(hero.value.dId == 'd-noTree')
+    mult = 2 + 0.25 * dimensions.value[35].infTier;
+  else if(hero.value.darkId.includes('d-noTree'))
+    mult = 2 - 0.02 * dimensions.value[35].infTier;
+
+  let text = `Cost of Infinity Tree Perks: <span style="color: gold">${(mult).toFixed(2)}<span>`;
+
+  return text;
+}
+
+function apsHandle() {
+  let aps =  0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier));
+  let enemyAps = 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier));
+
+  let text = `APS Penalty: <span style="color: red">-${aps.toFixed(2)}</span>
+  Max APS: <span style="color: red">${Math.max(hero.value.maxAPS, hero.value.attacksPerSecond)}</span>
+  Enemy APS: <span style="color: yellow">+${enemyAps.toFixed(2)}</span>: 
+  `
+  
+  return text;
+}
+
+function noEqDimHandle() {
+    let dark_d_penalty = (hero.value.dId == 'd-noEq'? (Math.E * (dimensions.value[36].infTier + 1)) ** 1.3: 1);
+    dark_d_penalty = (hero.value.darkId.includes('d-noEq')? Math.max(Math.E ** (1.3 - 0.015 * dimensions.value[36].infTier), 1): dark_d_penalty);
+
+    let text = `Enhances Cost: <span style="color: gold">*${formatNumber(dark_d_penalty)}</span>`;
+    if(hero.value.darkId.includes('d-noEq'))
+      text += `<br>Your possible Max Equipment Tier is <span style="color: rgb(0, 255, 255)">${dimensions.value[36].infTier + 1}</span>`
+
+    return text; 
+}
+
+function unlimitedDimHandle() {
+  let lvlRed = Math.max(hero.value.dTimer ** (0.1 + 0.01 * dimensions.value[38].infTier), 1);
+  let text = `Max Level Reduction: <span style="color: red">${lvlRed.toFixed(3)}</span>`;
+
+  return text;
+}
+
+function stageHardCap() {
+  return `<span style="color: rgb(0, 255, 255)">Your knowledge of this world is too small, perhaps [D-Gravity] will give you a hint</span>`;
+}
+
+function darkSpaceHandle() {
+  let power = (Math.E * (1 + dimensions.value[37].infTier)) ** 1.75;
+  let count = 6 * (dimensions.value[37].infTier + 1);
+  let text = `Celestials are <span style="color: gold">${formatNumber(power)}</span> times stronger<br>`;
+  text +=  `Beat <span style="color: gold">${hero.value.spCount + hero.value.spsCount} / ${count}</span> celestials to advance to the next Infinity Tier`;
+
+  return text;
+}
+
+function travellHandle() {
+  let text = `<span style="color: lightblue">Travel Effect</span>
+  
+  Enemies are stronger by <span style="color: red">${hero.value.travellPenalty.toFixed(2)}</span>.
+  `
+
+  return text;
+}
+
+function spaceTimerHandle() {
+  let text = `<span style="color: orange">[D-Space]</span> spreads its influence here. You can't stay for too long. 
+  You have <span style="color: gold">${Math.floor(hero.value.spaceTimer)}s</span> before you die.`;
+
+  return text;
+}
+
 </script>
 
 <style scoped>
+.zone-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  text-align: center;
+  min-height: 3vh;
+}
+
+.left-icons,
+.right-icons {
+  display: flex;
+  gap: 0.1rem;
+  align-items: center;
+}
+
+.progress-center {
+  flex: 1;                 
+  display: flex;
+  justify-content: center; 
+  position: fixed;
+    left: 47%;
+}
+
+.progress-text {
+  text-shadow: 0 0 4px #00ffea;
+}
+
+.tooltip-content {
+  text-align: left;  
+}
+
+
 .zone-progress {
   position: absolute;
   top: 20%;  
@@ -735,53 +1305,91 @@ function formatNumber(num, f = false) {
   pointer-events: none;
 }
 
-.lock-stage-button {
-  position: absolute;
-  right: 0%;
-  top: 10%;
-  margin-top: 1rem;
-  background-color: #2f2f2f;
-  border-radius: 8px;
-  border: 1px solid #2f2f2f;
-  padding: 0rem 0rem;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-  height: 42px;
-  width: 70px;
-  overflow: hidden;
+
+
+
+.lock-stage-wrapper {
+  position: relative;
   display: flex;
-  justify-content: center;
-  align-items: center;
   gap: 0.5rem;
+  flex-direction: row;
+  align-items: center;
+  margin: 5px;
 }
 
+.stage-modal {
+  position: absolute; 
+  top: 100%; 
+  z-index: 1000;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 200px;
+}
+
+.lock-stage-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #2f2f2f;
+  background-color: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.stage-input-group {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.stage-input-group input {
+  width: 60px;
+  text-align: center;
+}
+
+.stage-description {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-top: 0.3rem;
+}
+
+.lock-stage-button:hover {
+  background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
 
 .spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid transparent;
-  border-top: 3px solid #4caf50;
-  border-left: 3px solid #4caf50;
+  width: 14px;               
+  height: 14px;
+  border: 2px solid #ccc;
+  border-top: 2px solid #00ffff;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  box-shadow: 0 0 6px #4caf50, 0 0 12px #4caf50, 0 0 18px #4caf50;
+  animation: spin 1s linear infinite;
 }
 
 .fspinner {
-    border-left: 3px solid #4caf50;
-    border-right: 3px solid #4caf50;
-    border-bottom: 3px solid #4caf50;
+  border-top-color: #ff5555;
 }
 
 .spinner.paused {
   animation-play-state: paused;
 }
 
+.button-text {
+  font-size: 0.75rem;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
 
 
 .progress-header {
@@ -903,12 +1511,6 @@ function formatNumber(num, f = false) {
   overflow: auto;
 }
 
-.progress-text {
-  position: absolute;
-  left: 43%;
-  top: 30%;
-}
-
 .infinity-glow {
   font-size: 2rem;
   font-weight: bold;
@@ -971,7 +1573,7 @@ function formatNumber(num, f = false) {
   width: 100%;
 }
 
-/* скроллбар */
+
 .stage-list-scrollable::-webkit-scrollbar {
   width: 6px;
 }
@@ -1002,6 +1604,223 @@ function formatNumber(num, f = false) {
   border-radius: 6px;
   cursor: pointer;
   margin-top: 10px;
+}
+
+.staticIconPos {
+  width: 25px;
+  height: 25px;
+}
+
+.hidden {
+  visibility: hidden; 
+}
+
+
+
+
+.stage-wrapper {
+  background: #1e293b;
+  padding: 16px;
+  max-width: 400px;
+  color: #eee;
+  text-align: center;
+}
+
+.stage-input-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.stage-input-group input {
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  width: 100px;
+  background: #333;
+  color: #fff;
+}
+
+.stage-input-group button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.stage-input-group button:hover {
+  background: #66bb6a;
+}
+
+
+
+.afk-wrapper {
+  background: #1e293b;
+  padding: 16px;
+  color: #eee;
+  width: 400px;
+  font-family: "Consolas", monospace;
+}
+
+.afk-bar-container {
+  background: #333;
+  border-radius: 8px;
+  height: 24px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.afk-bar {
+  height: 100%;
+  background: linear-gradient(to right, #00ffcc, #0099ff);
+  transition: width 0.4s ease;
+}
+
+.afk-time {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 0 4px #000;
+}
+
+.afk-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.afk-controls input {
+  width: 60px;
+  padding: 4px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  background: #222;
+  color: #fff;
+}
+
+.afk-controls button {
+  padding: 6px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.afk-controls button:hover {
+  background: #218838;
+}
+
+
+
+
+.auto-panel-wrapper {
+  flex-direction: column;
+  background-color: #1e293b;
+  padding: 8px;
+}
+
+.auto-panel {
+  background: rgba(30, 30, 50, 0.95);
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 14px;
+}
+
+.auto-panel h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #ffd700;
+}
+
+.auto-panel label {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.auto-panel input {
+  width: 80px;
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #fff;
+  padding: 2px 6px;
+}
+
+
+.auto-settings-modal {
+  position: absolute;
+  top: 50px; 
+  right: 20px;
+  background: #111;
+  border: 2px solid #444;
+  padding: 16px;
+  z-index: 1000;
+  width: 280px;
+  color: #fff;
+  border-radius: 8px;
+  overflow-y: auto;
+  max-height: 40vh;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(245, 229, 56) transparent;
+}
+
+.auto-settings-modal .auto-panel {
+  margin-bottom: 12px;
+}
+
+.auto-settings-modal label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.auto-settings-modal .modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px; /* расстояние между кнопками */
+  margin-top: 12px;
+}
+
+.modal-buttons button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #4a90e2;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-buttons button:hover {
+  background-color: #357ab8;
+}
+
+.modal-buttons button:active {
+  background-color: #2c5f94;
 }
 
 

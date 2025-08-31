@@ -13,6 +13,8 @@ import { spEnemy } from '../data/spaceEnemy.js';
 import { goals as infGoals } from '../data/infGoals.js';
 import { dimensions } from '../data/dimensions.js';
 import { autoProgress, auto } from './autoProgression.js';
+import { spaceShop } from '../data/spaceShop.js';
+import { divineSkills } from '../data/quasarCore.js';
 import { recordKill, avgLootPerMinute, killHistory } from './afkHandle.js';
 
 export function useBattle(hero, enemy, buffs) {
@@ -27,7 +29,7 @@ export function useBattle(hero, enemy, buffs) {
     (equipment[3].tiers[hero.value.equipmentTiers['ring']].bonus.expMult + hero.value.eqUpsMult['ring'].bonus) *
     (1 + 0.05 * (hero.value.equipmentTiers['sword'] + hero.value.equipmentTiers['armor'] + hero.value.equipmentTiers['boots'] + hero.value.equipmentTiers['ring']) * ascenPerks[6].level) *
     (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 3? 3: 1) *
-    (enemy.value.soulBuff.active? enemy.value.soulBuff.drop: 1) * 
+    (enemy.value.soulBuff.active? enemy.value.soulBuff.drop * hero.value.soulOverkill: 1) * 
     (1 + Math.min(hero.value.souls, 40 + (hero.value.infTier >= 6 || hero.value.infEvents >= 6? 40: 0)) * (0.1 + (hero.value.soulTier >= 3? 0.05: 0))) *
     (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 4? overkillHandle() * (0.1 + (dimensions.value[19].infTier == dimensions.value.maxInfTier? 0.05: 0)): 1) *
     (1 + hero.value.cursedBonusExp) * (enemy.value.boss.isBoss? enemy.value.boss.drop: 1) *
@@ -40,14 +42,27 @@ export function useBattle(hero, enemy, buffs) {
     Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1) *
     (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) *
     (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.06) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1)+Math.log(hero.value.infPoints + 2)))) * 
-    (hero.value.dId == 'unlimitted'? 2.25 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1): 1);
+    (hero.value.dId == 'unlimitted'? Math.max(5 * Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500) , 1) ** 2: 1): 1) * 
+    (hero.value.dId == 'unlimitted'? Math.max((Math.E * dimensions.value[38].infTier) ** 0.6, 1): 1) *
+    (hero.value.selectedDivSkills.includes(1)? divineSkills.value[1].values[1]: 1) * 
+    (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1) /
+    (enemy.value.buffs.includes(3)? 3: 1);
+
+    exp **= cursed[17].loot;
+    exp **= (hero.value.selectedDivSkills.includes(13)? divineSkills.value[13].values[0]: 1)
+
+   
 
     hero.value.totalExp = exp;
     let expPenalty = Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1);
     exp = (!hero.value.infProgress? exp ** expPenalty: exp);
     enemy.value.averageLoot.exp = exp;
 
+    let expDiv = Math.min(100000 / hero.value.eLevel, 500);
+    exp = Math.min(hero.value.nextLevelExp * expDiv, exp);
+
     addLog(`You killed ${enemy.value.name} and gained ${formatNumber(exp)} (+${formatNumber((exp / hero.value.nextLevelExp) * 100, true)}%) exp`, "EXP");
+    
     if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage)
       hero.value.exp += exp * 25;
     else 
@@ -56,22 +71,26 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.rebirthPts >= 8e5){
       let sExp = (Math.random()*100 + 15 >= 100? nextLevel(hero.value.eLevel) * 0.05: 0);
       if(sExp > 0){
-        hero.value.totalExp = sExp;
+        hero.value.totalExp += sExp;
         addLog(`Singularity gift: ${formatNumber(sExp)} (+5%) exp`, "EXP");
       }
     }
     
     
     checkLevelUp();
-
-
   };
 
   const checkLevelUp = () => {
-    let power = (hero.value.soulsMax >= 40? 0.1: 0) + (perks.value[3].status? 0.1: 0) + (hero.value.rebirthPts >= 70000? 0.1: 0) + (0.02 * hero.value.singularity);
+    //level rush
+    let radStatus = (perks.value[3].status? 0.1 + 0.01 * (dimensions.value[40].infTier - 40): 0);
+    let power = (hero.value.soulsMax >= 40? 0.1: 0) + radStatus + (hero.value.rebirthPts >= 70000? 0.1: 0) + (0.02 * hero.value.singularity) + 
+    0.05 * hero.value.bhTier;
+    hero.value.levelRush = power;
+
     if(hero.value.maxLevel * power > hero.value.eLevel && hero.value.dId != 'unlimitted'){
       hero.value.eLevel += (hero.value.maxLevel * power > hero.value.eLevel? 1: 0);
       hero.value.perkPoints += (hero.value.infEvents >= 1 || hero.value.infTier >= 1? 2: 1);
+      hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
     }
 
     if (hero.value.exp >= hero.value.nextLevelExp && hero.value.eLevel < hero.value.maxLevel) {
@@ -86,7 +105,8 @@ export function useBattle(hero, enemy, buffs) {
 
   const nextLevel = (level) => {
     let rScale = (hero.value.rebirthPts >= 1?0.145:0) + (hero.value.rebirthPts >= 750?0.145:0) +(hero.value.rebirthPts >= 12500?0.145:0) +(hero.value.rebirthPts >= 90000?0.145:0);
-    let sReq = (1000 + 10 * Math.max(hero.value.eLevel - 700, 0)) ** (hero.value.rebirthPts > 7e5? 1 - Math.log(hero.value.rebirthPts + 3)/2 * 0.01 : 1);
+    let sReq = singReq();
+    
     let scale = Math.floor(((level+9)**2)**(1 + level/700)) * (Math.log(level+2)**((0.6-rScale) * (hero.value.eLevel >= 100? 4: 1))) * 
     (hero.value.isAbyss? 1.0155 ** level: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 30? Math.max(2 - (1.015 ** (hero.value.abyssDStages - 29)), 0.1): 1) * 
     (hero.value.mainInfTier >= 7? (1 / infBase(1.03) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
@@ -95,11 +115,28 @@ export function useBattle(hero, enemy, buffs) {
     return Math.max(scale, 100);
   }
 
+  function singReq() {
+    let base = 1000;
+  
+    let eLevelFactor = Math.max(hero.value.eLevel - 700, 0) ** (0.215 - (hero.value.dId === 'unlimitted' ? 0.075 : 0));
+  
+    let sReq = base + 20 ** eLevelFactor;
+  
+    if (hero.value.rebirthPts > 7e5) {
+      const rebirthFactor = 1 - Math.log(hero.value.rebirthPts + 3) / 2 * 0.01;
+      sReq = sReq ** rebirthFactor;
+    }
+  
+    return sReq;
+  }
+
   let intervalId = null;
 
   const startBattleLoop = () => {
     const interval = 50;
     intervalId = setInterval(() => {
+      if(hero.value.isPaused) return;
+
       afkKillsHandle();
       travellCooldown(interval);
       ascensionAutoBuyer();
@@ -134,13 +171,23 @@ export function useBattle(hero, enemy, buffs) {
       mutationHandle();
       spaceHandle();
       infPtsHandle();
+      blackHoleHanlde();
 
+      autoForgeAll();
       statCalculate();
-      treeAuto();
+      statsEnemyModifier();
+      treeAuto(interval);
       infoHandle();
       singularityHandle();
       dHandle();
-      //test();
+      darkDimensionsHandle(interval);
+      spaceCooldown(interval);
+      isRageHandler();
+      quasarCoreHandle();
+      rebirthAutoHandle();
+      soulsAutoHandle();
+      hardcapHandle();
+      test();
 
       hero.value.dTimer += (interval / 1000);
 
@@ -149,10 +196,19 @@ export function useBattle(hero, enemy, buffs) {
         enemy.value.soulBuff.active = false;
         enemy.value.boss.isBoss = false;
 
+        hero.value.spaceTimer = 15;
+
         let temp = hero.value.activeBuffs;
-        hero.value.activeBuffs = hero.value.spActiveBuffs;
+            
+        if(hero.value.dId == 'd-noSpace'){
+          hero.value.activeBuffs = [];
+          hero.value.spBuffsCache = hero.value.spActiveBuffs;
+        } else 
+          hero.value.activeBuffs = hero.value.spActiveBuffs;
+
         hero.value.spActiveBuffs = temp;
 
+        buffs.value[8].spaceTime = buffs.value[8].time;
         buffs.value[8].time = 0 + (buffs.value[8].tier >= 4? 250: 0);
         buffs.value[1].stun = 0;
         buffs.value[3].combo = 0;
@@ -165,17 +221,32 @@ export function useBattle(hero, enemy, buffs) {
         createSpaceCreature();
       }
 
-      if(hero.value.isSpaceAuto)
-        spaceAuto();
+      if(enemy.value.isSpaceFight == 2 && hero.value.spaceTimer > 0){
+        hero.value.spaceTimer = Math.max(hero.value.spaceTimer - (interval/1000), 0);
+      } else if(enemy.value.isSpaceFight == 2 && hero.value.spaceTimer == 0){
+        hero.value.hp = 0;
+        buffs.value[10].buffT3 = 0;
+        buffs.value[10].buffT3HP = 0;
+        hero.value.spaceTimer = -1;
+      }
+
+      if(hero.value.isSpaceAuto && hero.value.isSpaceFight != 2)
+        spaceAuto(interval);
+      else hero.value.autoSpaceCondition = "";
 
 
       conquerBuff(interval + 5);
-     
+
+      if(hero.value.activeBuffs.includes(1) && buffs.value[1].tier >= 4 && !buffs.value[1].usedAPS){
+        heroAttackBarProgress.value += 0.25;
+        buffs.value[1].usedAPS = true;
+      }
+      //////////////HERO
       if(hero.value.resetKilledTime > 0){
         heroAttackBarProgress.value = 0;
         hero.value.resetKilledTime -= interval / 1000;
       }
-      else if(cursed[5].time > 0 && (hero.value.activeBuffs.includes(0) && !buffs.value[0].tier == 4))
+      else if(cursed[5].time > 0 && !(hero.value.activeBuffs.includes(0) && buffs.value[0].tier == 4))
         cursed[5].time -= interval / 1000;
       else
         heroAttackBarProgress.value += hero.value.attacksPerSecond * interval / 1000;
@@ -184,7 +255,7 @@ export function useBattle(hero, enemy, buffs) {
         buffs.value[5].stuck--;
         buffs.value[1].stun += (dStun()? 0.5: 0);
 
-        if(hero.value.activeBuffs.includes(5) && buffs.value[5].stuck < 0)
+        if(buffs.value[5].stuck < 0)
           fastSlashBuff();  
         
         chargeGet();
@@ -193,88 +264,185 @@ export function useBattle(hero, enemy, buffs) {
         firstStrikeBuff();
         comboStuckBuff();
         sniperBuff();
+
+        blackImpulseBuff();
         
-        let totalDmg = (hero.value.attack * acrobaticCurse()) - enemy.value.def;
+        if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && !buffs.value[12].isRage){
+          buffs.value[12].rage = Math.min(buffs.value[12].rage + 1, 100);
+        }
+        if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && buffs.value[12].isRage){
+          buffs.value[12].rage = Math.max(buffs.value[12].rage - 1, 0);
+          buffs.value[12].rageAttackMult += 0.01;
+        }
+
+        if(hero.value.activeBuffs.includes(16) && buffs.value[16].tier >= 3){
+          buffs.value[16].stack = Math.min(buffs.value[16].stack + 1, 10);
+        }
+
+        let enemyDef = enemy.value.def * (buffs.value[15].defIgnore? 0: 1);
+
+        let totalDmg = Math.max((hero.value.attack * acrobaticCurse()) - enemyDef, 0);
+        totalDmg = (cursed[14].crit? 0: totalDmg);
+        totalDmg = (enemy.value.deBoss.ignoreDMG > 0 && enemy.value.spawnType == 'deBoss'? (Math.random() * 100 + enemy.value.deBoss.ignoreDMG >= 100? 0: totalDmg): totalDmg);
+
+        if(enemy.value.buffs.includes(0) && totalDmg > 0 && enemyDef >= totalDmg){
+          if (Math.random() < 0.5) enemy.value.hp = Math.min(enemy.value.hp + enemy.value.maxHp * 0.1, enemy.value.maxHp);
+        }
+
+        if(enemy.value.buffs.includes(1)) totalDmg *= Math.max(1 - 0.01 * Math.floor(enemy.value.rage / 2), 0);
+
         enemy.value.hp = Math.max(0, enemy.value.hp - Math.max(Math.max(totalDmg, 0), 0));
         heroAttackBarProgress.value = heroAttackBarProgress.value - 1;
         buffs.value[1].usedSkill = false;
+        cursed[14].crit = false;
 
         if(totalDmg > 0 && hero.value.activeBuffs.includes(4) && buffs.value[4].tier >= 4){
           let heal = ((hero.value.maxHp * 0.02 + hero.value.stage)) * (1 + hero.value.eqUpsMult['armor'].heal * 0.01)
           hero.value.hp = Math.min(hero.value.hp + heal, hero.value.maxHp);
         }
 
-
-        if (enemy.value.hp === 0) {
-          if(enemy.value.isSpaceFight == 2){
-              enemy.value.isSpaceFight = 0;
-              hero.value.activeCurse = [];
-              hero.value.spCount++;
-
-              let temp = hero.value.activeBuffs;
-              hero.value.activeBuffs = hero.value.spActiveBuffs;
-              hero.value.spActiveBuffs = temp;
-          }
-
-          //soul
-          if(enemy.value.soulBuff.active){
-            hero.value.souls = Math.min(hero.value.souls + 1 + hero.value.soulOverkill, hero.value.soulsCap);
-            hero.value.afkSoulBoost = 1;
-            if(hero.value.souls > hero.value.soulsMax && hero.value.souls < 40){
-              ascensionShardsProgress(hero.value.stage);
-            }
-            hero.value.soulsMax = Math.max(hero.value.souls, hero.value.soulsMax);
-          }
-          
-          if (enemy.value.ascensionSoul.active){
-            ascensionShardsProgress(hero.value.stage);
-            enemy.value.ascensionSoul.active = false;
-          }
-
-          rewardInfSouls();
-          curseBonus();
-          expBuffGrant();
-          grantExp();
-          starDustDrop();
-          mutagenGain();
-          timeCombatHandle();
-
-          enemy.value.soulBuff.active = false;
-          weaponDrop();
-
-          if(hero.value.dId == 'damage') hero.value.dKills++;
-          else hero.value.dKills = 0;
-
-          enemy.value.d_damagePenalty = (hero.value.dId == 'd-damage' || hero.value.darkId.includes('d-damage')? enemy.value.d_damagePenalty + 1: 0);
-          hero.value.damageStage = (dimensions.value[28].infTier > 0? hero.value.damageStage + 1: 0);
-
-          if(enemy.value.boss.isBoss){
-            if(hero.value.infTier >= 2 || hero.value.infEvents >= 2)
-              ascensionShardsProgress(hero.value.stage);
-            enemy.value.boss.isBoss = false;
-            hero.value.kills = 0;
-            hero.value.zone = 1;
-            hero.value.stage++;
-            hero.value.maxStage = Math.max(hero.value.maxStage, hero.value.stage);
-            ascensionShardsProgress(hero.value.stage);
-          }
-          if((enemy.value.danger > 0 || hero.value.singularity >= 5) && hero.value.spCount%6 == 5){
-            let ch = (Math.random() * 100 + enemy.value.spaceBossChance >= 100? true: false);
-            if(ch)
-              spEnemy[hero.value.spCount].status = ch;
-          }
-          
-          handleEnemyDefeat();
-          createEnemy();
-
-          stationReset(); 
-          recordKill(enemy);
-
-          enemy.value.weakStack *= (dimensions.value[2].infTier >= dimensions.value[2].maxInfTier? 0.9: 0);
-        }
+        if(totalDmg < enemy.value.def)
+          perditionOfThorns();
       }
 
-      // Враг
+      if (enemy.value.hp === 0) {
+        if(enemy.value.isSpaceFight == 2){
+            enemy.value.isSpaceFight = 0;
+            hero.value.spaceTimer = 0;
+            hero.value.activeCurse = [];
+            
+            if(hero.value.spCount >= 48 && hero.value.isInfSpace) {
+              hero.value.spsCount = Math.min(hero.value.spsCount + 1, 30);
+              hero.value.spsCountMax = Math.max(hero.value.spsCountMax, hero.value.spsCount);
+            }
+
+            hero.value.spCount = Math.min(hero.value.spCount + 1, 48);
+
+            let temp = hero.value.activeBuffs;
+
+            if(hero.value.dId == 'd-noSpace'){
+              hero.value.activeBuffs = [];
+              hero.value.spBuffsCache = hero.value.spActiveBuffs;
+            } else 
+              hero.value.activeBuffs = hero.value.spActiveBuffs;
+
+            hero.value.spActiveBuffs = temp;
+
+            hero.value.isSpaceFightCooldown = true;
+            buffs.value[8].time = buffs.value[8].spaceTime;
+        }
+
+        //bh
+        if(hero.value.dId == 'bh'){
+          hero.value.dId = 'main';
+          hero.value.infTier = hero.value.mainInfTier;
+          hero.value.bhTier++;
+          hero.value.isBhBoss = false;
+
+          performInf();
+          perform();
+
+          hero.value.infProgress = true;
+          hero.value.transcendenceBH = 0;
+        }
+
+        //soul
+        if(enemy.value.soulBuff.active){
+          hero.value.souls = Math.min(hero.value.souls + hero.value.soulOverkill, hero.value.soulsCap);
+          hero.value.afkSoulBoost = 1;
+          if(hero.value.souls > hero.value.soulsMax && hero.value.souls < 40){
+            ascensionShardsProgress(hero.value.stage);
+          }
+          hero.value.soulsMax = Math.max(hero.value.souls, hero.value.soulsMax);
+        }
+        
+        if (enemy.value.ascensionSoul.active){
+          ascensionShardsProgress(hero.value.stage);
+          enemy.value.ascensionSoul.active = false;
+        }
+
+        rewardInfSouls();
+        curseBonus();
+        expBuffGrant();
+        grantExp();
+        starDustDrop();
+        mutagenGain();
+        timeCombatHandle();
+
+        enemy.value.soulBuff.active = false;
+        weaponDrop();
+
+        if(hero.value.dId == 'damage') hero.value.dKills++;
+        else hero.value.dKills = 0;
+
+        if(hero.value.dId == 'd-damage' || hero.value.darkId.includes('d-damage')){
+          let chance = 100 - (dimensions.value[28].infTier >= 10? 25: 0) - (dimensions.value[28].infTier >= 20? 25: 0);
+          let totalChance = Math.random() * 100 + chance >= 100;
+
+          enemy.value.d_damagePenalty = (totalChance? enemy.value.d_damagePenalty + 1: enemy.value.d_damagePenalty);
+        }
+        
+        hero.value.damageStage = (dimensions.value[28].infTier > 0? hero.value.damageStage + 1 * hero.value.overkill: 0);
+
+        if(enemy.value.boss.isBoss){
+          if(hero.value.infTier >= 2 || hero.value.infEvents >= 2)
+            ascensionShardsProgress(hero.value.stage);
+
+          if(enemy.value.spawnType == 'deBoss')
+            enemy.value.darkEnergy.totalBosses = Math.min(enemy.value.darkEnergy.totalBosses + 1, enemy.value.darkEnergy.maxBosses);
+
+          enemy.value.boss.isBoss = false;
+          hero.value.kills = 0;
+          hero.value.zone = 0;
+          hero.value.stage++;
+
+          if(hero.value.dId == 'd-next')
+            hero.value.stage = Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1));
+ 
+          hero.value.maxStage = Math.max(hero.value.maxStage, hero.value.stage);
+          ascensionShardsProgress(hero.value.stage);
+
+          if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && !buffs.value[12].isRage){
+            buffs.value[12].rage = Math.min(buffs.value[12].rage+5, 100);
+          }
+        }
+        if((enemy.value.danger > 0 || hero.value.singularity >= 5) && hero.value.spCount%6 == 5){
+          let ch = (Math.random() * 100 + enemy.value.spaceBossChance >= 100? true: false);
+          if(ch)
+            spEnemy[hero.value.spCount].status = ch;
+        }
+        
+        handleEnemyDefeat();
+        createEnemy();
+
+        stationReset(); 
+        recordKill(enemy);
+
+        enemy.value.rage = 0;
+        enemy.value.weakStack *= (dimensions.value[2].infTier >= dimensions.value[2].maxInfTier? 0.9: 0);
+        //first strike t4
+        buffs.value[1].usedAPS = false;
+
+        if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && !buffs.value[12].isRage){
+          buffs.value[12].rage = Math.min(buffs.value[12].rage+5, 100);
+        }
+
+        if(hero.value.activeBuffs.includes(16)){
+          if(buffs.value[16].tier >= 4){
+            let fullStack = (Math.random()*100 + 50 >= 100? 1: 0.5);
+            buffs.value[16].stack = Math.floor(buffs.value[16].stack * fullStack);
+          } else buffs.value[16].stack = 0;
+        }
+
+        cursed[13].timer = 0;
+      }
+
+      ///////////////////// Enemy
+      if(enemy.value.buffs.includes(2) && !enemy.value.firstAttackAPS){
+        enemyAttackBarProgress.value += 0.25;
+        enemy.value.firstAttackAPS = true;
+      }
+
       if(hero.value.resetKilledTime > 0)
         enemyAttackBarProgress.value = 0;
       if(buffs.value[1].stun > 0)
@@ -283,35 +451,60 @@ export function useBattle(hero, enemy, buffs) {
         enemyAttackBarProgress.value += enemy.value.attacksPerSecond * interval / 1000;
 
       if (enemyAttackBarProgress.value >= 1 && enemy.value.hp > 0) {
-        let totalDMG = enemy.value.attack;
-        stunCurse();
-        BleedingCurse();
-        chargeLost();
-        //invisible buff
-        totalDMG = invisibleBuff(totalDMG);
-        //Soild Body Radiation
-        if(perks.value[2].status) buffs.value[1].stun = (Math.random() * 100 + 30 >= 100? 0.5: 0);
+        enemy.value.extraHitStacks--;
 
-        totalDMG *= AccurateBlowCurse();
-        totalDMG *= flexibleBuff();
-        if(buffs.value[10].buffT3 > 0) {
-          totalDMG = 0;
-          hero.value.hp = buffs.value[10].buffT3HP;
+        if(enemy.value.extraHitStacks < 0){
+          enemy.value.extraHitStacks = Math.floor(enemy.value.extraHit / 100) + (Math.random()*100 + enemy.value.extraHit%100 >= 100? 1: 0);
+          
+          enemyAttackBarProgress.value += enemy.value.extraHitStacks;
         }
+
+        let totalDMG = calculateEnemyDamage();
+
         if(totalDMG > 0) comboResetBuff();
+        //juggernaut t4
+        if(hero.value.activeBuffs.includes(13) && buffs.value[13].tier >= 4 && totalDMG > 0 && hero.value.def >= totalDMG){
+          if (Math.random() < 0.5) hero.value.hp = Math.min(hero.value.hp + hero.value.maxHp * 0.1, hero.value.maxHp);
+        }
+        //iradiation t4
+        if(totalDMG - hero.value.def * penetrateCurse() > 0) {
+          if(buffs.value[16].tier >= 4)
+            buffs.value[16].stack = (Math.random() * 100 + 50 >= 100? buffs.value[16].stack: 0);
+          else 
+            buffs.value[16].stack = 0;
+        } 
+
+
         hero.value.hp = Math.max(0, hero.value.hp - Math.max(totalDMG - hero.value.def * penetrateCurse(), 0));
         enemyAttackBarProgress.value--;
         
+        enemy.value.firstAttack = true;
       }
 
 
       if(hero.value.hp <= 0){
         extraLifeBuff();
         if(hero.value.hp <= 0){
+          hero.value.survivalLife = Math.max(hero.value.survivalLife - 1, 0);
+
           if(hero.value.dId == 'survival-2'){
             hero.value.survivalStage = Math.max(hero.value.survivalStage, hero.value.maxStage);
             performInf();
             perform();
+          }
+
+          if(hero.value.dId == 'd-survival-2'){
+            performInf();
+            perform();
+          }
+
+          if(hero.value.dId == 'bh'){
+            performInf();
+            perform();
+
+            hero.value.dId = 'main';
+            hero.value.infTier = hero.value.mainInfTier;
+            hero.value.transcendenceBH = 0;
           }
 
           hero.value.resetKilledTime = 15;
@@ -319,14 +512,23 @@ export function useBattle(hero, enemy, buffs) {
           buffs.value[1].used = false;
           enemy.value.weakStack = Math.min(enemy.value.weakStack + 1 * dimensions.value[2].infTier, 90);
           if(enemy.value.isSpaceFight == 2){
-            enemy.value.isSpaceFight = 0;
+            enemy.value.isSpaceFight = -1;
+            hero.value.spaceTimer = 0;
             stationReset();
 
             let temp = hero.value.activeBuffs;
-            hero.value.activeBuffs = hero.value.spActiveBuffs;
+            
+            if(hero.value.dId == 'd-noSpace'){
+              hero.value.activeBuffs = [];
+              hero.value.spBuffsCache = hero.value.spActiveBuffs;
+            } else 
+              hero.value.activeBuffs = hero.value.spActiveBuffs;
+
             hero.value.spActiveBuffs = temp;
 
             enemy.value.weakStack = 0;
+            hero.value.isSpaceFightCooldown = true;
+            buffs.value[8].time = buffs.value[8].spaceTime; 
           }
 
           
@@ -339,16 +541,23 @@ export function useBattle(hero, enemy, buffs) {
             enemy.value.boss.isBoss = false;
             hero.value.kills = 0;
           }
-          createEnemy();
+          
 
           if(hero.value.activeBuffs.includes(3) && buffs.value[3].tier == 4){
             buffs.value[3].combo = buffs.value[3].combo * 0;
           }
+
+          if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && buffs.value[12].isRage){
+            buffs.value[12].rage = 0;
+          }
+
+          createEnemy();
         }
       }
 
       if(enemy.value.isSpaceFight == 4){
         enemy.value.isSpaceFight = 0;
+        hero.value.spaceTimer = 0;
 
         let temp = hero.value.activeBuffs;
         hero.value.activeBuffs = hero.value.spActiveBuffs;
@@ -359,7 +568,9 @@ export function useBattle(hero, enemy, buffs) {
 
       if(hero.value.resetKilledTime > 0){
         if(hero.value.hp < 0) hero.value.hp = 0;
-        let mult = Math.min(0.0125 + 0.01 * perks.value[11].level, 0.08);
+        let debuff = Math.max(cursed[13].timer, 1) * hero.value.recoveryPenalty;
+        let time = (0.01 + 0.005 * perks.value[11].level) / debuff;
+        let mult = Math.min(time, 0.1);
         hero.value.hp += mult * hero.value.maxHp; 
         hero.value.hp = Math.min(hero.value.hp, hero.value.maxHp);
         if(hero.value.hp == hero.value.maxHp)
@@ -367,6 +578,10 @@ export function useBattle(hero, enemy, buffs) {
 
         //enemy.value.hp += 0.01 * enemy.value.maxHp;
         //enemy.value.hp = Math.min(enemy.value.hp, enemy.value.maxHp)
+      }
+
+      if(enemy.value.spawnType == 'deBoss' && enemy.value.deBoss.regen > 0){
+        enemy.value.hp = Math.min(enemy.value.hp + enemy.value.maxHp * (interval/1000) * (enemy.value.deBoss.regen * 0.01), enemy.value.maxHp);
       }
 
       DirtyBloodCurse();
@@ -378,8 +593,14 @@ export function useBattle(hero, enemy, buffs) {
       if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 3){
         if(hero.value.hp < hero.value.maxHp * 0.3){
           let curse = hero.value.activeCurse.includes(11);
+          let rageMult = 1;
+          if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && buffs.value[12].isRage){
+            buffs.value[12].rage = Math.max(buffs.value[12].rage - 5 * (interval / 1000), 0);
+            rageMult = 1.25;
+          }
+
           hero.value.hp += ((1 - (hero.value.hp/hero.value.maxHp)/10) * hero.value.maxHp * 0.05) * (curse? cursed[11].mult: 1) * 
-          (1 + hero.value.eqUpsMult['armor'].heal * 0.01);
+          (1 + hero.value.eqUpsMult['armor'].heal * 0.01) * rageMult;
         }
       }
       //bleeding
@@ -399,12 +620,26 @@ export function useBattle(hero, enemy, buffs) {
 
       //Endrurance radiation
       if(perks.value[1].status){
-        perks.value[1].buff += interval / 1000;
+        let mult = Math.max(dimensions.value[40].infTier - 40, 1) * 0.01;
         let curse = hero.value.activeCurse.includes(11);
-        hero.value.hp += hero.value.maxHp * 0.0005 * Math.floor(Math.min(perks.value[1].buff, 10)) * (curse? cursed[11].mult: 1) * 
+        hero.value.hp += hero.value.maxHp * (interval/1000) * mult * (curse? cursed[11].mult: 1) * 
         (1 + hero.value.eqUpsMult['armor'].heal * 0.01);
         hero.value.hp = Math.min(hero.value.hp, hero.value.maxHp);
       } else perks.value[1].buff = 0;
+
+      if(buffs.value[16].stack >= 10 && hero.value.resetKilledTime <= 0){
+        enemy.value.hp -= 1 * 0.02 * enemy.value.maxHp * (interval/1000);
+        enemy.value.hp = Math.max(enemy.value.hp, 0);
+      }
+
+      if(enemy.value.spawnType == 'deBoss' && enemy.value.deBoss.darkEnemyTimer > 0){
+        enemy.value.deBoss.darkEnemyTimer = Math.max(enemy.value.deBoss.darkEnemyTimer - (interval/1000), 0);
+      } else if(enemy.value.spawnType == 'deBoss' && enemy.value.deBoss.darkEnemyTimer == 0){
+        hero.value.hp = 0;
+        enemy.value.deBoss.darkEnemyTimer = -1;
+        buffs.value[10].buffT3 = 0;
+        buffs.value[10].buffT3HP = 0;
+      }
 
     }, interval);
   };
@@ -426,6 +661,8 @@ export function useBattle(hero, enemy, buffs) {
     
     buffs.value[4].used = true;
     
+    buffs.value[9].times = 0;
+
     buffs.value[10].rise = 1;
     buffs.value[10].buffT2 = 0;
     buffs.value[10].buffT3 = 0;
@@ -438,12 +675,70 @@ export function useBattle(hero, enemy, buffs) {
     cursed[5].time = 0;
   }
 
+  function calculateEnemyDamage() {
+    let dmg = enemy.value.attack;
+  
+    stunCurse();
+    BleedingCurse();
+    chargeLost();
+  
+    invisibleBuff();
+  
+    if(perks.value[2].status){
+      let stunEffect = 30 + 1 * (dimensions.value[40].infTier - 40);
+      let stunDuration = (0.5 + 0.05 * (dimensions.value[40].infTier - 40));
+
+      buffs.value[1].stun = (Math.random() * 100 + stunEffect >= 100 ? stunDuration : 0);
+    } 
+  
+    dmg *= AccurateBlowCurse();
+    dmg *= flexibleBuff();
+
+    enemy.value.hp = (hero.value.activeBuffs.includes(16) && buffs.value[16].tier >= 2 && hero.value.dId != 'bh' && enemy.value.hp > enemy.value.maxHp * 0.5
+    ? Math.max(enemy.value.hp - enemy.value.maxHp * 0.01, 0): enemy.value.hp);
+  
+    if(buffs.value[10].buffT3 > 0) {
+      dmg = 0;
+      hero.value.hp = buffs.value[10].buffT3HP;
+    }
+
+    if(hero.value.dId == 'bh') {
+      enemy.value.bhExtraHit = Math.min(Math.log((2 + hero.value.bhTier) ** 4) ** 1.75, 100);
+
+      enemy.value.bhBossHits += 1 + (Math.random() * 100 + enemy.value.bhExtraHit >= 100? 1: 0);
+    }
+    else enemy.value.bhBossHits = 0;
+
+    if(enemy.value.buffs.includes(1)){
+      enemy.value.rage = Math.min(enemy.value.rage + 5, 100);
+    } else enemy.value.rage = 0;
+
+    if(enemy.value.buffs.includes(2) && !enemy.value.firstAttack){
+      cursed[5].time = 1;
+    }
+
+    if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && !buffs.value[12].isRage){
+      buffs.value[12].rage = Math.min(buffs.value[12].rage+5, 100);
+    }
+    if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && buffs.value[12].isRage && dmg > 0){
+      buffs.value[12].rage = Math.max(buffs.value[12].rage-3, 0);
+      dmg *= 0.75;
+    }
+
+    dmg *= perditionOfFerocity();
+
+
+  
+    return dmg;
+  }
+  
+
   const weaponDrop = () => {
     if(hero.value.maxStage > 1) {
       var totalDrop = (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 1? 3 : 1) * (1 + 0.75 * hero.value.soulTier) * 
       (hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 4? overkillHandle()*(0.1 + (dimensions.value[19].infTier == dimensions.value.maxInfTier? 0.05: 0)): 1) * 
       (enemy.value.boss.isBoss? enemy.value.boss.drop: 1) *
-      (enemy.value.soulBuff.active? enemy.value.soulBuff.drop: 1) *
+      (enemy.value.soulBuff.active? enemy.value.soulBuff.drop * hero.value.soulOverkill: 1) *
       (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) *
       (enemy.value.rebirthEnemy["drop"]) *
       (hero.value.activeFormation == 3? 2: 1) *
@@ -452,7 +747,12 @@ export function useBattle(hero, enemy, buffs) {
       (hero.value.rebirthTier >= 50? 1.03 ** hero.value.rebirthTier: 1) * 
       (hero.value.mainInfTier >= 1? (1.08 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
       (perks.value[15].value ** perks.value[15].level) * 
-      (hero.value.curset5? 2: 1)
+      (hero.value.curset5? 2: 1) * 
+      (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1) /
+      (enemy.value.buffs.includes(3)? 3: 1);
+
+      totalDrop **= cursed[17].loot;
+
       hero.value.eqTotalDrop = totalDrop;
 
       hero.value.dropChance['sword'] = Math.min(20 * ((0.2 + 0.035 * hero.value.awakened['sword']) ** (hero.value.eqDrop['sword'])) * Math.log(hero.value.stage + 1) ** 2 * 
@@ -502,6 +802,15 @@ export function useBattle(hero, enemy, buffs) {
     let bRed = (ascenPerks[46].level? bonus ** 0.75: Math.sqrt(bonus))
     bonus = (hero.value.isAbyss? bRed: bonus);
     bonus = (hero.value.dId == 'd-hard'? Math.sqrt(bonus): bonus);
+
+    bonus /= (enemy.value.buffs.includes(3)? 3: 1);
+
+    let quasarShackles = (hero.value.selectedDivSkills.includes(0)? divineSkills.value[0].values[1]: 1);
+    let fluctuationFailures = (hero.value.selectedDivSkills.includes(10)? divineSkills.value[10].values[1]: 1);
+    let totalEffects = 1 * quasarShackles * fluctuationFailures;
+
+    bonus *= totalEffects;
+
     if(bonus > 0)
       addLog(`You gain ${formatNumber(bonus, true)} Curse bonuses`, 'Curses');
 
@@ -516,7 +825,10 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.rebirthPts >= 50000? enemy.value.rebirthEnemy["drop"]: 1) * 
     (hero.value.isAbyss? 0: 1) * (hero.value.activeFormation == 3? 2: 1) * 
     (hero.value.mainInfTier >= 4? (infBase(1.035) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
-    (1.15 ** (dimensions.value[11].infTier - 5));
+    (1.15 ** (dimensions.value[11].infTier - 5)) * 
+    (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1);
+
+    hero.value.curseBonus **= cursed[17].loot;
 
     hero.value.activeCurse = [];
   }
@@ -524,12 +836,12 @@ export function useBattle(hero, enemy, buffs) {
     if(dimensions.value[11].infTier == dimensions.value[11].maxInfTier){
       for(let buff of buffs.value){
         if(buff.tier < buff.maxTier)
-          buff.exp += hero.value.cursedBonus;
+          buff.exp = Math.max(buff.exp, 0) + hero.value.cursedBonus;
       }
     } else {
       for(let idx of hero.value.activeBuffs){
         if(buffs.value[idx].tier < buffs.value[idx].maxTier)
-          buffs.value[idx].exp += hero.value.cursedBonus;
+          buffs.value[idx].exp = Math.max(buffs.value[idx].exp, 0) + hero.value.cursedBonus;
       }
     }
     enemy.value.averageLoot.buffexp = hero.value.cursedBonus;
@@ -546,7 +858,12 @@ export function useBattle(hero, enemy, buffs) {
   }
   ///curse
   const cursedAffect = () => {
+    if(hero.value.dId == 'bh') return;
+
     if (hero.value.stage > 19 || hero.value.isAbyss || hero.value.isSingularity || hero.value.dId == 'hard' || hero.value.dId == 'd-hard'){
+      cursesUnlockCheck();
+
+
       hero.value.activeCurse = [];
       let filterCursed = cursed.filter(curse => curse.status === true);
       hero.value.activeCurseTier = new Array(filterCursed.length).fill(-1);
@@ -612,7 +929,10 @@ export function useBattle(hero, enemy, buffs) {
       
       
 
-      let countCurse = Math.floor(Math.random() * (hero.value.curse + 1));
+      const min = hero.value.minCurse; 
+      const max = hero.value.curse;
+
+      let countCurse = Math.floor(Math.random() * (max - min + 1)) + min;
       let tier = 0;
       let stuck = [];
       hero.value.curset5 = false;
@@ -666,8 +986,16 @@ export function useBattle(hero, enemy, buffs) {
   const mutagenGain = () => {
     if(hero.value.mutations > 0){
       let mutagen = ((hero.value.mutations + (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 1: 0)) ** 2.5) * (1.025 ** radPerks[4].level) * 
-      (1 + ascenPerks[34].level * 0.01) * (hero.value.curset5? 2: 1);
+      (1 + ascenPerks[34].level * 0.01) * (hero.value.curset5? 2: 1) * 
+      (enemy.value.soulBuff.mutagen) * 
+      (hero.value.mainInfTier >= 40? 1 + 0.01 * (hero.value.infPoints / 250): 1) *
+      (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 4? 2: 1) * 
+      (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1);
+
       mutagen /= (!hero.value.infProgress? (1 + 0.05 * Math.max(hero.value.infTier - 25, 0)): 1);
+      mutagen /= (enemy.value.buffs.includes(3)? 2: 1);
+
+      mutagen **= cursed[17].loot;
       addLog(`You gain ${formatNumber(mutagen)} mutagens`, "Radiation");
       hero.value.mutagen += mutagen;
       enemy.value.averageLoot.mutagen = mutagen;
@@ -677,33 +1005,30 @@ export function useBattle(hero, enemy, buffs) {
     }
   }
 
-  const removeCurse = (id) => {
-    switch(id){
-      case 0: return perks.value[16].level? false: true;
-      case 1: return ascenPerks[45].level? false: true;
-      default: return true;
-    }
-  }
   //1
   const activeBloodCurse = (interval) => {
     if (hero.value.activeCurse.includes(1)){
       cursed[1].time += interval / 1000;
+      let mult = 0;
       if (hero.value.activeCurseTier[1] == 0) {
-        enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * Math.min(0.03 * Math.max(hero.value.curseMult * 0.75, 1), 0.5): 0); 
+        mult = Math.min(0.03 * Math.max(hero.value.curseMult * 0.75, 1), 0.5);
       }
       if (hero.value.activeCurseTier[1] == 1) {
-        enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * Math.min(0.06 * Math.max(hero.value.curseMult * 0.75, 1), 0.5): 0); 
+        mult = Math.min(0.06 * Math.max(hero.value.curseMult * 0.75, 1), 0.5);
       }
       if (hero.value.activeCurseTier[1] == 2) {
-        enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * Math.min(0.09 * Math.max(hero.value.curseMult * 0.75, 1), 0.5): 0); 
+        mult = Math.min(0.09 * Math.max(hero.value.curseMult * 0.75, 1), 0.5);
       }
       if (hero.value.activeCurseTier[1] == 3) {
-        enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * Math.min(0.12 * Math.max(hero.value.curseMult * 0.75, 1), 0.5): 0); 
+        mult = Math.min(0.12 * Math.max(hero.value.curseMult * 0.75, 1), 0.5);
       }
       if (hero.value.activeCurseTier[1] == 4) {
-        enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * Math.min(0.2 * Math.max(hero.value.curseMult * 0.75, 1), 0.5): 0); 
+        mult = Math.min(0.2 * Math.max(hero.value.curseMult * 0.75, 1), 0.5);
       }
+
+      enemy.value.hp += (cursed[1].time >= 1? enemy.value.maxHp * mult: 0);
       enemy.value.hp = Math.min(enemy.value.hp, enemy.value.maxHp);
+
       cursed[1].time = (cursed[1].time >= 1? 0: cursed[1].time);
     }
     cursed[1].time = (hero.value.activeCurse.includes(1)? cursed[1].time: 0);
@@ -737,19 +1062,19 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeCurse.includes(2)){
       let block = 0
       if (hero.value.activeCurseTier[2] == 0) {
-        block = Math.min(0.1 * hero.value.curseMult, 0.9);;
+        block = Math.min(0.1 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
       }
       if (hero.value.activeCurseTier[2] == 1) {
-        block = Math.min(0.2 * hero.value.curseMult, 0.9);;
+        block = Math.min(0.2 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
       }
       if (hero.value.activeCurseTier[2] == 2) {
-        block = Math.min(0.3 * hero.value.curseMult, 0.9);;
+        block = Math.min(0.3 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
       }
       if (hero.value.activeCurseTier[2] == 3) {
-        block = Math.min(0.4 * hero.value.curseMult, 0.9);;
+        block = Math.min(0.4 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
       }
       if (hero.value.activeCurseTier[2] == 4) {
-        block = Math.min(0.6 * hero.value.curseMult, 0.9);
+        block = Math.min(0.6 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);
       }
 
       return 1 - block;
@@ -761,19 +1086,19 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeCurse.includes(3)){
       let speed = 0
       if (hero.value.activeCurseTier[3] == 0) {
-        speed = 0.3 * Math.max(hero.value.curseMult * 0.75, 1);
+        speed = Math.min(0.3 * Math.max(hero.value.curseMult * 0.5, 1), 4);
       }
       if (hero.value.activeCurseTier[3] == 1) {
-        speed = 0.5 * Math.max(hero.value.curseMult * 0.75, 1);
+        speed = Math.min(0.5 * Math.max(hero.value.curseMult * 0.5, 1), 4);
       }
       if (hero.value.activeCurseTier[3] == 2) {
-        speed = 0.7 * Math.max(hero.value.curseMult * 0.75, 1);
+        speed = Math.min(1.7 * Math.max(hero.value.curseMult * 0.5, 1), 4);
       }
       if (hero.value.activeCurseTier[3] == 3) {
-        speed = 0.9 * Math.max(hero.value.curseMult * 0.75, 1);
+        speed = Math.min(0.9 * Math.max(hero.value.curseMult * 0.5, 1), 4);;
       }
       if (hero.value.activeCurseTier[3] == 4) {
-        speed = 1.5 * Math.max(hero.value.curseMult * 0.75, 1);
+        speed = Math.min(1.2 * Math.max(hero.value.curseMult * 0.5, 1), 4);
       }
 
       return speed
@@ -782,27 +1107,45 @@ export function useBattle(hero, enemy, buffs) {
   }
   //4
   const acrobaticCurse = () => {
+    let avoidBuff = 0;
+
+    if(enemy.value.buffs.includes(4)){
+      avoidBuff = 20 + (enemy.value.avoidChance? 7: 0);
+    }
+
     if (hero.value.activeCurse.includes(4)){
       let avoid = 1;
-      let chance = Math.random() * 100;
+      let chance = Math.random() * 100 + avoidBuff;
       if (hero.value.activeCurseTier[4] == 0) {
-        avoid = (chance + 4 * Math.max(hero.value.curseMult * 0.35, 1) >= 100? 0: 1);
+        avoid = (chance + Math.min(4 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
       }
       if (hero.value.activeCurseTier[4] == 1) {
-        avoid = (chance + 8 * Math.max(hero.value.curseMult * 0.35, 1) >= 100? 0: 1);
+        avoid = (chance + Math.min(8 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
       }
       if (hero.value.activeCurseTier[4] == 2) {
-        avoid = (chance + 12 * Math.max(hero.value.curseMult * 0.35, 1) >= 100? 0: 1);
+        avoid = (chance + Math.min(12 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
       }
       if (hero.value.activeCurseTier[4] == 3) {
-        avoid = (chance + 16 * Math.max(hero.value.curseMult * 0.35, 1) >= 100? 0: 1);
+        avoid = (chance + Math.min(16 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
       }
       if (hero.value.activeCurseTier[4] == 4) {
-        avoid = (chance + 25 * Math.max(hero.value.curseMult * 0.35, 1) >= 100? 0: 1);
+        avoid = (chance + Math.min(25 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
       }
 
+      enemy.value.avoidChance = (!avoid? true: false);
+
+      if(!avoid) perditionOfReflexes();
+
       return buffs.value[11].hit? 1: avoid;
+    } else if (enemy.value.buffs.includes(4)){
+      let avoid = (Math.random()*100 + avoidBuff >= 100 || Math.random()*100 + avoidBuff >= 100? 0: 1);
+      enemy.value.avoidChance = (!avoid? true: false);
+
+      if(!avoid) perditionOfReflexes();
+
+      return avoid;
     }
+
     return 1;
   }
   //5
@@ -810,43 +1153,50 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeCurse.includes(5) && cursed[5].time <= 0){
       let chance = Math.random() * 100;
       if (hero.value.activeCurseTier[5] == 0) {
-        cursed[5].time = chance + 10 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 0.4 * Math.max(hero.value.curseMult * 0.25, 1): 0;
+        cursed[5].time = chance + Math.min(10 * Math.max(hero.value.curseMult * 0.25, 1), 50) >= 100? Math.min(0.4 * Math.max(hero.value.curseMult * 0.25, 1), 2): 0;
       }
       if (hero.value.activeCurseTier[5] == 1) {
-        cursed[5].time = chance + 15 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 0.6 * Math.max(hero.value.curseMult * 0.25, 1): 0;
+        cursed[5].time = chance + Math.min(15 * Math.max(hero.value.curseMult * 0.25, 1), 50) >= 100? Math.min(0.6 * Math.max(hero.value.curseMult * 0.25, 1), 2): 0;
       }
       if (hero.value.activeCurseTier[5] == 2) {
-        cursed[5].time = chance + 20 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 0.8 * Math.max(hero.value.curseMult * 0.25, 1): 0;
+        cursed[5].time = chance + Math.min(20 * Math.max(hero.value.curseMult * 0.25, 1), 50) >= 100? Math.min(0.8 * Math.max(hero.value.curseMult * 0.25, 1), 2): 0;
       }
       if (hero.value.activeCurseTier[5] == 3) {
-        cursed[5].time = chance + 25 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 1 * Math.max(hero.value.curseMult * 0.25, 1): 0;
+        cursed[5].time = chance + Math.min(25 * Math.max(hero.value.curseMult * 0.25, 1), 50) >= 100? Math.min(1 * Math.max(hero.value.curseMult * 0.25, 1), 2): 0;
       }
       if (hero.value.activeCurseTier[5] == 4) {
-        cursed[5].time = chance + 35 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 1.2 * Math.max(hero.value.curseMult * 0.25, 1): 0;
+        cursed[5].time = chance + Math.min(35 * Math.max(hero.value.curseMult * 0.25, 1), 50) >= 100? Math.min(1.2 * Math.max(hero.value.curseMult * 0.25, 1), 2): 0;
       }
     }
   }
   //6
   const AccurateBlowCurse = () => {
     if (hero.value.activeCurse.includes(6)){
-      let chance = Math.random() * 100;
+      let chance = Math.random() * 100 + enemy.value.crit;
+      let critAttack = 1 + (enemy.value.critAttack / 100);
+
       let crit = 1;
       if (hero.value.activeCurseTier[6] == 0) {
-        crit = chance + 30 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 1.5 * Math.max(hero.value.curseMult * 0.25, 1): 1;
+        crit = chance + Math.min(30 * Math.max(hero.value.curseMult * 0.4, 1), 90) >= 100? Math.min(1.5 * Math.max(hero.value.curseMult * 0.4, 1), 10): 1;
       }
       if (hero.value.activeCurseTier[6] == 1) {
-        crit = chance + 25 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 2 * Math.max(hero.value.curseMult * 0.25, 1): 1;
+        crit = chance + Math.min(25 * Math.max(hero.value.curseMult * 0.4, 1), 90) >= 100? Math.min(2 * Math.max(hero.value.curseMult * 0.4, 1), 10): 1;
       }
       if (hero.value.activeCurseTier[6] == 2) {
-        crit = chance + 20 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 2.5 * Math.max(hero.value.curseMult * 0.25, 1): 1;
+        crit = chance + Math.min(20 * Math.max(hero.value.curseMult * 0.4, 1), 90) >= 100? Math.min(2.5 * Math.max(hero.value.curseMult * 0.4, 1), 10): 1;
       }
       if (hero.value.activeCurseTier[6] == 3) {
-        crit = chance + 15 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 3 * Math.max(hero.value.curseMult * 0.25, 1): 1;
+        crit = chance + Math.min(15 * Math.max(hero.value.curseMult * 0.4, 1), 90) >= 100? Math.min(3 * Math.max(hero.value.curseMult * 0.4, 1), 10): 1;
       }
       if (hero.value.activeCurseTier[6] == 4) {
-        crit = chance + 25 * Math.max(hero.value.curseMult * 0.25, 1) >= 100? 4 * Math.max(hero.value.curseMult * 0.25, 1): 1;
+        crit = chance + Math.min(25 * Math.max(hero.value.curseMult * 0.4, 1), 90) >= 100? Math.min(4 * Math.max(hero.value.curseMult * 0.4, 1), 10): 1;
       }
-      return crit;
+      return crit + critAttack;
+    } else if(enemy.value.crit > 0){
+      let chance = Math.random() * 100 + enemy.value.crit >= 100;
+      let critAttack = 1 + (enemy.value.critAttack / 100);
+
+      return (chance? critAttack: 1);
     }
     return 1;
   }
@@ -855,19 +1205,19 @@ export function useBattle(hero, enemy, buffs) {
     if (hero.value.activeCurse.includes(7)){
       
       if (hero.value.activeCurseTier[7] == 0) {
-        hero.value.hp -= hero.value.maxHp * 0.02 * Math.max(hero.value.curseMult * 0.2, 1);
+        hero.value.hp -= hero.value.maxHp * Math.min(0.02 * Math.max(hero.value.curseMult * 0.35, 1), 0.2);
       }
       if (hero.value.activeCurseTier[7] == 1) {
-        hero.value.hp -= hero.value.maxHp * 0.03 * Math.max(hero.value.curseMult * 0.2, 1);
+        hero.value.hp -= hero.value.maxHp * Math.min(0.03 * Math.max(hero.value.curseMult * 0.35, 1), 0.2);
       }
       if (hero.value.activeCurseTier[7] == 2) {
-        hero.value.hp -= hero.value.maxHp * 0.04 * Math.max(hero.value.curseMult * 0.2, 1);
+        hero.value.hp -= hero.value.maxHp * Math.min(0.04 * Math.max(hero.value.curseMult * 0.35, 1), 0.2);
       }
       if (hero.value.activeCurseTier[7] == 3) {
-        hero.value.hp -= hero.value.maxHp * 0.05 * Math.max(hero.value.curseMult * 0.2, 1);
+        hero.value.hp -= hero.value.maxHp * Math.min(0.05 * Math.max(hero.value.curseMult * 0.35, 1), 0.2);
       }
       if (hero.value.activeCurseTier[7] == 4) {
-        hero.value.hp -= hero.value.maxHp * 0.08 * Math.max(hero.value.curseMult * 0.2, 1);
+        hero.value.hp -= hero.value.maxHp * Math.min(0.08 * Math.max(hero.value.curseMult * 0.35, 1), 0.2);
       }
 
       hero.value.hp = Math.max(hero.value.hp, 0);
@@ -877,39 +1227,40 @@ export function useBattle(hero, enemy, buffs) {
   const steelSkinCurse = () => {
     if (hero.value.activeCurse.includes(8)){
       if (hero.value.activeCurseTier[8] == 0) {
-        enemy.value.def = enemy.value.maxHp * 0.02 *  Math.max(hero.value.curseMult * 0.4, 1);
+        enemy.value.def += enemy.value.maxHp * Math.min(0.02 *  Math.max(hero.value.curseMult * 0.9, 1), 0.9);
       }
       if (hero.value.activeCurseTier[8] == 1) {
-        enemy.value.def = enemy.value.maxHp * 0.04 * Math.max(hero.value.curseMult * 0.4, 1);
+        enemy.value.def += enemy.value.maxHp * Math.min(0.04 *  Math.max(hero.value.curseMult * 0.9, 1), 0.9);
       }
       if (hero.value.activeCurseTier[8] == 2) {
-        enemy.value.def = enemy.value.maxHp * 0.06 * Math.max(hero.value.curseMult * 0.4, 1);
+        enemy.value.def += enemy.value.maxHp * Math.min(0.06 *  Math.max(hero.value.curseMult * 0.9, 1), 0.9);
       }
       if (hero.value.activeCurseTier[8] == 3) {
-        enemy.value.def = enemy.value.maxHp * 0.08 * Math.max(hero.value.curseMult * 0.4, 1);
+        enemy.value.def += enemy.value.maxHp * Math.min(0.08 *  Math.max(hero.value.curseMult * 0.9, 1), 0.9);
       }
       if (hero.value.activeCurseTier[8] == 4) {
-        enemy.value.def = enemy.value.maxHp * 0.12 * Math.max(hero.value.curseMult * 0.4, 1);
+        enemy.value.def += enemy.value.maxHp * Math.min(0.12 *  Math.max(hero.value.curseMult * 0.9, 1), 0.9);
       }
+
     }
   }
   //9
   const titanCurse = () => {
     if (hero.value.activeCurse.includes(9)){
       if (hero.value.activeCurseTier[9] == 0) {
-        enemy.value.maxHp *= 1.3 * hero.value.curseMult;
+        enemy.value.maxHp *= Math.min(1.3 * hero.value.curseMult, 1000);
       }
       if (hero.value.activeCurseTier[9] == 1) {
-        enemy.value.maxHp *= 1.5 * hero.value.curseMult;
+        enemy.value.maxHp *= Math.min(1.5 * hero.value.curseMult, 1000);
       }
       if (hero.value.activeCurseTier[9] == 2) {
-        enemy.value.maxHp *= 1.8 * hero.value.curseMult;
+        enemy.value.maxHp *= Math.min(1.8 * hero.value.curseMult, 1000);
       }
       if (hero.value.activeCurseTier[9] == 3) {
-        enemy.value.maxHp *= 2 * hero.value.curseMult;
+        enemy.value.maxHp *= Math.min(2 * hero.value.curseMult, 1000);
       }
       if (hero.value.activeCurseTier[9] == 4) {
-        enemy.value.maxHp *= 3 * hero.value.curseMult;
+        enemy.value.maxHp *= Math.min(3 * hero.value.curseMult, 1000);
       }
       enemy.value.hp = enemy.value.maxHp;
     }
@@ -949,7 +1300,7 @@ export function useBattle(hero, enemy, buffs) {
   const DirtyBloodCurse = () => {
     if (hero.value.activeCurse.includes(11)){
       if (hero.value.activeCurseTier[11] == 0) {
-        cursed[11].mult = Math.max(0.9 / Math.max(hero.value.curseMult * 0.45, 1), 0.1);
+        cursed[11].mult = Math.max(0.9 / Math.max(hero.value.curseMult * 0.25, 1), 0.1);
       }
       if (hero.value.activeCurseTier[11] == 1) {
         cursed[11].mult = Math.max(0.8 / Math.max(hero.value.curseMult * 0.25, 1), 0.1);
@@ -969,22 +1320,195 @@ export function useBattle(hero, enemy, buffs) {
   const MusclesCurse = () => {
     if (hero.value.activeCurse.includes(12)){
       if (hero.value.activeCurseTier[12] == 0) {
-        enemy.value.attack *= 1.25 * hero.value.curseMult;
+        enemy.value.attack *= Math.min(1.25 * Math.max(hero.value.curseMult * 0.5, 1), 100) ;
       }
       if (hero.value.activeCurseTier[12] == 1) {
-        enemy.value.attack *= 1.5 * hero.value.curseMult;
+        enemy.value.attack *= Math.min(1.5 * Math.max(hero.value.curseMult * 0.5, 1), 100);
       }
       if (hero.value.activeCurseTier[12] == 2) {
-        enemy.value.attack *= 1.75 * hero.value.curseMult;
+        enemy.value.attack *= Math.min(1.75 * Math.max(hero.value.curseMult * 0.5, 1), 100);
       }
       if (hero.value.activeCurseTier[12] == 3) {
-        enemy.value.attack *= 2 * hero.value.curseMult;
+        enemy.value.attack *= Math.min(2 * Math.max(hero.value.curseMult * 0.5, 1), 100);
       }
       if (hero.value.activeCurseTier[12] == 4) {
-        enemy.value.attack *= 3 * hero.value.curseMult;
+        enemy.value.attack *= Math.min(3 * Math.max(hero.value.curseMult * 0.5, 1), 100);
       }
       enemy.value.hp = enemy.value.maxHp;
     }
+  }
+  //13
+  const perditionOfDecay = () => {
+    if(hero.value.activeCurse.includes(13)){
+      if (hero.value.activeCurseTier[13] == 0) {
+        cursed[13].timer = Math.min(1.25 * Math.max(hero.value.curseMult * 0.4, 1), 5);
+      }
+      if (hero.value.activeCurseTier[13] == 1) {
+        cursed[13].timer = Math.min(1.5 * Math.max(hero.value.curseMult * 0.4, 1), 5);
+      }
+      if (hero.value.activeCurseTier[13] == 2) {
+        cursed[13].timer = Math.min(1.75 * Math.max(hero.value.curseMult * 0.4, 1), 5);
+      }
+      if (hero.value.activeCurseTier[13] == 3) {
+        cursed[13].timer = Math.min(2.25 * Math.max(hero.value.curseMult * 0.4, 1), 5);
+      }
+      if (hero.value.activeCurseTier[13] == 4) {
+        cursed[13].timer = Math.min(3 * Math.max(hero.value.curseMult * 0.4, 1), 5);
+      }
+    }
+  }
+  //14
+  const perdditionOfFragility = () => {
+
+  }
+  //15
+  const perditionOfThorns = () => {
+    if(hero.value.activeCurse.includes(15)){
+      let heal = 0;
+      if (hero.value.activeCurseTier[15] == 0) {
+        heal = Math.min(0.02 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[15] == 1) {
+        heal = Math.min(0.03 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[15] == 2) {
+        heal = Math.min(0.04 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[15] == 3) {
+        heal = Math.min(0.05 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[15] == 4) {
+        heal = Math.min(0.06 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+
+      enemy.value.hp = Math.min(enemy.value.hp + heal * enemy.value.maxHp, enemy.value.maxHp);
+    }
+  }
+  //16
+  const perditionOfFerocity = () => {
+    if(hero.value.activeCurse.includes(16)){
+      let chance = 0;
+      if (hero.value.activeCurseTier[16] == 0) {
+        chance = Math.min(10 * Math.max(hero.value.curseMult * 0.3, 1), 50);
+      }
+      if (hero.value.activeCurseTier[16] == 1) {
+        chance = Math.min(15 * Math.max(hero.value.curseMult * 0.3, 1), 50);;
+      }
+      if (hero.value.activeCurseTier[16] == 2) {
+        chance = Math.min(20 * Math.max(hero.value.curseMult * 0.3, 1), 50);
+      }
+      if (hero.value.activeCurseTier[16] == 3) {
+        chance = Math.min(25 * Math.max(hero.value.curseMult * 0.3, 1), 50);
+      }
+      if (hero.value.activeCurseTier[16] == 4) {
+        chance = Math.min(30 * Math.max(hero.value.curseMult * 0.3, 1), 50);
+      }
+
+      if(chance + Math.random()*100 >= 100)
+        return 4;
+    }
+    return 1;
+  }
+  //17
+  const perditionOfPoverty = () => {
+    cursed[17].loot = 1;
+    if(hero.value.activeCurse.includes(17)){
+      if (hero.value.activeCurseTier[17] == 0) {
+        cursed[17].loot = Math.max(0.95 / Math.max(hero.value.curseMult * 0.2, 1), 0.5);
+      }
+      if (hero.value.activeCurseTier[17] == 1) {
+        cursed[17].loot = Math.max(0.9 / Math.max(hero.value.curseMult * 0.2, 1), 0.5);
+      }
+      if (hero.value.activeCurseTier[17] == 2) {
+        cursed[17].loot = Math.max(0.85 / Math.max(hero.value.curseMult * 0.2, 1), 0.5);
+      }
+      if (hero.value.activeCurseTier[17] == 3) {
+        cursed[17].loot = Math.max(0.8 / Math.max(hero.value.curseMult * 0.2, 1), 0.5)
+      }
+      if (hero.value.activeCurseTier[17] == 4) {
+        cursed[17].loot = Math.max(0.75 / Math.max(hero.value.curseMult * 0.2, 1), 0.5)
+      }
+    }
+  }
+  //18
+  const perditionOfReflexes = () => {
+    if(hero.value.activeCurse.includes(18)){
+      let heal = 0;
+      if (hero.value.activeCurseTier[18] == 0) {
+        heal = Math.min(0.02 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[18] == 1) {
+        heal = Math.min(0.03 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[18] == 2) {
+        heal = Math.min(0.04 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[18] == 3) {
+        heal = Math.min(0.05 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+      if (hero.value.activeCurseTier[18] == 4) {
+        heal = Math.min(0.06 * Math.max(hero.value.curseMult * 0.4, 1), 0.2);
+      }
+
+      enemy.value.hp = Math.min(enemy.value.hp + heal * enemy.value.maxHp, enemy.value.maxHp);
+    }
+  }
+  //19
+  const perditionOfResilience = () => {
+    if(hero.value.activeCurse.includes(19)){
+      let reduce = 0;
+      if (hero.value.activeCurseTier[19] == 0) {
+        reduce = Math.min(0.1 * Math.max(hero.value.curseMult * 0.5, 1), 1);
+      }
+      if (hero.value.activeCurseTier[19] == 1) {
+        reduce = Math.min(0.15 * Math.max(hero.value.curseMult * 0.5, 1), 1);
+      }
+      if (hero.value.activeCurseTier[19] == 2) {
+        reduce = Math.min(0.2 * Math.max(hero.value.curseMult * 0.5, 1), 1);
+      }
+      if (hero.value.activeCurseTier[19] == 3) {
+        reduce = Math.min(0.25 * Math.max(hero.value.curseMult * 0.5, 1), 1);
+      }
+      if (hero.value.activeCurseTier[19] == 4) {
+        reduce = Math.min(0.3 * Math.max(hero.value.curseMult * 0.5, 1), 1);
+      }
+
+      return reduce;
+    }
+    return 0;
+  }
+
+  const enemyBuffJaggernout = () => {
+    enemy.value.base.attack *= 0.75;
+    enemy.value.base.maxHp *= 1.5;
+
+    enemy.value.base.def += enemy.value.maxHp * 0.05;
+    enemy.value.base.def *= 1.5;
+  }
+
+  const enemyBuffBerserk = () => {
+    if(enemy.value.hp < enemy.value.maxHp * 0.3){
+      enemy.value.hp += ((1 - (enemy.value.hp / enemy.value.maxHp)/10) * enemy.value.maxHp * 0.05);
+    }
+  }
+
+  const buffAffect = () => {
+    if(enemy.value.buffs.includes(0)){
+      enemyBuffJaggernout();
+    }
+
+    enemy.value.firstAttack = false;
+    enemy.value.firstAttackAPS = false;
+
+    enemy.value.hp = enemy.value.base.maxHp;
+  }
+
+  const darkEnergyBossHandle = () => {
+    let tier = Math.max(Math.floor((dimensions.value[29].infTier - 5) / 5), 0);
+
+    enemy.value.deBoss.regen = (tier >= 1? Math.min(1 + 0.5 * (dimensions.value[29].infTier - 10), 25) : 0);
+    enemy.value.deBoss.def = (tier >= 2? 5 + 2.5 * (dimensions.value[29].infTier - 15): 0);
+    enemy.value.deBoss.darkEnemyTimer = (tier >= 3? 15 - 0.1 * Math.min(dimensions.value[29].infTier - 20, 50): 0);
   }
 
   const createEnemy = () => {
@@ -992,10 +1516,23 @@ export function useBattle(hero, enemy, buffs) {
     if(enemy.value.boss.isBoss){
       enemy.value.boss.isBoss = true;
       enemy.value.spawnType = 'boss';
+
+      let darkPower = 1;
+      if(enemy.value.darkEnergy.totalBosses < enemy.value.darkEnergy.maxBosses && hero.value.stage >= 95 + 5 * enemy.value.darkEnergy.totalBosses && 
+        (hero.value.dId == 'd-overstage' || hero.value.darkId.includes('d-overstage'))){
+        enemy.value.spawnType = 'deBoss';
+
+        let scale = (hero.value.stage >= 200? 1.05 + 0.025 * Math.floor((hero.value.stage - 199) / 5): 1);
+        darkPower = (hero.value.dId == 'd-overstage'? 1 * (dimensions.value[29].infTier * 0.25 + 1) ** scale: darkPower);
+        darkPower = (hero.value.darkId.includes('d-overstage')? 1 * (dimensions.value[29].infTier + 1) ** Math.max(1 - 0.02 * dimensions.value[29].infTier, 0.5): darkPower);
+
+        darkEnergyBossHandle();
+      }
+
       let force = (hero.value.dId == 'afk'? 2: 1);
-      enemy.value.boss.attack = Math.max(Math.sqrt((hero.value.stage / 10 )*force)**(1.04 + force*0.02*Math.floor(hero.value.stage/10)), 1.35*force); 
-      enemy.value.boss.hp = Math.max(Math.sqrt((hero.value.stage / 5) + Math.log(hero.value.stage)**(0.55+0.08*Math.floor(hero.value.stage/5))), 2);
-      enemy.value.boss.drop = Math.sqrt((hero.value.stage / 5) * Math.log(hero.value.stage));
+      enemy.value.boss.attack = Math.max(Math.sqrt((hero.value.stage / 10 )*force)**(1.04 + force*0.02*Math.floor(hero.value.stage/10)), 1.35*force) * (darkPower ** 0.15); 
+      enemy.value.boss.hp = Math.max(Math.sqrt((hero.value.stage / 5) + Math.log(hero.value.stage)**(0.55+0.08*Math.floor(hero.value.stage/5))), 2) * darkPower;
+      enemy.value.boss.drop = Math.sqrt((hero.value.stage / 5) * Math.log(hero.value.stage)) * Math.sqrt(darkPower);
     }
     if((!enemy.value.boss.isBoss || hero.value.dId == 'afk') || hero.value.isAbyss || hero.value.isSingularity || hero.value.dId == 'hard' || hero.value.dId == 'd-hard')
       cursedAffect();
@@ -1014,9 +1551,18 @@ export function useBattle(hero, enemy, buffs) {
     titanCurse();
     steelSkinCurse();
     MusclesCurse();
+    perditionOfDecay();
+    perditionOfPoverty();
 
     if(enemy.value.spawnType == 'boss' || enemy.value.spawnType == 'soul' || enemy.value.spawnType == 'a-soul' || enemy.value.spawnType == 'none')
       enemy.value.name = enemy.value.soulBuff.active? soulNames[hero.value.souls%50]:  getRandomVillainName();
+
+    if(hero.value.dId == 'bh')
+      enemy.value.name = enemy.value.bhNames[hero.value.bhTier];
+
+    buffAffect();
+
+    enemy.value.hp *= (hero.value.activeBuffs.includes(16) && buffs.value[16].tier >= 1? 0.75: 1);
 
     function getRandomFloat(min, max) {
       return Math.random() * (max - min) + min;
@@ -1024,62 +1570,95 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const createSoul = () => {
+    if(hero.value.selectedDivSkills.includes(6)) return;
+
     if((hero.value.stage > 14 || hero.value.dId == 'soulD') && enemy.value.spawnType == 'none' && hero.value.souls < hero.value.soulsCap){ //soul
-      let dx = 60 * ((0.43 + 0.0035 * Math.min(hero.value.souls, 40)) ** (hero.value.souls));
-      let dy = Math.max((Math.log(hero.value.stage - 14) ** Math.log(hero.value.stage**Math.pow(Math.log(hero.value.stage-12), 0.65) - 14)), 1);
-      let filterCursed = cursed.filter(curse => curse.status === true);
-
-      enemy.value.soulBuff.chance = dx * dy * (ascenPerks[16].level? 1 + 0.3 * hero.value.souls: 1) * (1 + 0.35 * (hero.value.rebirthPts >= 1000? hero.value.rebirthTier: 0)) *
-      (hero.value.rebirthPts >= 20? enemy.value.rebirthEnemy["drop"] * 2: 1) * (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 2? 3 : 1) *
-      (hero.value.abyssTier >= 1? (1 + 0.5 * filterCursed.length): 1) * (perks.value[13].level? 1.075 ** Math.sqrt(hero.value.perkPoints): 1) * 
-      (enemy.value.danger >= 10? enemy.value.dangerEnemyChance[0]: 1) * 
-      (hero.value.afkSoulBoost);
-
-      
+      enemy.value.soulBuff.chance = soulChance();
       enemy.value.soulBuff.chance = hero.value.soulD? 100: enemy.value.soulBuff.chance;
 
       enemy.value.soulBuff.active = Math.random() * 100 + enemy.value.soulBuff.chance >= 100? true: false;
       enemy.value.spawnType = enemy.value.soulBuff.active? 'soul': enemy.value.spawnType;
       enemy.value.soulBuff.active = hero.value.soulD? true: enemy.value.soulBuff.active;
       
-      let soulDweakness = 2 + (hero.value.dId == 'soulD'? 4 + (0.6 * (dimensions.value[14].infTier - 10)): 0) - 0.075 * (dimensions.value[14].infTier - 10) - 
-      0.01 * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 180? Math.max(hero.value.abyssDStages - 179, 20): 0);
-
-      enemy.value.soulBuff.dmg = (0.4 + Math.pow( Math.log((hero.value.souls*2 + 3)**0.35), (hero.value.souls*2.5)**(0.115 + 0.001 *  Math.max(hero.value.souls - 40, 0))) * 
-      (ascenPerks[19].level? 0.85: 1)) ** (hero.value.soulD? soulDweakness: 1) * Math.max((hero.value.mainInfTier >= 6? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1);
-
-      enemy.value.soulBuff.hp = (0.4 + Math.pow( Math.log((hero.value.souls*3 + 3)**0.4) , (hero.value.souls*3)**(0.135 + 0.001 *  Math.max(hero.value.souls - 40, 0))) * 
-      (ascenPerks[19].level? 0.85: 1)) ** (hero.value.soulD? soulDweakness: 1) * Math.max((hero.value.mainInfTier >= 6? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1);
-
-      enemy.value.soulBuff.drop = (1 + Math.pow( Math.log((hero.value.souls*1.75 + 3)**0.5), hero.value.souls**0.175) * (ascenPerks[20].level? 1.3: 1)) ** (hero.value.soulD? 1.35: 1);
-      enemy.value.soulBuff.drop = (enemy.value.soulBuff.drop > 8? 8 + Math.sqrt(enemy.value.soulBuff.drop - 8): enemy.value.soulBuff.drop);
-
+      soulStats();
     } 
+  }
+
+  const soulChance = () => {
+    let dx = 60 * ((0.43 + 0.0035 * Math.min(hero.value.souls, 40)) ** (hero.value.souls));
+    let dy = Math.max((Math.log(hero.value.stage - 14) ** Math.log(hero.value.stage**Math.pow(Math.log(hero.value.stage-12), 0.65) - 14)), 1);
+    let filterCursed = cursed.filter(curse => curse.status === true);
+
+    let chance = dx * dy * (ascenPerks[16].level? 1 + 0.3 * hero.value.souls: 1) * (1 + 0.35 * (hero.value.rebirthPts >= 1000? hero.value.rebirthTier: 0)) *
+      (hero.value.rebirthPts >= 20? enemy.value.rebirthEnemy["drop"] * 2: 1) * (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 2? 3 : 1) *
+      (hero.value.abyssTier >= 1? (1 + 0.5 * filterCursed.length): 1) * (perks.value[13].level? 1.075 ** Math.sqrt(Math.max(hero.value.perkPoints, 0)): 1) * 
+      (enemy.value.danger >= 10? enemy.value.dangerEnemyChance[0]: 1) * 
+      (hero.value.afkSoulBoost);
+
+    return chance;
+  }
+
+  const soulStats = () => {
+    let soulDweakness = 2 + (hero.value.dId == 'soulD'? 4 + (0.6 * (dimensions.value[14].infTier - 10)): 0) - 0.0625 * (dimensions.value[14].infTier - 10) - 
+    0.0025 * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 180? Math.min(hero.value.abyssDStages - 179, 100): 0);
+    soulDweakness = Math.max(soulDweakness, 1.1);
+
+    enemy.value.soulBuff.dmg = (0.4 + Math.pow( Math.log((hero.value.souls*2 + 3)**0.35), (hero.value.souls*2.5)**(0.115 + 0.001 *  Math.max(hero.value.souls - 40, 0))) * 
+    (ascenPerks[19].level? 0.85: 1)) ** (hero.value.soulD? soulDweakness ** 0.25: 1) * Math.max((hero.value.mainInfTier >= 6? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1);
+
+    enemy.value.soulBuff.hp = (0.4 + Math.pow( Math.log((hero.value.souls*3 + 3)**0.4) , (hero.value.souls*3)**(0.135 + 0.001 *  Math.max(hero.value.souls - 40, 0))) * 
+    (ascenPerks[19].level? 0.85: 1)) ** (hero.value.soulD? soulDweakness: 1) * Math.max((hero.value.mainInfTier >= 6? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1);
+
+    enemy.value.soulBuff.drop = (1 + Math.pow( Math.log((hero.value.souls*1.75 + 3)**0.5), hero.value.souls**0.175) * (ascenPerks[20].level? 1.3: 1)) ** (hero.value.soulD? 1.35: 1) * 
+    (hero.value.selectedDivSkills.includes(11)? divineSkills.value[11].values[0]: 1);
+    enemy.value.soulBuff.drop = (enemy.value.soulBuff.drop > 8? 8 + Math.sqrt(enemy.value.soulBuff.drop - 8): enemy.value.soulBuff.drop);
   }
 
   const spaceCreaturesHandle = () => {
     let abyssPenalty = (hero.value.abyssDStages >= 160 && hero.value.spCount >= 15? Math.max(1 / (1.01 ** (hero.value.abyssDStages - 159)), 0.1): 1);
     let corruption = (hero.value.dId == 'corruption'? 3: 1);
-    let dCorruption = (hero.value.dId.startsWith('d-')? Math.max(10 - (hero.value.overcorruption + 1), 1): 1);
 
-    enemy.value.totalSpaceStats.hp = abyssPenalty * corruption * dCorruption;
-    enemy.value.totalSpaceStats.def = abyssPenalty * Math.max(corruption * dCorruption * 0.5, 1) ;
-    enemy.value.totalSpaceStats.dmg =  abyssPenalty * Math.max(corruption * dCorruption * 0.25, 1);
-    enemy.value.totalSpaceInfPenalty = (hero.value.infPenalty / 2) * (hero.value.dId.startsWith("d-")? 0: 1);
+    let dMult = 4 - (hero.value.dId == 'd-corruption'? 0.075 * dimensions.value[26].infTier: 0) + 0.075 * dimensions.value[26].infTier;
+    dMult = Math.max(dMult, 1);
+    hero.value.dCorruptionEffect = (hero.value.darkId.includes('d-corruption') || hero.value.dId == 'd-corruption'?Math.max(10000 - hero.value.overcorruption ** dMult, 100): 1);
+
+    let spaceMult = (hero.value.dId == 'd-noSpace'? (Math.E * (1 + dimensions.value[37].infTier)) ** 1.75: 1);
+    let globalDebuff = 1 - 0.01 * dimensions.value[37].infTier;
+
+    let infWarden = (hero.value.spsCount > 0? (Math.E * hero.value.spsCount) ** 4.5: 1);
+    let celestialWeakness = (spaceShop.value[4].status? 1.1 ** hero.value.spsCountMax: 1);
+
+    enemy.value.totalSpaceInfPenalty = Math.floor(hero.value.infPenalty / 2) * (hero.value.dId.startsWith("d-")? 0: 1);
+
+    enemy.value.totalSpaceStats.hp = spEnemy[hero.value.spCount].stats.hp * (1 + Math.max(hero.value.infTier - enemy.value.totalSpaceInfPenalty, 0) * 0.1) * 
+    abyssPenalty * corruption * hero.value.dCorruptionEffect * infWarden * spaceMult / celestialWeakness;
+
+    enemy.value.totalSpaceStats.hp **= globalDebuff;
+
+    enemy.value.totalSpaceStats.def = spEnemy[hero.value.spCount].stats.def * (1 + Math.max(hero.value.infTier - enemy.value.totalSpaceInfPenalty, 0) * 0.05) * 
+    abyssPenalty * Math.max(corruption * hero.value.dCorruptionEffect ** 0.5, 1) * Math.max(infWarden ** 0.95, 1) * Math.max(spaceMult ** 0.8, 1) / 
+    Math.max(celestialWeakness ** 0.75, 1);
+
+    enemy.value.totalSpaceStats.def **= globalDebuff;
+
+    enemy.value.totalSpaceStats.dmg = spEnemy[hero.value.spCount].stats.dmg * (1 + Math.max(hero.value.infTier - enemy.value.totalSpaceInfPenalty, 0) * 0.025) * 
+    abyssPenalty * Math.max(corruption * hero.value.dCorruptionEffect ** 0.25, 1) * Math.max(infWarden ** 0.25, 1) * Math.max(spaceMult ** 0.2, 1) / 
+    Math.max(celestialWeakness ** 0.25, 1);
+
+    enemy.value.totalSpaceStats.dmg **= globalDebuff;
+    
   }
 
   const createSpaceCreature = () => {
     let totalStats = enemy.value.totalSpaceStats;
-    let totalInfPenalty = enemy.value.totalSpaceInfPenalty;
 
     enemy.value.name = spEnemy[hero.value.spCount].name;
-    enemy.value.attack = spEnemy[hero.value.spCount].stats.dmg * (1 + Math.max(hero.value.infTier - totalInfPenalty, 0) * 0.25) * totalStats.dmg
-    enemy.value.maxHp = spEnemy[hero.value.spCount].stats.hp * (1 + Math.max(hero.value.infTier - totalInfPenalty, 0) * 0.1) * totalStats.hp
-    enemy.value.def = spEnemy[hero.value.spCount].stats.def * (1 + Math.max(hero.value.infTier - totalInfPenalty, 0) * 0.5) * totalStats.def
+    enemy.value.attack = totalStats.dmg
+    enemy.value.maxHp = totalStats.hp
+    enemy.value.def = totalStats.def
 
     enemy.value.hp = enemy.value.maxHp;
-    enemy.value.attacksPerSecond = spEnemy[hero.value.spCount].stats.AS * (1 + Math.max(hero.value.infTier - hero.value.infPenalty, 0) * 0.02) *
-    (1 - 0.02 * hero.value.survivalLevel);
+    enemy.value.attacksPerSecond = spEnemy[hero.value.spCount].stats.AS;
     hero.value.activeCurse = [];
 
     if(hero.value.spCount%6 == 5 || hero.value.spCount >= 24){
@@ -1140,10 +1719,12 @@ export function useBattle(hero, enemy, buffs) {
       }
     }
 
+    enemy.value.hp *= (hero.value.activeBuffs.includes(16) && buffs.value[16].tier >= 1? 0.75: 1);
+
   }
 
   const createAscensionSouls = () => {
-    if(hero.value.stage >= 20 && hero.value.abyssTier >= 2 && hero.value.dId != 'ascension'){
+    if(hero.value.stage >= 20 && hero.value.abyssTier >= 2 && hero.value.dId != 'ascension' && hero.value.dId != 'ascension-2'){
       let chance = Math.min(1 ** (1.01 + 0.0125 * (hero.value.stage - 20)), 4);
       let dx = 1.5 ** (1.01 + 0.01 * (hero.value.stage - 20));
 
@@ -1196,6 +1777,40 @@ export function useBattle(hero, enemy, buffs) {
       }
       
     }
+
+    if(!hero.value.isAbyss && hero.value.dId == 'd-danger'){
+      darkDangerBoss();
+
+
+      if(enemy.value.danger >= 1000 && hero.value.stage >= 100 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[0]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[0] >= 100? 'd-dim-1': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-1'? 'Dreadfang': enemy.value.name);
+      }
+      if(enemy.value.danger >= 1500 && hero.value.stage >= 110 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[1]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[1] >= 100? 'd-dim-2': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-2'? 'Voidborn Might': enemy.value.name);
+      }
+      if(enemy.value.danger >= 2000 && hero.value.stage >= 120 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[2]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[2] >= 100? 'd-dim-3': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-3'? 'Overseer Prime': enemy.value.name);
+      }
+      if(enemy.value.danger >= 2500 && hero.value.stage >= 130 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[3]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[3] >= 100? 'd-dim-4': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-4'? 'Baselurker': enemy.value.name);
+      }
+      if(enemy.value.danger >= 3000 && hero.value.stage >= 140 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[4]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[4] >= 100? 'd-dim-5': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-5'? 'Infinity Bane': enemy.value.name);
+      }
+      if(enemy.value.danger >= 3500 && hero.value.stage >= 150 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[5]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[5] >= 100? 'd-dim-6': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-6'? 'Crushdepth': enemy.value.name);
+      }
+      if(enemy.value.danger >= 4000 && hero.value.stage >= 160 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[6]){
+        enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[6] >= 100? 'd-dim-7': enemy.value.spawnType);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-7'? 'Entropy Leech': enemy.value.name);
+      }
+    }
   }
 
   const rewardInfSouls = () => {
@@ -1213,6 +1828,7 @@ export function useBattle(hero, enemy, buffs) {
         addLog("You destroyed The Infinite One and gained 1 Star", "Creatures");
       }
     }
+
     if(dimensions.value[15].infTier == dimensions.value[15].maxInfTier){
       if(enemy.value.spawnType == 'dim-1'){
         enemy.value.dEnemyLoot[0] = Math.min(enemy.value.dEnemyLoot[0] + 1, 200);
@@ -1229,7 +1845,7 @@ export function useBattle(hero, enemy, buffs) {
       }
       if(enemy.value.spawnType == 'dim-4'){
         enemy.value.dEnemyLoot[3] = Math.min(enemy.value.dEnemyLoot[3] + 1, 90);
-        addLog("You destroyed Clot of Dark Energy and Enemies of Singularity gain 1 stack of Weakness ", "Creatures");
+        addLog("You destroyed Clot of Dark Energy and Enemies of Singularity gained 1 stack of Weakness ", "Creatures");
       }
       if(enemy.value.spawnType == 'dim-5'){
         enemy.value.dEnemyLoot[4] = Math.min(enemy.value.dEnemyLoot[4] + 1, 25);
@@ -1237,106 +1853,219 @@ export function useBattle(hero, enemy, buffs) {
       }
       if(enemy.value.spawnType == 'dim-6'){
         enemy.value.dEnemyLoot[5] = Math.min(enemy.value.dEnemyLoot[5] + 1, 5);
-        addLog("You destroyed Entropy Reaver and gained -0.01 INF Penalty", "Creatures");
+        addLog("You destroyed Entropy Reaver and gained -0.01 INF Penalty Reduction", "Creatures");
+      }
+    }
+
+    if(hero.value.dId == 'd-danger'){
+      if(enemy.value.spawnType == 'd-dim-boss'){
+        enemy.value.darkEnemyReq[dimensions.value[31].infTier] = true;
+        addLog("You destroyed the Dimension Boss", "Creatures");
+      }
+
+      if(enemy.value.spawnType == 'd-dim-1'){
+        enemy.value.darkEnemyLoot[0] = Math.min(enemy.value.darkEnemyLoot[0] + 1, enemy.value.darkEnemyCap[0]);
+        addLog("You destroyed Dreadfang and gained 0.01 INF Penalty Reduction", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-2'){
+        enemy.value.darkEnemyLoot[1] = Math.min(enemy.value.darkEnemyLoot[1] + 1, enemy.value.darkEnemyCap[1]);
+        addLog("You destroyed Voidborn Might and gained 0.01 to MULT DMG", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-3'){
+        enemy.value.darkEnemyLoot[2] = Math.min(enemy.value.darkEnemyLoot[2] + 1, enemy.value.darkEnemyCap[2]);
+        addLog("You destroyed Overseer Prime and gained 0.01 to Max Level Mult", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-4'){
+        enemy.value.darkEnemyLoot[3] = Math.min(enemy.value.darkEnemyLoot[3] + 1, enemy.value.darkEnemyCap[3]);
+        addLog("You destroyed Baselurker and gained 1 Min Level", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-5'){
+        enenemy.value.darkEnemyLoot[4] = Math.min(enemy.value.darkEnemyLoot[4] + 1, enemy.value.darkEnemyCap[4]);
+        addLog("You destroyed Infinity Bane and gained 1 Potential", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-6'){
+        enemy.value.darkEnemyLoot[5] = Math.min(enemy.value.darkEnemyLoot[5] + 1, enemy.value.darkEnemyCap[5]);
+        addLog("You destroyed Crushdepth and gained 1 DS", "Creatures");
+      }
+      if(enemy.value.spawnType == 'd-dim-7'){
+        enemy.value.darkEnemyLoot[6] = Math.min(enemy.value.darkEnemyLoot[6] + 1, enemy.value.darkEnemyCap[6]);
+        addLog("You destroyed Entropy Leech and gained 0.05 Stardut MULT", "Creatures");
       }
     }
   }
+
+  const darkDangerBoss = () => {
+    if(hero.value.stage >= 100 + 10 * dimensions.value[31].infTier && 
+      enemy.value.danger >= 1000 + 500 * dimensions.value[31].infTier){
+        let chance = (Math.random() * 100 + 100 >= 100? true: false);
+        enemy.value.spawnType = (chance? 'd-dim-boss': enemy.value.spawnType);
+      }
+  }
   //stats
   const statEnemyCalculate = (dx) => {
-    let stageScaleDmg = (hero.value.stage >= 100? 0.2: 0) + (hero.value.stage >= 125? 0.1: 0) - (hero.value.stage >= 150? 0.05: 0)- (hero.value.stage >= 175? 0.15: 0)- (hero.value.stage >= 200? 0.2: 0)
-    enemy.value.attack = 10 * ((1.04 ** (hero.value.stage + 1)) ** Math.min((1.15 + 0.12*Math.floor(hero.value.stage/5)), 2.25 + stageScaleDmg)) * dx * 
+    enemyBuffs();
+
+    enemy.value.base.attack = statsEnemyAttackHandle(hero.value.stage, dx);
+
+    enemy.value.base.attack = Math.max(enemy.value.base.attack, 10);
+    enemy.value.attack = enemy.value.base.attack;
+
+    enemy.value.base.maxHp = statsEnemyHpHandle(hero.value.stage, dx);
+
+    hero.value.enemyAfkHp = enemy.value.base.maxHp;
+
+    enemy.value.base.maxHp *= (enemy.value.boss.isBoss? enemy.value.boss.hp: 1) *
+    (enemy.value.soulBuff.active? enemy.value.soulBuff.hp: 1) *
+    (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1);
+
+    let bhHp = [2.5e9, 1e10, 1e12, 2e13];
+    enemy.value.base.maxHp = (hero.value.dId == 'bh'? bhHp[hero.value.bhTier]: enemy.value.base.maxHp);   
+
+    enemy.value.base.maxHp = Math.max(enemy.value.base.maxHp, 20);
+
+    enemy.value.maxHp = enemy.value.base.maxHp
+    enemy.value.base.hp = enemy.value.base.maxHp;
+    enemy.value.hp = enemy.value.maxHp;
+
+    enemy.value.base.def = 0;
+
+    let aps = 0.4 + Math.min(2, (0.1 * Math.floor(hero.value.stage / 5))) + fastReflexesCurse();
+    aps -= (ascenPerks[23].level * 0.15);
+    aps *= (1 - 0.02 * hero.value.survivalLevel);
+
+    aps = (hero.value.dId == 'bh'? 0.5 + 0.1 * hero.value.bhTier: aps);
+
+    enemy.value.base.aps = aps;
+
+    enemy.value.attacksPerSecond = enemy.value.base.aps;
+  }
+
+  const statsEnemyAttackHandle = (stage, dx) => {
+    let stageScaleDmg = (stage >= 100? 0.2: 0) + (stage >= 125? 0.15: 0) - (stage >= 150? 0.15: 0) - (stage >= 175? 0.15: 0) - (stage >= 200? 0.1: 0)
+    let totalAttack = 10 * ((1.035 ** (stage + 1)) ** Math.min((1.15 + 0.12*Math.floor(stage/5)), 2.25 + stageScaleDmg)) * dx * 
     (enemy.value.soulBuff.active? enemy.value.soulBuff.dmg: 1) * 
     (enemy.value.boss.isBoss? enemy.value.boss.attack: 1) * 
     (hero.value.isAbyss? 1 :enemy.value.rebirthEnemy["dmg"]) * 
-    (hero.value.isAbyss? Math.max(1.04 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.01: 0), 1.02) ** hero.value.stage: 1) *
+    (hero.value.isAbyss? Math.max(1.04 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.01: 0), 1.02) ** stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) * 
-    (hero.value.isAbyss || hero.value.isSingularity? 1: Math.sqrt(enemy.value.enemyPower)) * 
+    (hero.value.isAbyss || hero.value.isSingularity? 1: enemy.value.enemyPower ** 0.25) * 
     (!hero.value.infProgress? 1 + 0.1 * Math.max(hero.value.infTier - 5 * hero.value.infPenalty, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
     (hero.value.abyssTier >= 2? 1 / ((1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 1)): 1) * 
-    (ascenPerks[27].level? Math.max(1 / (Math.max(hero.value.overcorruption - 0.1, 0.1)), 0.1): 1) *
-    (hero.value.isAbyss && hero.value.rebirthTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
-    (1 - ascenPerks[33].level * 0.0075) * 
-    (1 - ascenPerks[56].level * 0.0075) * 
+    (ascenPerks[27].level? Math.max(1 / (2 + Math.max(hero.value.corruption, 0.1)), 0.1): 1) *
+    (hero.value.isAbyss && hero.value.rebirtMhTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
+    (1 - ascenPerks[33].level * 0.01) * 
+    (1 - ascenPerks[56].level * 0.01) * 
     Math.max((hero.value.mainInfTier >= 22 && hero.value.isSingularity? (1 / infBase(1.01) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) * Math.log(hero.value.infPoints + 3)))): 1), 0.1) *
     Math.max((hero.value.mainInfTier >= 8? (1 / infBase(1.02) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.2) * 
     Math.max((hero.value.mainInfTier >= 1 && hero.value.isAbyss? (1 / infBase(1.0225) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
-    (perks.value[19].level? 2 - 1.035 ** hero.value.treeTier: 1) *
-    ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 75), 0.1): 1)) * 
+    (hero.value.isAbyss && perks.value[19].level? 2 - 1.035 ** hero.value.treeTier: 1) *
+    ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 50), 0.1): 1)) * 
     (hero.value.isSingularity? 10000 - 1050 * Math.min(hero.value.singularity, 8): 1) * 
     (hero.value.isSingularity? 1 - enemy.value.dEnemyLoot[3]*0.01: 1) * 
     (hero.value.dId == 'survival-2'? 10: 1) * 
-    (hero.value.dId == 'gravity'? 1.035 ** hero.value.stage: 1) * 
+    (hero.value.dId == 'gravity'? 1.035 ** stage: 1) * 
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills+3)**1.25: 1) *
-    (hero.value.dId == 'damage'? (1.005 * (1.0000 + 0.00075 * (dimensions.value[20].infTier - 20))) ** hero.value.dKills: 1) *
-    (hero.value.darkId.includes('d-corruption')? Math.max(100 - (hero.value.overcorruption + 1) ** 2, 1): 1) *
-    (hero.value.darkId.includes('d-damage')? Math.max(1.01 - 0.00035 * dimensions.value[28].infTier, 1) ** enemy.value.d_damagePenalty: 1) *
-    (hero.value.dId == 'd-corruption'? 1.5 ** dimensions.value[26].infTier: 1) *
+    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.25 + 0.1 * (dimensions.value[20].infTier - 20)), 1e3) : 1) *
+    (hero.value.darkId.includes('d-corruption')? Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10): 1) *
+    (hero.value.dId == 'd-corruption'? Math.max(100 - hero.value.overcorruption ** (2 - 0.025 * dimensions.value[26].infTier), 10) * 1.05 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) * 
     (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** (1 + 0.0175 * ((hero.value.kills)/75)): 1) * 
-    (ascenPerks[49].level? 1 - 0.005 * Math.min(hero.value.stage, 150) - 0.00025 * Math.max(hero.value.stage - 150, 0): 1)
+    (ascenPerks[49].level? 1 - 0.005 * Math.min(stage, 150) - 0.00025 * Math.max(stage - 150, 0): 1) *
+    (enemy.value.spawnType == 'd-dim-boss'? (dimensions.value[31].infTier + 1) ** 1.1: 1);
 
+    return totalAttack;
+  }
 
-    enemy.value.attack = Math.max(enemy.value.attack, 10);
-
-    let stageScaleHP = (hero.value.stage >= 100? 0.3: 0) + (hero.value.stage >= 125? 0.15: 0) - (hero.value.stage >= 150? 0.015: 0)- (hero.value.stage >= 175? 0.01: 0)- (hero.value.stage >= 200? 0.01: 0)
-    enemy.value.maxHp = 40 * ((((Math.max(1.065 - 0.00075 * Math.floor(hero.value.stage/5)), 1.05)** hero.value.stage) ** Math.min((1.3+0.205*Math.sqrt(hero.value.stage/2)), 2.8 + stageScaleHP)) / (2 - (hero.value.stage > 14? 0.5: 0) - (hero.value.stage > 19? 0.5: 0))) * dx * 
+  const statsEnemyHpHandle = (stage, dx) => {
+    let stageScaleHP = (stage >= 100? 0.3: 0) + (stage >= 125? 0.15: 0) - (stage >= 150? 0.015: 0) - (stage >= 175? 0.01: 0) - (stage >= 200? 0.01: 0)
+    let totalHp = 40 * ((((Math.max(1.065 - 0.00075 * Math.floor(stage/5)), 1.05)** stage) ** Math.min((1.3+0.205*Math.sqrt(stage/2)), 2.8 + stageScaleHP)) / (2 - (stage > 14? 0.5: 0) - (stage > 19? 0.5: 0))) * dx * 
     (hero.value.isAbyss? 1 :enemy.value.rebirthEnemy["hp"]) * 
-    (hero.value.isAbyss? Math.max(1.05 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.015: 0), 1.03) ** hero.value.stage: 1) *
+    (hero.value.isAbyss? Math.max(1.05 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.015: 0), 1.03) ** stage: 1) *
     (hero.value.isAbyss || hero.value.isSingularity? 1: enemy.value.enemyPower) * 
     (!hero.value.infProgress? 1 + 0.1 * Math.max(hero.value.infTier - 5 * hero.value.infPenalty, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
     (hero.value.abyssTier >= 2? 1 / ((1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 1)): 1) *
     (hero.value.isAbyss && hero.value.rebirthTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
-    (ascenPerks[27].level? Math.max(1 / (1 + Math.max(hero.value.corruption - 0.1, 0)), 0.1): 1) *
+    (ascenPerks[27].level? Math.max(1 / (2 + Math.max(hero.value.corruption, 0)), 0.1): 1) *
     (1 - ascenPerks[22].level * 0.01) * 
     (1 - ascenPerks[32].level * 0.01) * 
-    (1 - ascenPerks[55].level * 0.01) * 
+    (1 - ascenPerks[55].level * 0.01) *
     Math.max((hero.value.mainInfTier >= 22 && hero.value.isSingularity? (1 / infBase(1.01) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) * Math.log(hero.value.infPoints + 3)))): 1), 0.1) *
     Math.max((hero.value.mainInfTier >= 8? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
     Math.max((hero.value.mainInfTier >= 1 && hero.value.isAbyss? (1 / infBase(1.0225) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
-    (perks.value[19].level? 2 - 1.04 ** hero.value.treeTier: 1) *
-    ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 75), 0.1): 1)) * 
+    (hero.value.isAbyss && perks.value[19].level? 2 - 1.04 ** hero.value.treeTier: 1) *
+    ((hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 4? Math.max(1 - 0.01 * Math.floor(buffs.value[8].time / 50), 0.1): 1)) * 
     (hero.value.isSingularity? Math.max(450000 - 62500 * Math.min(hero.value.singularity, 8) , 7500) : 1) * 
     (hero.value.isSingularity? 1 - enemy.value.dEnemyLoot[3]*0.01: 1) * 
     (hero.value.dId == 'survival-2'? 100: 1) * 
-    (hero.value.dId == 'gravity'? 1.045 ** hero.value.stage: 1) * 
+    (hero.value.dId == 'gravity'? 1.045 ** stage: 1) * 
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills + 3) ** 1.2: 1) *
-    (hero.value.dId == 'damage'? (1.01 * (1.000 + 0.00175 * (dimensions.value[20].infTier - 20))) ** hero.value.dKills: 1) *
-    (hero.value.darkId.includes('d-corruption')? Math.max(10000 - (hero.value.overcorruption + 1) ** 4, 1): 1) *
-    (hero.value.darkId.includes('d-damage')? Math.max(1.015 - 0.00075 * dimensions.value[28].infTier, 1.001) ** enemy.value.d_damagePenalty: 1) *
-    (hero.value.dId == 'd-corruption'? 2.5 ** dimensions.value[26].infTier: 1) *
+    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.3 + 0.1 * (dimensions.value[20].infTier - 20)), 1e6): 1) *
+    (hero.value.darkId.includes('d-corruption')? Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100): 1) *
+    (hero.value.dId == 'd-corruption'? Math.max(10000 - hero.value.overcorruption ** (4 - 0.05 * dimensions.value[26].infTier), 100) * 1.5 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
-    (hero.value.travellPenalty) * 
+    (hero.value.travellPenalty) *
     (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** Math.min(1 + 0.01 * ((hero.value.kills)/10), 1.4 + 0.3 * Math.floor(hero.value.kills/1000)): 1) * 
-    (ascenPerks[49].level? 1 - 0.006 * Math.min(hero.value.stage, 150) - 0.0003 * Math.max(hero.value.stage - 150, 0): 1)
+    (ascenPerks[49].level? 1 - 0.006 * Math.min(stage, 150) - 0.0003 * Math.max(stage - 150, 0): 1) * 
+    (enemy.value.spawnType == 'd-dim-boss'? (dimensions.value[31].infTier + 1) ** (1.5 + 0.05 * dimensions.value[31].infTier): 1);
 
-    hero.value.enemyAfkHp = enemy.value.maxHp;
+    return totalHp;
+  }
 
-    enemy.value.maxHp *= (enemy.value.boss.isBoss? enemy.value.boss.hp: 1) *
-    (enemy.value.soulBuff.active? enemy.value.soulBuff.hp: 1) *
-    (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1);
+  const statsEnemyModifier = () => {
+    if(enemy.value.isSpaceFight > 0)
+      return;
 
-    enemy.value.maxHp = Math.max(enemy.value.maxHp, 20);
 
-    enemy.value.hp = enemy.value.maxHp;
+    enemy.value.attack = enemy.value.base.attack * 
+    (enemy.value.buffs.includes(1)? (1 + (1 - enemy.value.hp / enemy.value.maxHp ) * 1) * (1 + enemy.value.rage / 100): 1) *
+    (enemy.value.buffs.includes(2) && !enemy.value.firstAttack? 2: 1);
 
-    enemy.value.def = 0;
+    enemy.value.crit = enemy.value.base.crit + 
+    (enemy.value.buffs.includes(1)? (1 - enemy.value.hp / enemy.value.maxHp) * 15: 0) + 
+    (enemy.value.buffs.includes(2) && !enemy.value.firstAttack? 100: 0);
 
-    enemy.value.attacksPerSecond = 0.4 + Math.min(2, (0.1 * Math.floor(hero.value.stage / 5))) + fastReflexesCurse();
-    enemy.value.attacksPerSecond -= (ascenPerks[23].level * 0.15)
-    enemy.value.attacksPerSecond = enemy.value.attacksPerSecond * (1 - 0.02 * hero.value.survivalLevel);
-    enemy.value.attacksPerSecond = Math.min(enemy.value.attacksPerSecond, 3.9);
-    enemy.value.attacksPerSecond = Math.max(enemy.value.attacksPerSecond, 0.4);
+    enemy.value.critAttack = enemy.value.base.critAttack +
+    (enemy.value.buffs.includes(1)? (1 - enemy.value.hp / enemy.value.maxHp) * 75: 0);
+
+    if(hero.value.dId == 'bh'){
+      enemy.value.bhMod = 1.2 + 0.05 * hero.value.bhTier;
+      enemy.value.attack = 1 * (enemy.value.bhMod ** enemy.value.bhBossHits);
+    }
+
+    enemy.value.maxHp = enemy.value.base.maxHp;
+
+    enemy.value.def = enemy.value.base.def * (enemy.value.buffs.includes(0)? (2 - enemy.value.hp / enemy.value.maxHp): 1);
+
+    if(enemy.value.deBoss.def > 0 && enemy.value.spawnType == 'deBoss'){
+      enemy.value.def = (enemy.value.deBoss.def * 0.01) * enemy.value.maxHp;
+    }
+
+    if(enemy.value.buffs.includes(1)){
+      enemyBuffBerserk();
+    }
+
+    let base = (enemy.value.buffs.includes(5)? 1: 0.4);
+
+    enemy.value.attacksPerSecond = enemy.value.base.aps + 
+    (enemy.value.buffs.includes(5)? 0.01 * hero.value.stage: 0) +
+    (hero.value.dId == 'd-noAps'? 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier)): 0);
+
+    enemy.value.extraHit = (enemy.value.attacksPerSecond > 4? Math.log(Math.max((enemy.value.attacksPerSecond - 3.9) * 10, 1)) ** 3.75: 0);
+
+    enemy.value.attacksPerSecond = Math.min(Math.max(enemy.value.attacksPerSecond, base), 3.9);
+
   }
 
   const statCalculate = () => {
-    hero.value.attack = (10 + (((1 + 0.2 * Math.floor(hero.value.potential/20)) * 
+    hero.value.attack = (10 + (((1 + 0.2 * Math.floor(hero.value.potential/20)) *
     (Math.min(hero.value.maxLevel, hero.value.eLevel-1) + 
     (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0) + 
-    hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1)))) * (hero.value.dId == 'noStats'? 0: 1)) * 
+    hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1)))) * (hero.value.dId == 'noStats' || hero.value.dId == 'd-noMinLevel'? 0: 1)) * 
+    (hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1) *
 
     (perks.value[0].infStatus? ((perks.value[0].value - 0.001) ** perks.value[0].level): 1) *
-    (perks.value[0].status? (1.01 ** Math.min(perks.value[0].kills,140) + (perks.value[0].kills >= 140? perks.value[0].kills ** 0.09 - 1: 0)): 1) * 
+    (perks.value[0].status? radPerkAttack(): 1) * 
     (!perks.value[0].infStatus && !perks.value[0].status? perks.value[0].value ** perks.value[0].level: 1) * 
     (equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.multDmg + hero.value.eqUpsMult['sword'].bonus) * 
     (hero.value.mainInfTier >= 0 || hero.value.level >= 700? ((infBase(1.055, 1) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)))) : 1) *
@@ -1349,10 +2078,17 @@ export function useBattle(hero, enemy, buffs) {
     (ascenPerks[48].level? 1 + 0.05 * dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length: 1) * 
     (1.04 ** (dimensions.value[20].infTier - 20)) * 
     (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1) * 
-    ((1.005 + 0.0025 * dimensions.value[28].infTier) ** Math.sqrt(hero.value.damageStage))
+    ((1.01 + 0.0075 * dimensions.value[28].infTier) ** Math.log(3 + Math.sqrt(hero.value.damageStage))) *
+    (hero.value.survivalLife > 0? 2: 1) * 
+    (hero.value.bhTier >= 2 && hero.value.dId == 'main'? 1 + 0.05 * hero.value.transcendence: 1) *
+    (hero.value.bhTier >= 2 && hero.value.dId == 'bh'? 1 + 0.05 * hero.value.transcendenceBH: 1) *
+    (1 + 0.01 * enemy.value.darkEnemyLoot[1])
 
     //d-damage
-    hero.value.attack /= (hero.value.dId == 'd-damage'? (1.02 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.5 + 0.01 * dimensions.value[28].infTier))): 1);
+    hero.value.d_damage_penalty.dmg = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.02 * dimensions.value[28].infTier), 1e6 * 1.05 ** dimensions.value[28].infTier): 1);
+    hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
+    hero.value.d_damage_penalty.dmg = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.0175 * dimensions.value[28].infTier, 0.5), 1e6): hero.value.d_damage_penalty.dmg);
+    hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
     //first stirke
     
     hero.value.attack *= (hero.value.activeBuffs.includes(1) && buffs.value[1].tier >= 1 && !buffs.value[1].used)? 2: 1
@@ -1368,9 +2104,9 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.attack *= (buffs.value[10].buffT2 > 0? 1.5: 1);
     //berserk
     hero.value.attack *= (buffs.value[12].dmg);
+    hero.value.attack *= (1 + buffs.value[12].rageAttackMult);
     //charge
     hero.value.attack *= (1 + 0.05 * buffs.value[6].charges.power)
-
 
     hero.value.crit = 0 + (perks.value[7].level * perks.value[7].value) + (hero.value.rebirthPts >= 150? 5: 0) + (buffs.value[12].crit) + 
     (Math.floor(hero.value.spCount/6) >= 3? hero.value.eqUpsMult['sword'].crit: 0) + (hero.value.activeBuffs.includes(11)? 15: 0) + 
@@ -1378,67 +2114,104 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.critAttack = 150 + (perks.value[8].level * perks.value[8].value) + (buffs.value[12].critDmg) + (hero.value.activeBuffs.includes(11)? 75: 0) + 
     (Math.floor(hero.value.spCount/6) >= 3? hero.value.eqUpsMult['sword'].critDmg: 0) + (5 * buffs.value[6].charges.energy);
     
-    hero.value.attack *= (hero.value.activeFormation == 1? 2: 1);
+    hero.value.attack *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 4: 2): 1);
     hero.value.attack *= (hero.value.activeFormation == 0? 0.5: 1);
     hero.value.attack *= (hero.value.activeFormation == 2? 0.5: 1);
-    hero.value.attack *= (hero.value.activeFormation == 3? 0.5: 1);
+    hero.value.attack *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
 
     hero.value.attack *= cursedShieldCurse();
 
+    //blackImpulse
+    hero.value.attack *= (hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 1? (Math.random()*100 + 20 * buffs.value[15].hits >= 100? 2: 1): 1);
+    hero.value.attack *= (hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 2 && enemy.value.def <= 0? 1.5: 1);
+    hero.value.attack *= (hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 4 && hero.value.attack * 10 < enemy.value.maxHp? 2: 1);
+
+    //quasar core
+    hero.value.attack *= divineSkills.value[3].values[0];
+
+
+
     hero.value.maxHp = ((100 + ((2 + 0.5 * Math.floor(hero.value.potential/10)) * (Math.min(hero.value.maxLevel, hero.value.eLevel-1) + hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1) + 
-    (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0))) * (hero.value.dId == 'noStats'? 0: 1)) + 
-    (perks.value[1].value * perks.value[1].level) +
+    (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0))) * (hero.value.dId == 'noStats' || hero.value.dId == 'd-noMinLevel'? 0: 1)) + 
     (equipment[1].tiers[hero.value.equipmentTiers['armor']].bonus.hp + hero.value.eqUpsMult['armor'].bonus)) * 
+    (hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1) *
+
+    (1 + 0.01 * perks.value[1].level) *
     (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.015) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) *
     (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1) * (1 + 0.05 * buffs.value[6].charges.life) * 
-    (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) * (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1);
+    (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) * (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1) * 
+    (hero.value.survivalLife > 0? 2: 1);
     
     //d-damage
-    hero.value.maxHp /= (hero.value.dId == 'd-damage'? (1.015 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.25 + 0.01 * dimensions.value[28].infTier))): 1);
+    hero.value.d_damage_penalty.hp = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.0125 * dimensions.value[28].infTier), 1e3): 1);
+    hero.value.maxHp /= Math.max(hero.value.d_damage_penalty.hp, 1);
+    hero.value.d_damage_penalty.hp = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.02 * dimensions.value[28].infTier, 0.5), 1e3): hero.value.d_damage_penalty.hp);
+    hero.value.maxHp /= Math.max(hero.value.d_damage_penalty.hp, 1);
 
     hero.value.maxHp *= (hero.value.activeFormation == 0? 2: 1);
-    hero.value.maxHp *= (hero.value.activeFormation == 1? 0.5: 1);
+    hero.value.maxHp *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 0.25: 0.5): 1);
     hero.value.maxHp *= (hero.value.activeFormation == 2? 0.5: 1);
-    hero.value.maxHp *= (hero.value.activeFormation == 3? 0.5: 1);
+    hero.value.maxHp *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
     hero.value.maxHp *= (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 1? (1 + 0.001 * Math.floor(buffs.value[8].time)): 1);
     //d-survival
     hero.value.maxHp = (hero.value.dId == 'survival'? 1: hero.value.maxHp);
 
+    hero.value.maxHp = Math.max(hero.value.maxHp, 100);
+
     hero.value.def = 0 + (((0.5 + 0.1 * Math.floor(hero.value.potential/30)) * (Math.min(hero.value.maxLevel, hero.value.eLevel-1) + hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1)) + 
-    (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0)) * (hero.value.dId == 'noStats'? 0: 1) + hero.value.eqUpsMult['armor'].def) *
+    (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0)) * (hero.value.dId == 'noStats' || hero.value.dId == 'd-noMinLevel'? 0: 1) + hero.value.eqUpsMult['armor'].def) *
+    (hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1) *
+
     (1 + 0.05 * buffs.value[6].charges.life) *
     (1 + ((perks.value[2].value * perks.value[2].level)*0.01)) * (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1) *
     (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) * (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1) *
-    buffs.value[0].def * (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.0125) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
+    buffs.value[0].def * (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.0125) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
+    (hero.value.survivalLife > 0? 2: 1)
 
     //d-damage
-    hero.value.def /= (hero.value.dId == 'd-damage'? (1.0145 ** Math.sqrt(enemy.value.d_damagePenalty ** (1.2 + 0.01 * dimensions.value[28].infTier))): 1);
+    hero.value.d_damage_penalty.def = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.0125 * dimensions.value[28].infTier), 1e3): 1);
+    hero.value.def /= Math.max(hero.value.d_damage_penalty.def, 1);
+    hero.value.d_damage_penalty.def = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.02 * dimensions.value[28].infTier, 0.5), 1e3): hero.value.d_damage_penalty.def);
+    hero.value.def /= Math.max(hero.value.d_damage_penalty.def, 1);
 
     hero.value.def *= (hero.value.activeFormation == 2? 2: 1);
-    hero.value.def *= (hero.value.activeFormation == 1? 0.5: 1);
+    hero.value.def *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 0.25: 0.5): 1);
     hero.value.def *= (hero.value.activeFormation == 0? 0.5: 1);
-    hero.value.def *= (hero.value.activeFormation == 3? 0.5: 1);
+    hero.value.def *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
     //extra life
-    hero.value.def *= (buffs.value[10].buffT2 > 0? 1.25: 1);
+    hero.value.def *= (buffs.value[10].buffT2 > 0? 2: 1);
     //jagernout
     juggernautBuff();
     //d-survival
     hero.value.def = (hero.value.dId == 'survival'? 1: hero.value.def);
 
+    hero.value.unlimitMinLevel = Math.max(Math.floor((hero.value.unlimitLevel - 700) / Math.max(100 - 2.5 * Math.max(dimensions.value[38].infTier - 10, 0), 50)), 0);
+
     hero.value.minLevel = eqCpmplect() + (ascenPerks[26].level? Math.floor(hero.value.stage/5)-1: 0) + 
     ((hero.value.rebirthPts >= 50? 5: 0) + (hero.value.rebirthPts > 3500? 5: 0) + (hero.value.rebirthPts > 30000? 5: 0)) + perks.value[12].level + 
-    (hero.value.infTier >= 3 && hero.value.rebirthTier >= 40? Math.floor(1.05 ** Math.min(hero.value.rebirthTier, 80)): 0) + 
+    (hero.value.rebirthTier >= 40? Math.floor(1.05 ** Math.min(hero.value.rebirthTier, 80)): 0) + 
     (equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel + hero.value.eqUpsMult['spRing'].bonus) + 
-    (hero.value.infTier >= 6 || hero.value.infTier >= 6? Math.floor(hero.value.soulsMax/10): 0) + 
+    (hero.value.infTier >= 6 || hero.value.infEvents >= 6? Math.floor(hero.value.soulsMax/10): 0) + 
     (ascenPerks[50].level? Math.floor(hero.value.soulsMax/20): 0) +
     (hero.value.mainInfTier >= 13? infBase(200, 18): 0) + 
-    (Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 700, 0) / 100 ), 0)) + 
+    hero.value.unlimitMinLevel + 
     (hero.value.rebirthPts >= 9e5? hero.value.singularity: 0) + 
     (ascenPerks[54].level? dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length : 0) + 
     (hero.value.spCount >= 41? Math.floor(hero.value.spCount / 6): 0) + 
-    dimensions.value[12].infTier
+    dimensions.value[12].infTier +
+    (dimensions.value[41].infTier == dimensions.value[41].maxInfTier? Math.floor(Math.log(3 + hero.value.trueLevel) ** 1.25) : 0) + 
+    (spaceShop.value[9].status? Math.floor(hero.value.spsCountMax / 2): 0) + 
+    (hero.value.bhTier >= 3 && hero.value.dId == 'main'? 1 * hero.value.transcendence: 0) +
+    (hero.value.bhTier >= 3 && hero.value.dId == 'bh'? 1 * hero.value.transcendenceBH: 0) + 
+    enemy.value.darkEnemyLoot[3]
 
-    hero.value.minLevel = (hero.value.dId == 'noMinLevel'? 0: hero.value.minLevel);
+    hero.value.minLevelMult = 1 + dimensions.value[33].infTier * 0.005 + 
+    (hero.value.selectedDivSkills.includes(13)? divineSkills.value[13].values[1]: 0);
+
+    hero.value.minLevel *= hero.value.minLevelMult;
+    hero.value.minLevel = Math.floor(hero.value.minLevel);
+
+    hero.value.minLevel = (hero.value.dId == 'noMinLevel' || hero.value.dId == 'd-noMinLevel'? 0: hero.value.minLevel);
 
     hero.value.level = hero.value.eLevel + hero.value.minLevel;
     hero.value.maxReachedLevel = Math.max(hero.value.maxReachedLevel, hero.value.level);
@@ -1456,43 +2229,83 @@ export function useBattle(hero, enemy, buffs) {
     eqCpmplect() + (ascenPerks[26].level? 2*Math.floor(hero.value.stage/5)-1: 0) + 
     (hero.value.spCount >= 23? hero.value.sp * 2: 0) + (radPerks[12].level) +
     ((hero.value.spCount / 6 >= 1? 25: 0) + (hero.value.spCount / 6 >= 2? 50: 0) + (hero.value.spCount / 6 >= 3? 75: 0) + (hero.value.spCount / 6 >= 4? 100: 0) + 
-    (hero.value.spCount / 6 >= 5? 150: 0) + (hero.value.spCount / 6 >= 6? 200: 0) + (hero.value.spCount / 6 >= 7? 300: 0) + (hero.value.spCount / 6 >= 8? 400: 0));
+    (hero.value.spCount / 6 >= 5? 150: 0) + (hero.value.spCount / 6 >= 6? 200: 0) + (hero.value.spCount / 6 >= 7? 300: 0) + (hero.value.spCount / 6 >= 8? 400: 0)) + 
+    (spaceShop.value[1].status? 10 * hero.value.spsCountMax: 0);
+
+    hero.value.unlimitLevelMax = 3000 + Math.floor((12 * dimensions.value[38].infTier) ** 1.25);
+    hero.value.unlimitLevel = Math.min(hero.value.unlimitLevel, hero.value.unlimitLevelMax);
+
+    hero.value.unlimitMaxLevel = ((1.05 ** (Math.max(hero.value.unlimitLevel - 700, 0) / 75)) - 1);
 
     hero.value.maxLevelMult = ((amulets[0].prefix.status? 0.02: 0) + (amulets[1].prefix.status? 0.04: 0) + (amulets[2].prefix.status? 0.06: 0) + (amulets[3].prefix.status? 0.08: 0)) * (hero.value.spCount >= 34? 2: 1) + 
-    (ascenPerks[31].level * 0.01) + (hero.value.rebirthTier >= 80? 1.01 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0) +
-    (ascenPerks[41].level? hero.value.overcorruption / (4 - 0.15 * (dimensions.value[22].infTier - 25)): 0) + (hero.value.mainInfTier >= 10? infBase(1.07) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0) + 
-    ((1.05 ** (Math.max((hero.value.unlimitLevel >= 3000? 3000 + (hero.value.unlimitLevel - 3000) ** 0.75: hero.value.unlimitLevel) - 700, 0) / 75) - 1)) +
+    (ascenPerks[31].level * 0.01) + (hero.value.rebirthTier >= 80? 0.02 * (Math.min(hero.value.rebirthTier, 200) - 79): 0) +
+    (ascenPerks[41].level? hero.value.overcorruption / (4 - 0.125 * (dimensions.value[22].infTier - 25)): 0) + (hero.value.mainInfTier >= 10? infBase(1.07) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints)*Math.log(hero.value.infPoints))) - 1: 0) + 
     hero.value.eqUpsMult['ring'].multLevel + 
-    (hero.value.spCount >= 15 && hero.value.abyssDStages >= 200? 1.025 ** (hero.value.abyssDStages - 199) - 1: 0)
-    hero.value.maxLevelMult *= (perks.value[4].status? 1.1: 1);
+    hero.value.unlimitMaxLevel +
+    (hero.value.spCount >= 15 && hero.value.abyssDStages >= 200? 0.025 * (hero.value.abyssDStages - 199): 0) + 
+    (hero.value.bhTier >= 1 && hero.value.dId == 'main'? 0.1 * hero.value.transcendence: 0) + 
+    (hero.value.bhTier >= 1 && hero.value.dId == 'bh'? 0.1 * hero.value.transcendenceBH: 0) + 
+    (0.01 * enemy.value.darkEnemyLoot[2]);
+
+    hero.value.maxLevelMult *= (perks.value[4].status? 1.1 + 0.01 * (dimensions.value[40].infTier - 40): 1);
 
     hero.value.maxLevel *= 1 + hero.value.maxLevelMult;
+    hero.value.maxLevel *= (hero.value.selectedDivSkills.includes(1)? divineSkills.value[1].values[0]: 1);
 
+    hero.value.maxLevel **= enemy.value.darkEnergy.deTotal;
+
+    hero.value.maxLevel *= (hero.value.dId == 'd-unlimitted'? 1 / Math.max(hero.value.dTimer ** (0.1 + 0.01 * dimensions.value[38].infTier), 1): 1);
+    hero.value.maxLevel = Math.max(hero.value.maxLevel, 1);
+
+    if(hero.value.dId == 'noMaxLevel'){
+      hero.value.maxLevel = 1;
+      hero.value.eLevel = 1;
+    }
+    
     hero.value.maxLevel = Math.floor(hero.value.maxLevel);
-    hero.value.trueLevel = hero.value.maxLevel;
+    hero.value.trueLevel = hero.value.maxLevel; 
 
+    hero.value.transcendence = (hero.value.dId == 'main'? Math.min(hero.value.trueLevel / 70000, 30): 0); //cap - 30
+
+    hero.value.infEvents = (!hero.value.infProgress? hero.value.infTier + 1: hero.value.infTier);
+    hero.value.infEvents = (hero.value.dId.startsWith('d-')? hero.value.mainInfTier: hero.value.infEvents);
 
     hero.value.infPenalty = (ascenPerks[47].level? dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length * 0.005: 0) + 
     (ascenPerks[42].level? 0.02: 0) + (enemy.value.dEnemyLoot[5]*0.01) + (Math.max(dimensions.value[13].infTier - 15, 0) * 0.005) + 
-    (hero.value.rebirthPts >= 2.5e6? Math.sqrt(Math.log(hero.value.rebirthPts)) * 0.01: 0) + (dimensions.value[27].infTier * 0.0025); 
+    (hero.value.rebirthPts >= 2.5e6? Math.sqrt(Math.log(hero.value.rebirthPts)) * 0.01: 0) + 
+    (dimensions.value[27].infTier * 0.005) + 
+    (hero.value.selectedDivSkills.includes(2)? divineSkills.value[2].values[0]: 0) + 
+    (hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[0]: 0) + 
+    (0.0075 * enemy.value.darkEnemyLoot[0])
+
     hero.value.maxInfPenalty = hero.value.infPenalty;
 
     hero.value.infPenalty = (hero.value.dId !== 'main' && hero.value.mainInfTier >= 20? hero.value.infPenalty * infPenaltyScale(hero.value.mainInfTier, 35): hero.value.infPenalty);
     if(!hero.value.infProgress && hero.value.level >= 700 && hero.value.dId == 'main'){
       hero.value.infProgress = true;
       if(hero.value.infEvents >= 1 || hero.value.mainInfTier >= 1){
-        hero.value.mainInfTier = Math.min(hero.value.mainInfTier + 1, 40);
+        hero.value.mainInfTier = Math.min(hero.value.mainInfTier + 1, 60);
         hero.value.infTier = hero.value.mainInfTier;
       }
     }
 
-    let infPower = Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty * (hero.value.dId.startsWith('d-')? 0: 1), 1);
-    hero.value.maxLevel = !hero.value.infProgress? Math.floor((Math.pow(hero.value.maxLevel, infPower))): hero.value.maxLevel; 
-    
-    let sLevels = Math.floor((hero.value.rebirthPts >= 4.5e5? Math.log(hero.value.rebirthPts + 3) ** 1.906: 0)) + 25 * (hero.value.singularity)
+    hero.value.infPenalty = (hero.value.dId.startsWith('d-')? 0: hero.value.infPenalty);
+    let infPower = Math.max(Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1), 0);
 
-    if(hero.value.dId.startsWith('d-'))
-      hero.value.maxLevel = Math.floor(Math.min(300 + (hero.value.maxLevel - 300) * ((hero.value.overcorruption + 1)/10) ,700 + sLevels))
+    //next inf tier
+    hero.value.infPower = Math.max(Math.min(1 - 0.02 * (hero.value.infTier) + hero.value.infPenalty, 1), 0);
+
+    hero.value.maxLevel = !hero.value.infProgress? Math.floor((Math.pow(hero.value.maxLevel, infPower))): hero.value.maxLevel; 
+
+    hero.value.trueMaxLevelWithMinLevelReq = (Math.round((700 - hero.value.minLevel) ** (1 / (1 - 0.02 * (hero.value.infTier) + hero.value.infPenalty))))
+    
+    let sLevels = Math.floor((hero.value.rebirthPts >= 4.5e5? Math.log(hero.value.rebirthPts + 3) ** 1.906: 0)) + 25 * (hero.value.singularity) + 
+    75 * hero.value.bhTier;
+
+    if(hero.value.dId.startsWith('d-')){
+      let mult = 10 + (hero.value.dId == 'd-corruption'? 2.5 * dimensions.value[26].infTier: 0);
+      hero.value.maxLevel = Math.floor(Math.min(hero.value.maxLevel * (hero.value.overcorruption / mult) ,700 + sLevels))
+    }
     else if(hero.value.dId == 'unlimitted')
       hero.value.maxLevel = Math.min(hero.value.maxLevel, hero.value.trueLevel)
     else if(hero.value.dId == 'next')
@@ -1507,38 +2320,56 @@ export function useBattle(hero, enemy, buffs) {
 
     let base = 0.5 + (hero.value.activeBuffs.includes(14) && buffs.value[14].tier >= 1? 0.5: 0);
 
-    hero.value.attacksPerSecond = base + (perks.value[5].status? Math.min(0.1 * Math.floor(hero.value.stage / 5 - 1), 1.5): perks.value[5].value * perks.value[5].level) + 
+    hero.value.attacksPerSecond = 0.5 + 
+    (perks.value[5].status? radPerkAPS(): perks.value[5].value * perks.value[5].level) + 
     (equipment[2].tiers[hero.value.equipmentTiers['boots']].bonus.speed + hero.value.eqUpsMult['boots'].bonus ) + 
     (buffs.value[3].combo == 100? 0.3: 0) + 
     (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 3? 0.1 * Math.floor(buffs.value[8].time/250): 0) + 
-    (flashBuff()) + 
-    (0.1 * buffs.value[6].charges.power);
+    (flashBuff()) +
+    (0.1 * buffs.value[6].charges.power) -
+    (hero.value.dId == 'd-noAps'? 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier)): 0) + 
+    (dimensions.value[39].infTier * 0.1);
+
     hero.value.attacksPerSecond -= hero.value.activeBuffs.includes(5)? buffs.value[5].debuff: 0;
 
-    hero.value.attacksPerSecond = Math.min(hero.value.attacksPerSecond, 4);
-    hero.value.attacksPerSecond = Math.max(hero.value.attacksPerSecond, base);
+    buffs.value[14].extraHit = (hero.value.attacksPerSecond > 4? Math.log(Math.max((hero.value.attacksPerSecond - 4) * 10, 1)) ** 3.75: 0);
+    
+    enemy.value.bhApSDown = (hero.value.bhTier >= 3? Math.max(Math.min(hero.value.bhTier ** 1.75, 100), 1) : 1);
+    hero.value.attacksPerSecond **= 1 - enemy.value.bhApSDown * 0.01;
+
+    hero.value.maxAPS = 4 - (hero.value.dId == 'd-noAps'? 0.1 * dimensions.value[39].infTier: 0);
+
+    hero.value.totalAPS = hero.value.attacksPerSecond;
+    hero.value.attacksPerSecond = Math.min(Math.max(hero.value.attacksPerSecond, base), Math.max(hero.value.maxAPS, base));
+
+
 
     hero.value.avoid = 0 + (hero.value.rebirthPts >= 1750? 8: 0) + (hero.value.spCount >= 33? Math.floor(hero.value.spCount / 6): 0);
 
+    hero.value.infCorruption = (hero.value.mainInfTier >= 5? (infBase(1.008) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0);
     hero.value.corruption = 0.1 + (hero.value.spCount >= 22? 1.002 ** hero.value.sp - 1: 0) + (radPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0) + 
     (hero.value.spCount >= 15 && hero.value.abyssDStages >= 40? (1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15))): 0) + 
-    (hero.value.mainInfTier >= 5? (infBase(1.01) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)) - 1): 0) + 
+    hero.value.infCorruption +
     (hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0) + 
     ((dimensions.value[22].infTier - 25) * 0.1) + (dimensions.value[26].infTier * 0.2);
 
-    hero.value.overcorruption = Math.max(hero.value.corruption - 1, 0);
+    hero.value.overcorruption = hero.value.corruption;
     hero.value.corruption = Math.min(hero.value.corruption, 1);
     if(hero.value.dId == 'corruption') hero.value.corruption = 0.1;
 
     hero.value.freeTreePoints = 50 * (dimensions.value[6].infTier - 10) + enemy.value.dEnemyLoot[0];
 
     hero.value.dsStage = 150 - (hero.value.rebirthPts >= 8.5e5? Math.floor(Math.log(hero.value.rebirthPts + 3)): 0) - 
-    (hero.value.abyssDStages >= 120 && hero.value.spCount >= 15? Math.floor(Math.sqrt(hero.value.abyssDStages - 119)): 0) - 
+    (hero.value.abyssDStages >= 120 && hero.value.spCount >= 15? Math.floor((hero.value.abyssDStages - 119) ** 0.65): 0) - 
     (dimensions.value[13].infTier == dimensions.value[13].maxInfTier? 30: 0);
     
     hero.value.maxStage = Math.max(hero.value.maxStage, hero.value.stage);
     if(hero.value.dId == 'survival-2') hero.value.survivalStage = Math.max(hero.value.survivalStage, hero.value.maxStage);
- 
+
+
+    hero.value.recoveryPenalty = 1 + 0.01 * Math.max(hero.value.stage - 100, 0);
+
+    hero.value.minStage = dimensions.value[39].infTier;
   }
 
   const eqStatsHandle = () => {
@@ -1561,6 +2392,9 @@ export function useBattle(hero, enemy, buffs) {
     eqMin();
     eqTierHandle();
 
+    hero.value.multEnchance = (hero.value.spCount >= 28? 5 * Math.floor(hero.value.spCount / 6): 0) + (ascenPerks[44].level? 5 * hero.value.singularity : 0) + 
+    (2.5 * dimensions.value[36].infTier) + (spaceShop.value[5].status? 2 * hero.value.spsCountMax: 0);
+
     if(hero.value.isSingularity && hero.value.singularity >= 6)
       hero.value.freeEnchances = 0;
     else
@@ -1569,10 +2403,30 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const eqTierHandle = () => {
-    hero.value.equipmentTiers['sword'] = Math.min(hero.value.eqDrop['sword'] + hero.value.eqMin['sword'], 50);
-    hero.value.equipmentTiers['armor'] = hero.value.eqDrop['armor'] + hero.value.eqMin['armor'];
-    hero.value.equipmentTiers['boots'] = hero.value.eqDrop['boots'] + hero.value.eqMin['boots'];
-    hero.value.equipmentTiers['ring'] = hero.value.eqDrop['ring'] + hero.value.eqMin['ring'];
+    let cap = (hero.value.dId == 'd-noEq'? 1: 50);
+    cap = (hero.value.darkId.includes('d-noEq')? Math.min(1 + dimensions.value[36].infTier, 50): cap);
+
+    let notId = !(hero.value.dId == 'd-noEq' || hero.value.darkId.includes('d-noEq'));
+    let weaponEqCap = Math.min(cap, hero.value.eqTierReq['armor']);
+    let capSword = Math.min(cap, hero.value.eqTierReq['sword']);
+    
+    if (Math.floor(hero.value.spCount / 6) >= 4 && notId) capSword = 50;
+    
+    if(dimensions.value[36].infTier > 0 && notId){
+      let minEq = dimensions.value[36].infTier;
+      let minSword = Math.max(hero.value.eqTierReq['sword'], capSword);
+
+      hero.value.eqDrop['sword'] = Math.min(minSword, Math.max(hero.value.eqDrop['sword'], minEq));
+      hero.value.eqDrop['armor'] = Math.min(hero.value.eqTierReq['armor'], Math.max(hero.value.eqDrop['armor'], minEq));
+      hero.value.eqDrop['boots'] = Math.min(hero.value.eqTierReq['boots'], Math.max(hero.value.eqDrop['boots'], minEq));
+      hero.value.eqDrop['ring'] = Math.min(hero.value.eqTierReq['ring'], Math.max(hero.value.eqDrop['ring'], minEq));
+    }
+   
+
+    hero.value.equipmentTiers['sword'] = Math.min(hero.value.eqDrop['sword'] + hero.value.eqMin['sword'], capSword);
+    hero.value.equipmentTiers['armor'] = Math.min(hero.value.eqDrop['armor'] + hero.value.eqMin['armor'], weaponEqCap);
+    hero.value.equipmentTiers['boots'] = Math.min(hero.value.eqDrop['boots'] + hero.value.eqMin['boots'], weaponEqCap);
+    hero.value.equipmentTiers['ring'] = Math.min(hero.value.eqDrop['ring'] + hero.value.eqMin['ring'], weaponEqCap);
 
     if(hero.value.dId == 'noEq' || hero.value.isSingularity && hero.value.singularity >= 6){
       hero.value.equipmentTiers['sword'] = 0;
@@ -1601,13 +2455,31 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const eqMin = () => {
-    hero.value.eqMin['sword'] = 0 + (ascenPerks[10].level? 1: 0) + Math.floor(hero.value.spCount/6) + (hero.value.spCount >= 47? 1: 0);
+    hero.value.eqMin['sword'] = 0 + (ascenPerks[10].level? 1: 0) + Math.floor(hero.value.spCount/6) + (hero.value.spCount >= 47? 1: 0) + 
+    (spaceShop.value[8].status? 1 * Math.floor(hero.value.spsCountMax / 10): 0);
 
-    hero.value.eqMin['armor'] = 0 + (ascenPerks[11].level? 1: 0) + (hero.value.spCount >= 47? 1: 0);
+    hero.value.eqMin['armor'] = 0 + (ascenPerks[11].level? 1: 0) + (hero.value.spCount >= 47? 1: 0) + 
+    (spaceShop.value[8].status? 1 * Math.floor(hero.value.spsCountMax / 10): 0);
 
-    hero.value.eqMin['boots'] = 0 + (ascenPerks[12].level? 1: 0) + (hero.value.spCount >= 47? 1: 0);
+    hero.value.eqMin['boots'] = 0 + (ascenPerks[12].level? 1: 0) + (hero.value.spCount >= 47? 1: 0) + 
+    (spaceShop.value[8].status? 1 * Math.floor(hero.value.spsCountMax / 10): 0);
 
-    hero.value.eqMin['ring'] = 0 + (ascenPerks[13].level && ascenPerks[5].level? 1: 0) + (hero.value.spCount >= 47? 1: 0);
+    hero.value.eqMin['ring'] = 0 + (ascenPerks[13].level && ascenPerks[5].level? 1: 0) + (hero.value.spCount >= 47? 1: 0) + 
+    (spaceShop.value[8].status? 1 * Math.floor(hero.value.spsCountMax / 10): 0);
+  }
+
+  const radPerkAttack = () => {
+    let soft = 140 + 10 * (dimensions.value[40].infTier - 40);
+    hero.value.radAttack = (1.01 ** Math.min(perks.value[0].kills, soft) + (perks.value[0].kills >= soft? (perks.value[0].kills - soft) ** 0.09 - 1: 0));
+
+    return hero.value.radAttack;
+  }
+
+  const radPerkAPS = () => {
+    let dimEffect = 0.01 * (dimensions.value[40].infTier - 40);
+    hero.value.radAPS = Math.min((0.1 + dimEffect) * Math.floor(hero.value.stage / 5 - 1), 1.5);
+
+    return hero.value.radAPS;
   }
   //buff
   const buffActivation = () => {
@@ -1660,14 +2532,51 @@ export function useBattle(hero, enemy, buffs) {
       buffs.value[6].active = true;
       buffs.value[6].maxTier = 1 + hero.value.singularity;
     }
-     
+    
+    if(hero.value.bhTier > 0){
+      buffs.value[15].active = true;
+      buffs.value[15].maxTier = hero.value.bhTier;
+    }
 
     if(hero.value.singularity >= 1){
       buffs.value[7].maxTier = 4;
     }
 
+    if(dimensions.value[32].infTier >= 1)
+      buffs.value[13].maxTier = 4;
+
+    if(dimensions.value[32].infTier >= 4)
+      buffs.value[12].maxTier = 4;
+
+    if(dimensions.value[32].infTier >= 6)
+      buffs.value[1].maxTier = 4;
+
+    if(dimensions.value[32].infTier >= 8)
+      buffs.value[2].maxTier = 4;
+
+    if(dimensions.value[32].infTier >= 12)
+      buffs.value[9].maxTier = 4;
+
+    if(dimensions.value[32].infTier >= 16)
+      buffs.value[14].maxTier = 4;
+
+    if(dimensions.value[40].infTier == dimensions.value[40].maxInfTier){
+      buffs.value[16].maxTier = 4;
+      buffs.value[16].active = true;
+    }
+     
+    hero.value.buffLayouts[0].id = 0;
+    hero.value.buffLayouts[0].unlocked = true;
+
+    hero.value.buffLayouts[1].id = 1;
+    hero.value.buffLayouts[1].unlocked = (hero.value.singularity >= 5? true: false);
+
+    hero.value.buffLayouts[2].id = 2;
+    hero.value.buffLayouts[2].unlocked = (hero.value.mainInfTier >= 30? true: false);
 
     chargesBuffReset();
+
+    if(!hero.value.activeBuffs.includes(16)) buffs.value[16].stack = 0;
 
   }
 
@@ -1758,23 +2667,57 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const flexibleBuff = () => {
+    if(hero.value.dId == 'bh' && hero.value.bhTier >= 2) return 1;
+
     let chance = 1;
-    if(!hero.value.activeBuffs.includes(9))
+    if(!hero.value.activeBuffs.includes(9)){
+      hero.value.totalAvoid = hero.value.avoid;
       chance = (Math.random()*100 + hero.value.avoid >= 100? 0: 1);
-
-    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 1)
-      chance = (Math.random()*100 + hero.value.avoid + 10 >= 100? 0: 1);
-
-    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 2)
-      chance = (Math.random()*100 + hero.value.avoid + 20 >= 100? 0: 1);
-    
-    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 3)
-      chance = (Math.random()*100 + hero.value.avoid + 20 >= 100 || Math.random()*100 + hero.value.avoid + 20 >= 100? 0: 1);
+    }
       
+    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 1){
+      hero.value.totalAvoid = hero.value.avoid + 10;
+      chance = (Math.random()*100 + hero.value.avoid + 10 >= 100 ? 0 : 1);
+    }
+    
+    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 2){
+      hero.value.totalAvoid = hero.value.avoid + 20;
+      chance = (Math.random()*100 + hero.value.avoid + 20 >= 100 ? 0 : 1);
+    }
+    
+    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 3){
+      hero.value.totalAvoid = (1 - (1 - (hero.value.avoid + 20) * 0.01) ** 2) * 100;
+
+      chance = (Math.random()*100 + hero.value.avoid + 20 >= 100 || 
+                Math.random()*100 + hero.value.avoid + 20 >= 100 ? 0 : 1);
+    }
+    
+    if(hero.value.activeBuffs.includes(9) && buffs.value[9].tier == 4){
+      hero.value.totalAvoid = (1 - (1 - Math.min(hero.value.avoid + 20 + 4 * buffs.value[9].times, 70) * 0.01) ** 2) * 100;
+
+      chance = (Math.random()*100 + Math.min(hero.value.avoid + 20 + 4 * buffs.value[9].times, 70) >= 100 || 
+                Math.random()*100 + Math.min(hero.value.avoid + 20 + 4 * buffs.value[9].times, 70) >= 100 ? 0 : 1);
+      
+      buffs.value[9].times = Math.min(!chance? buffs.value[9].times + 1: 0, 10);
+    }
+
+    hero.value.totalAvoid = Math.max(Math.min(hero.value.totalAvoid, 90), 0);
+    
+
     return chance;
   }
 
   const extraLifeBuff = () => {
+    if(hero.value.spaceTimer == -1){
+      hero.value.spaceTimer = 0;
+      return;
+    }
+
+    if(enemy.value.deBoss.darkEnemyTimer == -1){
+      enemy.value.deBoss.darkEnemyTimer = 0;
+      return;
+    }
+
     if(!buffs.value[10].rise)
       return;
     let dChance = 5 * dimensions.value[4].infTier;
@@ -1787,24 +2730,29 @@ export function useBattle(hero, enemy, buffs) {
       buffs.value[10].buffT2 = 8;
     }
     if(hero.value.activeBuffs.includes(10) && buffs.value[10].tier >= 3 && chance){
-      buffs.value[10].buffT3 = 4;
+      buffs.value[10].buffT3 = 3;
       buffs.value[10].buffT3HP = hero.value.hp;
     }
   }
 
   const fastSlashBuff = () => {
-    if(hero.value.activeBuffs.includes(5) && buffs.value[5].tier >= 1){
-      buffs.value[5].debuff = 0.8;
-      buffs.value[5].stuck = 1;
-    }
-    if(hero.value.activeBuffs.includes(5) && buffs.value[5].tier >= 2){
-      buffs.value[5].debuff = 0.7;
-      buffs.value[5].stuck += (Math.random()*100 + 45 >= 100? 1: 0);
-    }
-    if(hero.value.activeBuffs.includes(5) && buffs.value[5].tier >= 2){
-      buffs.value[5].debuff = 0.6;
-      buffs.value[5].stuck += (Math.random()*100 + 25 >= 100? 1: 0);
-    }
+    if(hero.value.activeBuffs.includes(5)){
+      if(buffs.value[5].tier >= 1){
+        buffs.value[5].debuff = 0.8;
+        buffs.value[5].stuck = 1;
+      }
+      if(buffs.value[5].tier >= 2){
+        buffs.value[5].debuff = 0.7;
+        buffs.value[5].stuck += (Math.random()*100 + 45 >= 100? 1: 0);
+      }
+      if(buffs.value[5].tier >= 2){
+        buffs.value[5].debuff = 0.6;
+        buffs.value[5].stuck += (Math.random()*100 + 25 >= 100? 1: 0);
+      }
+    } else if(hero.value.activeBuffs.includes(14) && buffs.value[14].tier >= 4){
+      let extraHit = Math.floor(buffs.value[14].extraHit / 100) + (Math.random()*100 + buffs.value[14].extraHit%100 >= 100? 1: 0);
+      buffs.value[5].stuck = (buffs.value[5].stuck < 0? extraHit: buffs.value[5].stuck + extraHit);
+    } else return;
 
     heroAttackBarProgress.value += buffs.value[5].stuck;
   }
@@ -1868,7 +2816,18 @@ export function useBattle(hero, enemy, buffs) {
       return;
 
     if(!hero.value.activeBuffs.includes(11)){
-      hero.value.attack *= (Math.random() * 100 + hero.value.crit >= 100? hero.value.critAttack*0.01: 1);
+      let chance = Math.random() * 100 + hero.value.crit;
+
+      if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && chance && !buffs.value[12].isRage){
+        buffs.value[12].rage = Math.min(buffs.value[12].rage +3 , 100);
+      }
+
+      if(hero.value.activeCurse.includes(14) && chance < 100) cursed[14].crit = true;
+    
+
+      let critdmg = hero.value.critAttack * 0.01 * (1 - perditionOfResilience())
+
+      hero.value.attack *= (chance >= 100? critdmg: 1);
       return;
     }
 
@@ -1885,7 +2844,14 @@ export function useBattle(hero, enemy, buffs) {
       buffs.value[11].hit = chance;
     }
 
-    hero.value.attack *= (chance? (hero.value.critAttack)*0.01: 1);
+    if(hero.value.activeBuffs.includes(12) && buffs.value[12].tier >= 4 && chance && !buffs.value[12].isRage){
+      buffs.value[12].rage = Math.min(buffs.value[12].rage + 3, 100);
+    }
+
+    if(hero.value.activeCurse.includes(14) && !chance) cursed[14].crit = true;
+
+    let critdmg = hero.value.critAttack * 0.01 * (1 - perditionOfResilience());
+    hero.value.attack *= (chance? critdmg: 1);
     
   }
 
@@ -1897,6 +2863,17 @@ export function useBattle(hero, enemy, buffs) {
       buffs.value[12].crit = (1 - hero.value.hp / hero.value.maxHp) * 15;
       buffs.value[12].critDmg = (1 - hero.value.hp / hero.value.maxHp) * 75;
     }
+  }
+
+  const isRageHandler = () => {
+    if(buffs.value[12].rage >= 100)
+      buffs.value[12].isRage = true;
+
+    if(buffs.value[12].rage <= 0){
+      buffs.value[12].isRage = false;
+      buffs.value[12].rageAttackMult = 0;
+    }
+      
   }
 
   const juggernautBuff = () => {
@@ -1923,6 +2900,22 @@ export function useBattle(hero, enemy, buffs) {
     }
     return total;
   }
+
+  const blackImpulseBuff = () => {
+    buffs.value[15].defIgnore = false;
+    buffs.value[15].divShield = false;
+
+    buffs.value[15].hits = (buffs.value[15].hits + 1)%5;
+
+    if(hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 2){
+      buffs.value[15].defIgnore = (Math.random() * 100 + 25 >= 100? true: false);
+    }
+    if(hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 3){
+      let chance = (Math.random() * 100 + 10 >= 100);
+      buffs.value[10].buffT3 = (chance? Math.min(buffs.value[10].buffT3 + 1, 3): buffs.value[10].buffT3);
+      if(chance) buffs.value[10].buffT3HP = hero.value.hp;
+    }
+  }
 //ascension
   const ascensionEffect = () => {
     amulets[0].status = (ascenPerks[8].level && hero.value.maxStage >= 20? true: false);
@@ -1946,7 +2939,7 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.ascensionShards += hero.value.totalAscensionShards * 0.1;
     }
 
-    hero.value.dsTotal = hero.value.ds + enemy.value.dEnemyLoot[2] - hero.value.dsSpend;
+    hero.value.dsTotal = hero.value.ds + enemy.value.dEnemyLoot[2] + enemy.value.darkEnemyLoot[5] - hero.value.dsSpend;
     hero.value.dsMax = Math.max(hero.value.dsTotal, hero.value.dsMax);
 
     if(dimensions.value[17].infTier == dimensions.value[17].maxInfTier){
@@ -1974,6 +2967,8 @@ export function useBattle(hero, enemy, buffs) {
     x *= (1 + ascenPerks[34].level * 0.01);
     x *= (hero.value.mainInfTier >= 3? (infBase(1.045) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
     x **= (hero.value.dId == 'unlimitted'? 0.825: 1);
+
+    x /= (enemy.value.buffs.includes(3)? 1.5: 1);
 
     hero.value.shardsMult = x;
 
@@ -2021,11 +3016,14 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.isSingularity || !hero.value.isStage)
       return;
 
-    hero.value.lacrimose = (hero.value.rebirthPts >= 20000? 0.15: 0) + (hero.value.infEvents >= 2 || hero.value.infTier >= 2? 0.25: 0) + (0.02 * hero.value.singularity);
+    //stage rush
+    hero.value.lacrimose = (hero.value.rebirthPts >= 20000? 0.15: 0) + (hero.value.infEvents >= 2 || hero.value.infTier >= 2? 0.25: 0) + (0.02 * hero.value.singularity) + 
+    0.05 * hero.value.bhTier;
     if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage && !hero.value.isTravell && !hero.value.soulD && hero.value.dId != 'next'){
       hero.value.stage++;
       hero.value.zone = 1;
       hero.value.kills = 0;
+
       refreshKillsPerZone();
       grantExp();
       if (hero.value.stage > 10)
@@ -2045,14 +3043,19 @@ export function useBattle(hero, enemy, buffs) {
         hero.value.zone = 1;
         hero.value.stage++;
 
-        hero.value.damageStage = 0;
         
         if(hero.value.dId == 'next')
           hero.value.stage = Math.min(hero.value.stage, 30);
+        if(hero.value.dId == 'd-next')
+          hero.value.stage = Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1));
+        if(hero.value.darkId.includes('d-next'))
+          hero.value.stage = Math.min(hero.value.stage, 30 + 10 * dimensions.value[34].infTier);
         if(hero.value.soulD && hero.value.dId != 'soulD')
           hero.value.stage = 15;
         if(hero.value.stage > 100 && hero.value.isAbyss && hero.value.dId != 'abyss-d')
           hero.value.stage = 100;
+        if(hero.value.stage >= 300)
+          hero.value.stage = 300;
         
         if(hero.value.abyssTier >= 3 && hero.value.isAbyss) hero.value.abyssDStages = Math.max(hero.value.stage, hero.value.abyssDStages);
           
@@ -2110,7 +3113,7 @@ export function useBattle(hero, enemy, buffs) {
       }
 
     }
-    start = Math.min(start, 10000);
+    start = Math.min(start, 10000 * (2 ** Math.max(Math.floor((hero.value.stage - 100)/50), 0)));
     hero.value.killsPerZone = Math.max(start * (hero.value.mainInfTier >= 7? (1 / infBase(1.03) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 5);
   }
 
@@ -2129,6 +3132,18 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.soulTier = Math.floor(hero.value.souls/10);
     
+
+    let totalBonus = (hero.value.selectedDivSkills.includes(11)? divineSkills.value[11].values[0]: 1);
+    enemy.value.soulBuff.mutagen = (hero.value.souls > 40? enemy.value.soulBuff.drop ** 0.2 * totalBonus: 1);
+    enemy.value.soulBuff.stardust = (hero.value.souls > 40? enemy.value.soulBuff.drop ** 0.3 * totalBonus: 1);
+
+    if(hero.value.selectedDivSkills.includes(11) || hero.value.selectedDivSkills.includes(6)){
+      if(hero.value.soulD)
+        hero.value.stage = hero.value.soulDStage;
+      hero.value.soulD = false;
+
+      return;
+    }
   }
 
   const rebirthPtsHandle = () => {
@@ -2160,9 +3175,11 @@ export function useBattle(hero, enemy, buffs) {
   const rebirthHandle = () => {
     hero.value.potential = (hero.value.rebirthPts >= 3? 10: 0) + (hero.value.rebirthPts >= 75? 10: 0) + (hero.value.rebirthPts >= 250? 10: 0) + 
     (hero.value.rebirthPts >= 5000? 10: 0) + (hero.value.rebirthPts >= 17500? 10: 0) + (hero.value.rebirthPts >= 60000? 10: 0) + radPerks[6].level + 
-    (hero.value.infTier >= 3 && hero.value.rebirthTier >= 30? Math.floor(1.053 ** Math.min(hero.value.rebirthTier, 80)): 0) + (enemy.value.dangerEnemyLoot[0]) + 
+    (hero.value.rebirthTier >= 30? Math.floor(1.053 ** Math.min(hero.value.rebirthTier, 80)): 0) + (enemy.value.dangerEnemyLoot[0]) + 
     (perks.value[18].level) + (hero.value.mainInfTier >= 20? infBase(250, 22): 0) + 
-    (hero.value.rebirthPts >= 5e5? 30: 0) + (6 * (dimensions.value[10].infTier - 10));
+    (hero.value.rebirthPts >= 5e5? 30: 0) + (6 * (dimensions.value[10].infTier - 10)) + 
+    (hero.value.eqUpsMult['spRing'].potential) + 
+    (enemy.value.darkEnemyLoot[4]);
 
 
     if(hero.value.rebirthPts >= 2000 && hero.value.maxStage >= 20) 
@@ -2188,7 +3205,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.rebirthPts >= 3.5e5? Math.log(hero.value.rebirthPts + 3): 1) * 
     (hero.value.abyssDStages >= 100 && hero.value.spCount >= 15? Math.max(1.01 ** (hero.value.abyssDStages - 99), 1): 1);
 
-    hero.value.soulOverkill = ((hero.value.rebirthPts >= 2e5? 1: 0) + (hero.value.rebirthPts >= 6.5e5? 1: 0)) * (hero.value.dId == 'soulD'? 0: 1);
+    hero.value.soulOverkill = 1 + ((hero.value.rebirthPts >= 2e5? 1: 0) + (hero.value.rebirthPts >= 6.5e5? 1: 0)) * (hero.value.dId == 'soulD'? 0: 1);
 
 
   }
@@ -2222,8 +3239,38 @@ export function useBattle(hero, enemy, buffs) {
     (amulets[2].status && hero.value.maxStage >= 40? 1: 0) + (amulets[3].status && hero.value.maxStage >= 50? 1: 0) + 
     (hero.value.rebirthPts >= 15000? 1: 0) + (hero.value.isAbyss && hero.value.rebirthTier >= 15? 1: 0) + (hero.value.singularity >= 6? 1: 0);
     hero.value.curse = 1 + (amulets[0].status? 1: 0) + (amulets[1].status? 1: 0) + (amulets[2].status? 1: 0) + (amulets[3].status? 1: 0) + 
-    (hero.value.rebirthTier >= 10? 1: 0);
+    (hero.value.rebirthTier >= 10? 1: 0) + Math.floor((hero.value.mainInfTier - 25) / 10);
+    hero.value.minCurse = Math.floor((hero.value.mainInfTier - 25) / 10);
 
+    cursesUnlockCheck();
+
+    if(hero.value.singularity >= 8){
+      for(let i = 0; i < cursed.length;i++){
+        cursed[i].tier[4].status = true;
+      }
+    }
+
+    let quasarShackles = (hero.value.selectedDivSkills.includes(0)? divineSkills.value[0].values[0]: 1);
+    let fluctuationFailures = (hero.value.selectedDivSkills.includes(10)? divineSkills.value[10].values[0]: 1);
+
+    let totalEffects = 1 * quasarShackles * fluctuationFailures;
+    ///////////////////////
+    if(hero.value.dId == 'd-hard')
+      hero.value.curseMult = ((1 + (0.01 + 0.003 * dimensions.value[27].infTier) * hero.value.stage) * totalEffects) ** (1 + 0.0125 * dimensions.value[27].infTier);
+    else if(hero.value.darkId.includes('d-hard') && hero.value.dId != 'd-hard')
+      hero.value.curseMult = Math.max((1 + 0.01 * hero.value.stage - 0.02 * dimensions.value[27].infTier) * totalEffects, 1);
+    else 
+      hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.05 * Math.max(hero.value.infTier - 30, 0) - 0.02 * dimensions.value[27].infTier) * totalEffects, 1));
+
+
+    let curses = Math.min(Math.floor((hero.value.mainInfTier - 30) / 10), 7);
+    for(let count = 0; count < curses; count++){
+      cursed[13 + count].status = true;
+    }
+    
+  }
+
+  const cursesUnlockCheck = () => {
     if(hero.value.abyssTier >= 1 || hero.value.dId == 'hard'){
       cursed[7].status = true;
       cursed[8].status = true;
@@ -2234,19 +3281,6 @@ export function useBattle(hero, enemy, buffs) {
       cursed[11].status = true;
       cursed[12].status = true;
     }
-
-    if(hero.value.singularity >= 8){
-      for(let i = 0; i < cursed.length;i++){
-        cursed[i].tier[4].status = true;
-      }
-    }
-
-    if(hero.value.dId == 'd-hard')
-      hero.value.curseMult = 1 + (0.01 + 0.002 * dimensions.value[27].infTier) * hero.value.stage;
-    else if(hero.value.darkId.includes('d-hard') && hero.value.dId != 'd-hard')
-      hero.value.curseMult = Math.max(1 + 0.01 * hero.value.stage - 0.05 * dimensions.value[27].infTier, 1);
-    else 
-      hero.value.curseMult = Math.max((hero.value.isSingularity || hero.value.infProgress? 1: 1 + 0.025 * Math.max(hero.value.infTier - 30, 0) - 0.0125 * dimensions.value[27].infTier), 0.5);
   }
 
   const mutationHandle = () => {
@@ -2256,6 +3290,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.mutation[3].chance = Math.min(0 + 2 * radPerks[3].level + (ascenPerks[39].level? 10: 0), 100);
 
     if(radPerks[9].level) hero.value.soulsCap = 10000;
+    else hero.value.soulsCap = 40;
     radPerks[10].max = 100;
 
     radPerks[0].max = (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 80: 25);
@@ -2266,13 +3301,28 @@ export function useBattle(hero, enemy, buffs) {
     radPerks[4].max = (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 40: 30);
     radPerks[5].max = (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 10: 5);
     if(radPerks[6].status) radPerks[6].max = (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 60: 30);
+
     radPerks[12].max = (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 200: 100);
+    radPerks[12].max += (hero.value.selectedDivSkills.includes(4)? divineSkills.value[4].values[0]: 0);
+    radPerks[12].level = Math.min(radPerks[12].level, 200 + (hero.value.selectedDivSkills.includes(4)? divineSkills.value[4].values[0]: 0));
 
     if(ascenPerks[51].level) hero.value.dangerStage = Math.max(hero.value.dangerStage, hero.value.stage);
+    else hero.value.dangerStage = 0;
 
     radPerks[10].max += (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 100: 0) + (ascenPerks[40].level? 100: 0) + (hero.value.mainInfTier >= 16? infBase(15, 20): 0) + 
-    Math.floor(hero.value.rebirthPts >= 2e6? Math.log(hero.value.rebirthPts) ** 2: 0) + hero.value.dangerStage + 
-    (dimensions.value[15].infTier > 10? Math.floor(1.45 ** (dimensions.value[15].infTier - 10)): 0) + (hero.value.spCount >= 38? hero.value.sp: 0);
+    Math.floor(hero.value.rebirthPts >= 2e6? Math.log(hero.value.rebirthPts) ** 2: 0) + hero.value.dangerStage * 2 + 
+    (dimensions.value[15].infTier > 10? Math.floor(1.45 ** (dimensions.value[15].infTier - 10)): 0) + (hero.value.spCount >= 38? hero.value.sp: 0) + 
+    (hero.value.selectedDivSkills.includes(12)? Math.floor(divineSkills.value[12].values[0]): 0);
+
+
+    if(hero.value.selectedDivSkills.includes(14)){
+      radPerks[10].level = radPerks[10].max;
+
+      for (let i in radPerks) {
+        if (Number(i) === 10) continue;
+        radPerks[i].level = 0;
+      }
+    }
 
 
     if(hero.value.dId == 'danger') radPerks[10].level = 300 + 30 * (dimensions.value[15].infTier - 10)
@@ -2281,9 +3331,9 @@ export function useBattle(hero, enemy, buffs) {
     if (radPerks[6].status) radPerks[6].description = `+[${radPerks[6].level}] Potential`;
     else radPerks[6].description = `REBUILD REBIRTH SYSTEM THAT ALLOWS YOU TO SPEND MUTAGEN TO UP YOUR POTENTIAL`;
 
-    let epPenalty = (hero.value.abyssDStages >= 140 && hero.value.spCount >= 15? (100 - Math.sqrt(hero.value.abyssDStages - 139)) * 0.01: 1);
     enemy.value.danger = radPerks[10].level;
-    enemy.value.enemyPower = ((1.017 - (hero.value.infTier >= 4 || hero.value.infEvents >= 4? 0.005: 0) + (hero.value.dId == 'danger'? 0.0175: 0)) ** epPenalty) ** radPerks[10].level;
+    enemy.value.enemyPower = enemyPowerHandle();
+    
     enemy.value.spaceBossChance = (((1.09 + (hero.value.infTier >= 4? 0.01: 0)) ** radPerks[10].level - 1) / (10 ** Math.floor((hero.value.spCount) / 6))) * 
     (hero.value.rebirthTier >= 60? 1.02 ** hero.value.rebirthTier: 1);
     enemy.value.spaceBossChance = Math.min(enemy.value.spaceBossChance, 100);
@@ -2311,25 +3361,119 @@ export function useBattle(hero, enemy, buffs) {
       enemy.value.dEnemyChance[5] = (enemy.value.dEnemyLoot[5] < 5? (0.2 ** enemy.value.dEnemyLoot[5] * 1.0025 ** Math.max(radPerks[10].level - 699, 0)): 0);
     }
 
+
+    darkCreaturesCapHandle();
+    if(hero.value.dId == 'd-danger'){
+      
+      //inf penalty
+      enemy.value.darkEnemyChance[0] = darkCreaturesHandle(0, 0.6, 0.025)
+      //dmg
+      enemy.value.darkEnemyChance[1] = darkCreaturesHandle(1, 0.95, 0.035)
+      //max level mult
+      enemy.value.darkEnemyChance[2] = darkCreaturesHandle(2, 0.85, 0.015)
+      //min level
+      enemy.value.darkEnemyChance[3] = darkCreaturesHandle(3, 0.55, 0.02)
+      //ds
+      enemy.value.darkEnemyChance[4] = darkCreaturesHandle(4, 0.15, 0.025)
+      //potential
+      enemy.value.darkEnemyChance[5] = darkCreaturesHandle(5, 0.8, 0.025)
+      //stardust drop
+      enemy.value.darkEnemyChance[6] = darkCreaturesHandle(6, 0.95, 0.02)
+    }
+
     if(hero.value.dId == 'soulD'){
       hero.value.soulD = true;
       radPerks[9].level = 1;
     }
   }
 
+  const enemyPowerHandle = () => {
+    let power = 1;
+  
+    let epPenalty = (hero.value.abyssDStages >= 140 && hero.value.spCount >= 15
+      ? (100 - Math.sqrt(hero.value.abyssDStages - 139)) * 0.01
+      : 1);
+  
+    let baseMult = (1.017 
+      - (hero.value.infTier >= 4 || hero.value.infEvents >= 4 ? 0.005 : 0) 
+      + (hero.value.dId === 'danger' ? 0.0175 : 0));
+  
+    power = baseMult;
+    
+    // Radiation perk scaling
+    power = power ** radPerks[10].level;
+    // Abyss Penalty
+    power = power ** epPenalty;
+    //quasar power
+    power = power ** (hero.value.selectedDivSkills.includes(12)? divineSkills.value[12].values[1]: 1); 
+    //dimension
+    power = power ** (1 - 0.01 * dimensions.value[31].infTier);
+    //
+    power = power ** (divineSkills.value[14].values[0]);
+
+  
+    // Mutagen damping
+    if (ascenPerks[65].level) {
+      let digits = Math.floor(Math.log10(Math.max(hero.value.mutagen, 10))); 
+      let damping = 1 - 0.01 * digits; 
+      power = power ** damping;
+    }
+  
+    if (spaceShop.value[6].status) {
+      power /= (Math.E * hero.value.spsCountMax) ** 1.4;
+    }
+  
+    return Math.max(power, 1);
+  };
+
+  const darkCreaturesCapHandle = () => {
+    enemy.value.darkEnemyCap[0] = 10 + Math.floor(2.5 * dimensions.value[31].infTier);
+    enemy.value.darkEnemyCap[1] = 50 + 25 * dimensions.value[31].infTier;
+    enemy.value.darkEnemyCap[2] = 25 + Math.floor(12.5 * dimensions.value[31].infTier);
+    enemy.value.darkEnemyCap[3] = 5 + Math.floor(2.5 * dimensions.value[31].infTier);
+    enemy.value.darkEnemyCap[4] = 10 + 5 * dimensions.value[31].infTier;
+    enemy.value.darkEnemyCap[5] = 3 + Math.floor(1.25 * dimensions.value[31].infTier);
+    enemy.value.darkEnemyCap[6] = 10 + 5 * dimensions.value[31].infTier;
+  }
+  
+
+  const darkCreaturesHandle = (tier, base, mult) => {
+    let quasarScale = 1;
+    let danger = 1000 + 500 * tier;
+
+    if(enemy.value.darkEnemyLoot[tier] >= enemy.value.darkEnemyCap[tier])
+      return 0;
+
+    if(radPerks[10].level >= danger && hero.value.dId == 'd-danger')
+      return (enemy.value.darkEnemyReq[tier]? ((base + mult * quasarScale) ** enemy.value.darkEnemyLoot[tier] * 1.1 ** (Math.max(radPerks[10].level - danger, 0) ** 0.65)): 0)
+    else return 0;
+  }
+
   const eqForgeHandle = () => {
-    let baseCap = 0.1 + 0.0035 * hero.value.awakened['sword'];
-    let baseBonus = 0.05 + 0.0015 * hero.value.awakened['sword'];
+    hero.value.totalEnhances = Math.min(hero.value.eqUps['sword'], hero.value.equipmentTiers['sword']+hero.value.freeEnchances) + 
+    Math.min(hero.value.eqUps['armor'], hero.value.equipmentTiers['armor']+hero.value.freeEnchances) + 
+    Math.min(hero.value.eqUps['boots'], hero.value.equipmentTiers['boots']+hero.value.freeEnchances) + 
+    Math.min(hero.value.eqUps['ring'], hero.value.equipmentTiers['ring']+hero.value.freeEnchances) + 
+    hero.value.eqUps['spRing'];
+
+    hero.value.forgeTierReq = 50 - (spaceShop.value[3].status? 1 * Math.floor(hero.value.spsCountMax / 3): 0);
+
+    hero.value.forgeTier = Math.floor(hero.value.totalEnhances / hero.value.forgeTierReq);
+
+    let { cap: baseCap, bonus: baseBonus } = getBaseValues('sword', hero.value.awakened, hero.value.forgeTier);
+
+    let swordCondition = (ascenPerks[63].level? 150: hero.value.equipmentTiers['sword']+hero.value.freeEnchances);
+
     hero.value.eqUpsMult['sword'].cap = (equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.cap * 
       (baseCap * Math.min(hero.value.eqUps['sword'], hero.value.equipmentTiers['sword']+hero.value.freeEnchances)));
     hero.value.eqUpsMult['sword'].bonus = (equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.multDmg * 
       (baseBonus * Math.min(hero.value.eqUps['sword'], hero.value.equipmentTiers['sword']+hero.value.freeEnchances)));
-    hero.value.eqUpsMult['sword'].crit = (hero.value.spCount/6 >= 3? 5 + 5 * (baseCap * Math.min(hero.value.eqUps['sword'], hero.value.equipmentTiers['sword']+hero.value.freeEnchances)): 0);
-    hero.value.eqUpsMult['sword'].critDmg = (hero.value.spCount/6 >= 3? 25 + 25 * (baseCap * Math.min(hero.value.eqUps['sword'], hero.value.equipmentTiers['sword']+hero.value.freeEnchances)): 0);  
+    hero.value.eqUpsMult['sword'].crit = (hero.value.spCount/6 >= 3? 5 + 5 * (baseCap * Math.min(hero.value.eqUps['sword'], swordCondition)): 0);
+    hero.value.eqUpsMult['sword'].critDmg = (hero.value.spCount/6 >= 3? 25 + 25 * (baseCap * Math.min(hero.value.eqUps['sword'], swordCondition)): 0);  
     
 
-    baseCap = 0.1 + 0.0035 * hero.value.awakened['armor']
-    baseBonus = 0.05 + 0.0015 * hero.value.awakened['armor']
+    ({ cap: baseCap, bonus: baseBonus } = getBaseValues('armor', hero.value.awakened, hero.value.forgeTier));
+
     hero.value.eqUpsMult['armor'].cap = (equipment[1].tiers[hero.value.equipmentTiers['armor']].bonus.cap * 
       (baseCap * Math.min(hero.value.eqUps['armor'], hero.value.equipmentTiers['armor']+hero.value.freeEnchances)));
     hero.value.eqUpsMult['armor'].bonus = (equipment[1].tiers[hero.value.equipmentTiers['armor']].bonus.hp * 
@@ -2338,8 +3482,8 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.eqUpsMult['armor'].heal = (hero.value.spCount/6 >= 6? 10 + 10 * (baseCap * Math.min(hero.value.eqUps['armor'], hero.value.equipmentTiers['armor']+hero.value.freeEnchances)): 0);  
 
 
-    baseCap = 0.1 + 0.0035 * hero.value.awakened['boots']
-    baseBonus = 0.05 + 0.0015 * hero.value.awakened['boots']
+    ({ cap: baseCap, bonus: baseBonus } = getBaseValues('boots', hero.value.awakened, hero.value.forgeTier));
+
     hero.value.eqUpsMult['boots'].cap = (equipment[2].tiers[hero.value.equipmentTiers['boots']].bonus.cap * 
       (baseCap * Math.min(hero.value.eqUps['boots'], hero.value.equipmentTiers['boots']+hero.value.freeEnchances)));
     hero.value.eqUpsMult['boots'].bonus = (equipment[2].tiers[hero.value.equipmentTiers['boots']].bonus.speed * 
@@ -2348,8 +3492,8 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.eqUpsMult['boots'].overkill = (hero.value.spCount/6 >= 7? 1 + Math.floor((1 + baseCap) * (Math.min(hero.value.eqUps['boots'], hero.value.equipmentTiers['boots']+hero.value.freeEnchances))/5): 0);  
 
 
-    baseCap = 0.1 + 0.0035 * hero.value.awakened['ring']
-    baseBonus = 0.05 + 0.0015 * hero.value.awakened['ring']
+    ({ cap: baseCap, bonus: baseBonus } = getBaseValues('ring', hero.value.awakened, hero.value.forgeTier));
+
     hero.value.eqUpsMult['ring'].cap = (equipment[3].tiers[hero.value.equipmentTiers['ring']].bonus.cap * 
       (baseCap * Math.min(hero.value.eqUps['ring'], hero.value.equipmentTiers['ring']+hero.value.freeEnchances)));
     hero.value.eqUpsMult['ring'].bonus = (equipment[3].tiers[hero.value.equipmentTiers['ring']].bonus.expMult * 
@@ -2360,6 +3504,16 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.eqUpsMult['spRing'].cap = (equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.cap * (0.1 * hero.value.eqUps['spRing']));
     hero.value.eqUpsMult['spRing'].bonus = Math.floor((equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel * (0.05 * hero.value.eqUps['spRing'])));
+    hero.value.eqUpsMult['spRing'].potential = (spaceShop.value[10].status? Math.floor(hero.value.eqUps['spRing'] ** 0.6): 0);
+    hero.value.eqUpsMult['spRing'].infPoints = (spaceShop.value[10].status? hero.value.eqUps['spRing']: 0);
+
+
+    function getBaseValues(type, awakened, forgeTier) {
+      return {
+        cap: 0.1 + 0.0035 * awakened[type] + 0.001 * forgeTier,
+        bonus: 0.05 + 0.0015 * awakened[type] + 0.0005 * forgeTier
+      };
+    }
   }
 
   const spaceHandle = () => {
@@ -2390,6 +3544,7 @@ export function useBattle(hero, enemy, buffs) {
     }
 
     hero.value.st = Math.floor(hero.value.spCount / 6) + enemy.value.dangerEnemyLoot[2];
+    hero.value.stBosses = Math.floor(hero.value.spCount / 6);
 
     if(Math.floor(hero.value.spCount / 6) >= 5){
       hero.value.equipmentTiers['spRing'] = 1 + hero.value.st;
@@ -2399,6 +3554,9 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.sp = hero.value.baseSp + enemy.value.dEnemyLoot[1] + (6 * (dimensions.value[23].infTier - 10));
     hero.value.spMaxCount = 24 + (hero.value.infTier >= 5 || hero.value.infEvents >= 5? 6: 0) + (hero.value.singularity >= 5? 6: 0) + (ascenPerks[53].level? 6: 0) + 
     (dimensions.value[23].infTier == dimensions.value[23].maxInfTier? 6: 0);
+
+    hero.value.isInfSpace = (hero.value.spCount >= 48 && hero.value.bhTier >= 3? true: false);
+    hero.value.isInfSpace = (hero.value.dId == 'main' || hero.value.dId == 'd-noSpace'? hero.value.isInfSpace: false);
 
     spaceCreaturesHandle();
   }
@@ -2425,19 +3583,30 @@ export function useBattle(hero, enemy, buffs) {
 
   const starDustDrop = () => {
     hero.value.stardustInfo = 0;
-
+    
     if(hero.value.spCount < 2)
       return 0;
+
     let stardust = 0;
     let st = 39 - (hero.value.spCount >= 8? 1: 0) - (hero.value.spCount >= 14? 2: 0) - (hero.value.spCount >= 20? 2: 0) - 
-    (hero.value.spCount >= 32? 3: 0) - (hero.value.spCount >= 39? 3: 0) - (hero.value.spCount >= 44? 4: 0);
+    (hero.value.spCount >= 32? 3: 0) - (hero.value.spCount >= 39? 3: 0) - (hero.value.spCount >= 44? 4: 0) - 
+    (spaceShop.value[12].status? Math.floor(hero.value.spsCountMax/2) : 0);
+
     if(hero.value.stage - st > 0){
       stardust = (((1.0525 ** (hero.value.stage - st)) * (1 + ascenPerks[34].level * 0.01) * 
-      (hero.value.infTier >= 5 || hero.value.infEvents >= 5? 2: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1.015 ** Math.min(hero.value.abyssDStages - 59, 120)): 1) * 
+      (hero.value.infTier >= 5 || hero.value.infEvents >= 5? 2: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1 + 0.05 * (hero.value.abyssDStages - 59)): 1) * 
       (hero.value.curset5? 2: 1) * (hero.value.spCount >= 45 && hero.value.activeFormation == 3? 2: 1) *
+      (enemy.value.soulBuff.stardust) *
+      (hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 4? 2: 1) *
       (1 + perks.value[17].level*0.01) * ((hero.value.mainInfTier >= 18? infBase(1.0145) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints)): 1))) - 1) /
-      (!hero.value.infProgress? (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1);
-      
+      (!hero.value.infProgress? (1 + 0.2 * Math.max(hero.value.infTier - 20, 0)): 1) * 
+      (spaceShop.value[0].status? 1 + 0.1 * hero.value.spsCountMax: 1) *
+      (1 + 0.05 * enemy.value.darkEnemyLoot[6]) * 
+      (Math.max((Math.E * dimensions.value[37].infTier) ** 0.4, 1)) *
+      (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[0]: 1) /
+      (enemy.value.buffs.includes(3)? 2: 1); 
+
+      stardust **= cursed[17].loot;
     }
     enemy.value.averageLoot.stardust = 0;
     if(stardust > 0){
@@ -2455,11 +3624,13 @@ export function useBattle(hero, enemy, buffs) {
       if(hero.value.dId == 'damage')
         hero.value.dKills += hero.value.afkKills;
 
-      if(hero.value.dId == 'd-damage')
-        enemy.value.d_damagePenalty += hero.value.afkKills;
+      if(hero.value.dId == 'd-damage' || hero.value.darkId.includes('d-damage'))
+        enemy.value.d_damagePenalty += Math.floor(hero.value.afkKills);
 
       if(perks.value[0].status)
         perks.value[0].kills += hero.value.afkKills * (overkillHandle() + 1);
+
+      if(hero.value.dId == 'bh') return;
 
       if(hero.value.isSingularity){
         if(hero.value.singularity >= 8) return;
@@ -2576,37 +3747,99 @@ export function useBattle(hero, enemy, buffs) {
     localStorage.setItem('lastOnline', Date.now().toString());
   }
 
-  const spaceAuto = () => {
-    for(let it = 1; it <= 6; it++){
-      let status = hero.value.spCount > 0 && hero.value.spCount%6 == 5? 2: 1;
-      let enemyDps = (spEnemy[hero.value.spCount].stats.dmg * enemy.value.totalSpaceStats.dmg - hero.value.def) * spEnemy[hero.value.spCount].stats.AS * it * 1.25 * status;
-      let heroDps = (hero.value.attack - spEnemy[hero.value.spCount].stats.def * enemy.value.totalSpaceStats.def) * hero.value.attacksPerSecond * it;
-      let hpCondition = (hero.value.dId == 'survival'? true: hero.value.maxHp > enemyDps);
-
-      let totalSpaceHp = spEnemy[hero.value.spCount].stats.hp * 1.5 * status * enemy.value.totalSpaceStats.hp;
-  
-      if(heroDps >= totalSpaceHp && hpCondition && hero.value.spCount < hero.value.spMaxCount){
-        hero.value.spCount++;
-      }
+  const spaceAuto = (interval) => {
+    if(hero.value.spaceAutoCooldown > 0){
+      hero.value.spaceAutoCooldown -= (interval / 1000);
+      return;
     }
-  }
-
-  const treeAuto = () => {
-    if(!hero.value.treeAuto)
+      
+    
+    if(hero.value.dId == 'd-noSpace' && 6 * dimensions.value[37].infTier < hero.value.spCount + hero.value.spsCount)
       return;
 
-    let t = hero.value.treeTier;
-    const MULT = (dimensions.value[6].infTier == dimensions.value[6].maxInfTier? 0.9: 1);
-    for (let perk of perks.value) {
-      if (hero.value.perkPoints <= 0) break;
-      if ((perk.infStatus && hero.value.perkPoints <= perk.baseCost) || perk.status || perk.block) continue;
-      if (perk.level < perk.maxLevel[t] || perk.infStatus) {
-        perk.level++
-        hero.value.perkPoints -= (perk.infStatus? perk.baseCost * MULT: 1);
+    let enemyStatus = spEnemy[hero.value.spCount].status;
+    if(!enemyStatus) return;
+
+    const BATTLE_ITERATIONS = 6;
+    const ROUND_MOD = 1.25;
+    const HP_MULTIPLIER = 1.5;
+
+    let totalStats = enemy.value.totalSpaceStats;
+    let status = hero.value.spCount > 0 && hero.value.spCount % 6 === 5 ? 2 : 1;
+
+    let enemyAS = spEnemy[hero.value.spCount].stats.AS;
+    let heroAtk = Math.max(hero.value.attack - totalStats.def, 0);
+    let enemyAtk = Math.max(totalStats.dmg - hero.value.def, 0);
+    
+
+    for (let it = 1; it <= BATTLE_ITERATIONS; it++) {
+      let enemyDps = enemyAtk * enemyAS * it * ROUND_MOD * status;
+      let heroDps = heroAtk * hero.value.attacksPerSecond * it;
+      let hpCondition = (hero.value.dId === 'survival' || hero.value.maxHp > enemyDps);
+      let totalSpaceHp = totalStats.hp * HP_MULTIPLIER * status;
+
+      if(it == 6){
+        hero.value.autoSpaceCondition = "<span style='color: orange'>Auto Condition</span><br>"
+        if(heroDps < totalSpaceHp) hero.value.autoSpaceCondition += `Your <span style="color: red">DPS</span> is low<br>`;
+        if(!hpCondition) hero.value.autoSpaceCondition += `Your <span style="color: lightgreen">HP</span> is low<br>`;
+      }
+        
+
+      if (heroDps >= totalSpaceHp && hpCondition && (hero.value.spCount < hero.value.spMaxCount || hero.value.isInfSpace)) {
+        if(hero.value.spCount >= 48 && hero.value.isInfSpace) { 
+          hero.value.spsCount = Math.min(hero.value.spsCount + 1, 30);
+          hero.value.spsCountMax = Math.max(hero.value.spsCountMax, hero.value.spsCount);
+        }
+
+        hero.value.spCount = Math.min(hero.value.spCount + 1, 48);
+
+        hero.value.spaceAutoCooldown = 1;
+        break;
       }
     }
   }
 
+  const toInt = (n) => Math.max(0, Math.floor(n || 0));
+
+  const treeAuto = (interval) => {
+    if (!hero.value.treeAuto) return;
+
+    if(hero.value.autoTreeCooldown > 0) {
+      hero.value.autoTreeCooldown -= (interval/1000);
+      return;
+    }
+      
+  
+    let t = hero.value.treeTier;
+    const MULT = infTreePerkCost();
+  
+    for (let perk of perks.value) {
+      let totalCost = toInt(perk.baseCost * MULT);
+      let points = toInt(hero.value.perkPoints);
+      let maxPoints = toInt(hero.value.freeTreePoints) + toInt(hero.value.eLevel) *
+      ((hero.value.infTier >= 1 || hero.value.infEvents >= 1) ? 2 : 1);
+      let maxInfCounts = totalCost > 0? maxPoints / totalCost: 0;
+  
+      if (points <= 0) break;
+      if (perk.infStatus && perk.level > Math.floor(maxInfCounts)) {
+        perk.level = Math.floor(maxInfCounts);
+      }      
+      if ((perk.infStatus && points < totalCost) || perk.status || perk.block) continue;
+  
+      if (perk.level < perk.maxLevel[t] || perk.infStatus) {
+        perk.level = toInt(perk.level) + 1;
+        hero.value.perkPoints = points - (perk.infStatus ? totalCost : 1);
+      }
+    }
+  };
+
+  const infTreePerkCost = () => {
+    let mult = (dimensions.value[6].infTier === dimensions.value[6].maxInfTier ? 0.9 : 1);
+    mult *= 1 - dimensions.value[35].infTier * 0.01;
+    mult *= (hero.value.dId == 'd-noTree'? 2 + 0.25 * dimensions.value[35].infTier : 1);
+    mult *= (hero.value.darkId.includes('d-noTree')? 2 - 0.02 * dimensions.value[35].infTier: 1);
+    return mult;
+  }
 
   const  formatNumber = (num, f = false) => {
     if(f && num < 100) return num.toFixed(2);
@@ -2614,6 +3847,9 @@ export function useBattle(hero, enemy, buffs) {
   
     const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
     const tier = Math.floor(Math.log10(num) / 3);
+
+    if(tier >= units)
+      return "999d";
   
     const suffix = units[tier];
     const scale = Math.pow(10, tier * 3);
@@ -2646,12 +3882,20 @@ export function useBattle(hero, enemy, buffs) {
     infTiersReq();
     infHandle();
     let count = Object.values(hero.value.secrets).filter(v => v).length * 20;
-    let discord = 200;
+    let discord = 400;
 
-    hero.value.infPointsMult = 1 + (0.05 * hero.value.singularity) + (hero.value.rebirthPts >= 5e6? Math.log(hero.value.rebirthPts)*0.015: 0) +
-    (enemy.value.dEnemyLoot[4]*0.01) + (dimensions.value[22].infTier == dimensions.value[22].maxInfTier?hero.value.mainInfTier * 0.01: 0);
+    hero.value.infPointsMult = 1 + (0.05 * hero.value.singularity) + 
+    (hero.value.rebirthPts >= 5e6? Math.log(hero.value.rebirthPts) * 0.015: 0) +
+    (enemy.value.dEnemyLoot[4] * 0.01) + (dimensions.value[22].infTier >= dimensions.value[22].maxInfTier? hero.value.mainInfTier * 0.01: 0) + 
+    (ascenPerks[60].level? infGoals.value.map(g => g.tier == g.maxTier).length * 0.01: 0) + 
+    (hero.value.dId.startsWith('d-') && hero.value.selectedDivSkills.includes(9) && hero.value.overcorruption >= 10? divineSkills.value[9].values[0]: 0) + 
+    (0.05 * hero.value.bhTier) + 
+    (hero.value.bhTier >= 4 && hero.value.dId == 'main'? 0.005 * hero.value.transcendence: 0) +
+    (hero.value.bhTier >= 4 && hero.value.dId == 'bh'? 0.005 * hero.value.transcendenceBH: 0);
 
-    hero.value.infPoints = (count + hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + discord) * hero.value.infPointsMult;
+    hero.value.infPoints = (count + hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + discord + hero.value.eqUpsMult['spRing'].infPoints) * hero.value.infPointsMult;
+
+    hero.value.infPoints *= (hero.value.selectedDivSkills.includes(2)? divineSkills.value[2].values[1]: 1);
   }
  
   const infGoalsReq = (idx) => {
@@ -2690,8 +3934,8 @@ export function useBattle(hero, enemy, buffs) {
       () => hero.value.def >= 5e4 + 1e4 * infGoals.value[28].tier,
       () => hero.value.mainInfTier > 15 + infGoals.value[29].tier,
       () => dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length >= 10 + 2 * infGoals.value[30].tier,
-      () => hero.value.rebirthPts >= 2e5 + 2e5 * infGoals.value[31].tier,
-      () => hero.value.infPoints >= 3000 + 2000 * infGoals.value[32].tier,
+      () => hero.value.rebirthPts >= 625000 * (2 ** infGoals.value[31].tier),
+      () => hero.value.infPoints >= 5000 + 5000 * infGoals.value[32].tier,
       () => hero.value.exp >= 1e9 * 1e6 ** infGoals.value[33].tier,
       () => hero.value.dTimeReward <= 480 / (1 * (infGoals.value[34].tier + 1)),
     ];
@@ -2794,9 +4038,9 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const singularityHandle = () => {
-    if(hero.value.isSingularity && hero.value.kills >= 10000 && hero.value.singularityKills < 1e4){
+    if(hero.value.isSingularity && hero.value.kills >= Math.min(1250 * (hero.value.singularity + 1),10000) && hero.value.singularityKills < 1e4){
       hero.value.isSingularity = false;
-      hero.value.singularity = Math.min(hero.value.singularity + 1, 8);
+      
       hero.value.kills = 0;
       hero.value.killsPerZone = 5;
       createEnemy();
@@ -2829,6 +4073,8 @@ export function useBattle(hero, enemy, buffs) {
       if(hero.value.singularity >= 8 && hero.value.singularityKills > 0) {
         hero.value.singularityKills = 1e4;
       }
+
+      hero.value.singularity = Math.min(hero.value.singularity + 1, 8);
     }
   }
 
@@ -2849,17 +4095,26 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.dTimeReward = Math.min(hero.value.dTimeReward, hero.value.dTimer)
     }
 
-    if(d.idx >= 26 && d.idx < 38){
-      if(hero.value.level >= 1400)
+    if(d.idx >= 26 && d.idx < 40){
+      if(hero.value.level >= 1400 && dReq(d))
         dInfHandle(d);
 
       return;
     }
 
-    if(!notAllowdId.includes(hero.value.dId) && d.infTier < d.maxInfTier && hero.value.level >= 700){
-      if(hero.value.dId == 'hard' && hero.value.stage < 100 + 5 * (d.infTier - 15)) return;
+    if(!notAllowdId.includes(hero.value.dId) && d.infTier < d.maxInfTier && hero.value.level >= 700 && dReq(d)){
 
       dInfHandle(d);
+    }
+  }
+
+  const dReq = (d) => {
+    switch(d.idx){
+      case 13: return hero.value.stage >= 100 + 5 * (d.infTier - 15);
+      case 29: return enemy.value.darkEnergy.totalBosses >= enemy.value.darkEnergy.maxBosses;
+      case 31: return enemy.value.darkEnemyReq[d.infTier];
+      case 37: return hero.value.spCount + hero.value.spsCount >= 6 + (6 * d.infTier);
+      default: return true;
     }
   }
 
@@ -2871,11 +4126,17 @@ export function useBattle(hero, enemy, buffs) {
 
 
   const performInf = () => {
-    hero.value.eLevel = Math.floor(hero.value.eLevel ** (1 - 0.02 * hero.value.infTier));
+    if(hero.value.dId == 'd-survival-2' || hero.value.dId.startsWith('d-'))
+      hero.value.eLevel = 1;
+    else 
+      hero.value.eLevel = Math.floor(hero.value.eLevel ** (1 - 0.02 * hero.value.infTier));
+
     hero.value.perkPoints = hero.value.eLevel * 2;
     hero.value.treeTier = 0;
-
-    hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (dimensions.value[19].infTier - 20): 0);
+    hero.value.exp = 0;
+    hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
+    hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (dimensions.value[19].infTier - 20) - hero.value.minStage: 0) + 
+    hero.value.minStage;
     hero.value.zone = 1;
     hero.value.kills = 0;
     hero.value.killsPerZone = 5;
@@ -2912,7 +4173,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.soulsCap = 40;
     hero.value.soulTier = 0;
     hero.value.ascendShardPerform = 0;
-    hero.value.ascensionShards **= 0.75;
+    hero.value.ascensionShards **= (hero.value.dId.startsWith('d-')? 0.25: 0.75);
     hero.value.totalAscensionShards = 0;
     hero.value.isAbyss = false;
 
@@ -2920,9 +4181,10 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.spActiveBuffs = [];
     
     hero.value.spCount = 0;
+    hero.value.spsCount = 0;
     hero.value.sp = 0;
     hero.value.st = 0;
-    hero.value.isSpaceAuto = false;
+    hero.value.stardust = 0 + (hero.value.bhTier >= 1? 1e7: 0);
 
     for(let sp of spEnemy){
       if(sp.id%6 == 0){
@@ -2953,6 +4215,8 @@ export function useBattle(hero, enemy, buffs) {
     for(let idx in radPerks){
       radPerks[idx].level = 0;
     }
+    hero.value.mutagen **= (hero.value.dId.startsWith('d-')? 0.25: 0.75);
+    hero.value.mutagen = (hero.value.mainInfTier >= 35? Math.max(hero.value.mutagen, 1e4): hero.value.mutagen);
 
     if(hero.value.singularity < 4){
       for(let perk of ascenPerks){
@@ -2966,25 +4230,31 @@ export function useBattle(hero, enemy, buffs) {
     radPerks[6].description = 'REBUILD REBIRTH SYSTEM THAT ALLOWS YOU TO SPEND MUTAGEN TO UP YOUR POTENTIAL';
     radPerks[6].max = 1;
   
-    radPerks[7].perkStatus = false;
     radPerks[10].status = false;
     radPerks[10].max = 1;
+
+    hero.value.autoTreeCooldown = 3;
 
     hero.value.soulD = false;
     enemy.value.spawnType = 'none';
     enemy.value.ascensionSoul.active = false;
     enemy.value.soulBuff.active = false;
     enemy.value.boss.isBoss = false;
-    hero.value.infProgress = false;
-    hero.value.isSpaceAuto = false;
+    hero.value.infProgress = (hero.value.dId == 'bh'? true: false);
     hero.value.windowUpdate = true;  
     perks.value[0].kills = 0;
     hero.value.shardsMult = 0;
     hero.value.shardsPerformMult = 0;
     hero.value.dKills = 0;
     killHistory.length = 0;
-    hero.value.damageStage = 0;
     enemy.value.d_damagePenalty = 0;
+    enemy.value.soulBuff.soulsStardustReq = 0;
+    enemy.value.soulBuff.soulsMutagenReq = 0;
+    hero.value.infEvents = hero.value.infTier;
+    hero.value.damageStage = 0;
+    enemy.value.darkEnergy.totalBosses = (hero.value.dId == 'd-overstage'? 0: enemy.value.darkEnergy.totalBosses);
+    hero.value.survivalLife = dimensions.value[30].infTier;
+    hero.value.dTimer = 0;
   }
 
   const performAscension = () => {
@@ -3004,7 +4274,7 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.isRebirth || auto.value.rebirth.enabled){
       hero.value.rebirthPts += hero.value.totalRebirthPts;
 
-      if(hero.value.infTier < 3 || (hero.value.infEvents < 3 && hero.value.dId == 'main')){
+      if(hero.value.infTier < 2){
         if(hero.value.level >= 100 + 10 * hero.value.rebirthTier && hero.value.rebirthTier < 20){
             hero.value.rebirthTier++;
         }
@@ -3058,6 +4328,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.travellPenalty = 1;
     hero.value.isTravell = false;
     hero.value.dKills = 0;
+    enemy.value.d_damagePenalty = 0;
 
     if(hero.value.gcnpSetting){
       hero.value.isLocked = true;
@@ -3097,7 +4368,7 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const ascensionAutoBuyer = () => {
-    if (hero.value.dId != 'ascension' && !hero.value.isSingularity && hero.value.ascensionAuto && hero.value.stage >= 10) {
+    if (hero.value.dId != 'ascension' && hero.value.dId != 'ascension-2' && !hero.value.isSingularity && hero.value.ascensionAuto && hero.value.stage >= 10) {
       for (const perk of ascenPerks) {
         if (perk.tier === 7 || perk.level >= perk.max) continue;
     
@@ -3130,6 +4401,28 @@ export function useBattle(hero, enemy, buffs) {
     }
   }
 
+  const spaceCooldown = (interval) => {
+    if (hero.value.spaceFightCooldown > 0){
+      hero.value.spaceFightCooldown -= (interval/1000);
+
+      if (hero.value.spaceFightCooldown <= 0) {
+        hero.value.isSpaceFightCooldown = false;
+  
+        const defeatedAndRepeat = hero.value.repeatOnDefeat && enemy.value.isSpaceFight === -1;
+        const wonAndNextEnemy  = hero.value.nextEnemyOnWin && enemy.value.isSpaceFight === 0;
+  
+        if (defeatedAndRepeat || wonAndNextEnemy){
+          if(spEnemy[hero.value.spCount].status)
+            enemy.value.isSpaceFight = 1;
+        } 
+          
+      }
+    }
+    else if (hero.value.isSpaceFightCooldown && hero.value.spaceFightCooldown <= 0) {
+      hero.value.spaceFightCooldown = 3;
+    }
+  }
+
   function getAscensionCost(perk) {
     if (perk.tier === 6) {
       let iPenalty = 1 - 0.01 * dimensions.value[1].infTier;
@@ -3148,7 +4441,325 @@ export function useBattle(hero, enemy, buffs) {
     return Math.pow(clampedX / maxX, power);
   }
 
+  const darkDimensionsHandle = (interval) => {
+    darkEnergyHandle();
+    bleedVealHandle(interval);
+  }
+
+  const darkEnergyHandle = () => {
+    let mult = 1;
+
+    if(dimensions.value[29].infTier >= 10){
+      let totalInfs = dimensions.value.filter(d => d.id.startsWith('d-')) .reduce((sum, d) => sum + d.infTier, 0);
+      mult = 1 + totalInfs ** (dimensions.value[29].infTier * 0.01);
+    }
+
+    let perkMult = Math.max(2 - 0.025 * dimensions.value[29].infTier, 1.1);
+
+    enemy.value.darkEnergy.maxBosses = 5 + dimensions.value[29].infTier;
+    enemy.value.darkEnergy.mult = 1.08 ** dimensions.value[29].infTier * (ascenPerks[58].level? perkMult: 1);
+    enemy.value.darkEnergy.deTotal = 1 + (0.00015 * enemy.value.darkEnergy.mult) * enemy.value.darkEnergy.totalBosses * mult;
+  }
+
+  const bleedVealHandle = (interval) => {
+    let mult = 1.01 + 0.0025 * dimensions.value[30].infTier;
+    let red = (hero.value.dId == 'd-survival-2'? 200 * (mult ** hero.value.stage) * Math.log(3 + dimensions.value[30].infTier) ** 4: 0);
+    red = (ascenPerks[61].level? Math.max(red - hero.value.def, 0): red);
+    red = Math.floor(red);
+
+    hero.value.bleedvealValue = red;
+    hero.value.hp = Math.max(hero.value.hp - red * (interval / 1000) , 0);
+
+  }
+
+  const enemyBuffs = () => {
+    enemy.value.buffs = [];
+
+    let buffTiers = [1, 4, 6, 8, 12, 16, 20, 25];
+    let maxCount = 6;
+    let count = Math.min(getBuffIntervalPosition(buffTiers, dimensions.value[32].infTier), maxCount);
+    
+
+    if(hero.value.dId == 'd-noBuffs'){
+      for(let idx = 0; idx < count; idx++){
+        enemy.value.buffs.push(idx);
+      }
+    }
+
+    if(hero.value.darkId.includes('d-noBuffs')){
+      let descrase = Math.min(Math.log(1 + dimensions.value[32].infTier) ** 4 , 80);
+
+      for(let idx = 0; idx < maxCount; idx++){
+        let chance = (Math.random() * 100 + Math.max(100 - descrase, 20) >= 100? true: false);
+        if(chance)
+          enemy.value.buffs.push(idx);
+      }
+    }
+  }
+
+  function getBuffIntervalPosition(arr, num) {
+    if (num <= 0) return 1; 
+  
+    let pos = 1;
+    for (let i = 0; i < arr.length; i++) {
+      if (num >= arr[i]) {
+        pos = i + 2; 
+      } else {
+        break;
+      }
+    }
+    return pos;
+  }
+
+  const quasarCoreHandle = () => {
+    if(hero.value.mainInfTier < 50) return;
+
+    let tier = Math.min(hero.value.mainInfTier - 50, 50);
+
+    divineSkills.value[0].values[0] = 0.75 - 0.005 * tier;
+    divineSkills.value[0].values[1] = 0.25 + 0.01 * tier;
+
+    divineSkills.value[1].values[0] = 0.5 + 0.005 * tier;
+    divineSkills.value[1].values[1] = 1 + 0.35 * tier;
+    //0.1
+    divineSkills.value[2].values[0] = 0.01 + 0.001 * tier * Math.sqrt(Math.log(Math.max(hero.value.infPoints, 3)));
+    divineSkills.value[2].values[1] = 0.5 + 0.005 * tier;
+
+    divineSkills.value[3].values[0] = (hero.value.totalAPS >= hero.value.maxAPS? Math.log(3 + Math.max(hero.value.totalAPS - 4, 0)) * Math.log(Math.max(Math.sqrt(tier), 3)): 1);
+    
+    divineSkills.value[4].values[0] = 16 * tier;
+    divineSkills.value[4].values[1] = 50 - 0.8 * tier;
+
+    divineSkills.value[6].values[0] = 0.75 + 0.01 * tier;
+
+    divineSkills.value[7].values[0] = (enemy.value.danger > 0? 1 + 0.01 * tier * (enemy.value.danger ** 0.35): 1);
+    divineSkills.value[7].values[1] = 0.1 + 0.008 * tier;
+    //0.1
+    divineSkills.value[8].values[0] = 0.01 + 0.004 * tier;
+    divineSkills.value[8].values[1] = 0.1 + 0.005 * tier;
+
+    divineSkills.value[9].values[0] = 0.02 * tier;
+
+    divineSkills.value[10].values[0] = 2 - 0.01 * tier;
+    divineSkills.value[10].values[1] = 1.1 + 0.005 * tier;
+
+    divineSkills.value[11].values[0] = 1 + 0.04 * tier;
+
+    divineSkills.value[12].values[0] = (Math.E ** 3.7) * tier;
+    divineSkills.value[12].values[1] = 1.25 - 0.005 * tier;
+
+    divineSkills.value[13].values[0] = 0.01 + 0.005 * tier
+    divineSkills.value[13].values[1] = 1 + 0.001 * tier;
+
+    divineSkills.value[14].values[0] = 0.9 - 0.003 * tier;
+  } 
+
+  const rebirthAutoHandle = () => {
+    if(hero.value.selectedDivSkills.includes(5)){
+      hero.value.rebirthTier = Math.floor((hero.value.level - 90) / 10);
+    }
+  }
+
+  const soulsAutoHandle = () => {
+    if(!hero.value.selectedDivSkills.includes(6)) return;
+    if(hero.value.dId == 'soulD') return;
+    
+    let soulDActive = (hero.value.infTier < 6 || hero.isSingularity || hero.value.selectedDivSkills.includes(11))? false: true;
+  
+    let soulDweakness = 2 - 0.0625 * (dimensions.value[14].infTier - 10) - 
+    0.0025 * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 180? Math.min(hero.value.abyssDStages - 179, 100): 0);
+    soulDweakness = Math.max(soulDweakness, 1.15);
+
+    let soulHpBuff = (0.4 + Math.pow( Math.log((hero.value.souls*3 + 3)**0.4) , (hero.value.souls*3)**(0.135 + 0.001 *  Math.max(hero.value.souls - 40, 0))) * 
+    (ascenPerks[19].level? 0.85: 1)) ** (soulDActive? soulDweakness: 1) * Math.max((hero.value.mainInfTier >= 6? (1 / infBase(1.025) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1);
+  
+    let totalHp = statsEnemyHpHandle(15, 1) * soulHpBuff;
+    let attack = hero.value.attack * divineSkills.value[6].values[0];
+
+    if(attack > totalHp && soulDActive){
+      hero.value.souls = Math.min(hero.value.souls + hero.value.soulOverkill, hero.value.soulsCap);
+      hero.value.soulsMax = Math.max(hero.value.soulsMax, hero.value.souls);
+    } else if(!soulDActive){
+      let rnd = soulChance();
+      if(Math.random() + rnd >= 100 && attack > totalHp){
+        hero.value.souls = Math.min(hero.value.souls + hero.value.soulOverkill, hero.value.soulsCap);
+        hero.value.soulsMax = Math.max(hero.value.soulsMax, hero.value.souls);
+      }
+        
+    }
+    soulStats();
+  }
+
+  const blackHoleHanlde = () => {
+    if(hero.value.bhTier >= 1 && hero.value.dId == 'bh')
+      buffs.value[1].stun = 0;
+  }
+
+  const hardcapHandle = () => {
+    hero.value.eqUps['spRing'] = Math.min(hero.value.eqUps['spRing'], 500);
+    hero.value.eLevel = (hero.value.dId == 'unlimitted'? Math.min(hero.value.eLevel, hero.value.unlimitLevel): hero.value.eLevel);
+    
+    hero.value.stage = Math.min(hero.value.stage, 300);
+
+    if(hero.value.attack === NaN)
+      hero.value.attack = 10;
+    if(hero.value.maxHp === NaN)
+      hero.value.maxHp = 100;
+    if(hero.value.def === NaN)
+      hero.value.def = 0;
+
+    dimensions.value[9].infTier = Math.min(dimensions.value[9].infTier, 7);
+
+    if(hero.value.dId == 'bh' && !hero.value.newUpdateChanges.blackhole){
+      performInf();
+      perform();
+
+      hero.value.dId = 'main';
+      hero.value.infTier = hero.value.mainInfTier;
+      hero.value.transcendenceBH = 0;
+    }
+    hero.value.newUpdateChanges.blackhole = true;
+
+
+    if(!hero.value.newUpdateChanges.dimReworks){
+      for(let idx in dimensions.value){
+        if(idx == 24) dimensions.value[24].infTier = 35;
+        if(idx == 40) dimensions.value[40].infTier = 40;
+        if(idx == 41) dimensions.value[41].infTier = 50;
+        if(idx >= 26 && idx < 40)
+          dimensions.value[idx].infTier = 0;
+      }
+      hero.value.newUpdateChanges.dimReworks = true;
+    }
+  }
+
+  function eqUpCost(type) {
+    let dark_d_penalty = (hero.value.dId == 'd-noEq'
+      ? (Math.E * (dimensions.value[36].infTier + 1)) ** 1.3
+      : 1);
+    dark_d_penalty = (hero.value.darkId.includes('d-noEq')
+      ? Math.max(Math.E ** (1.3 - 0.015 * dimensions.value[36].infTier), 1)
+      : dark_d_penalty);
+  
+    let power = 1 + 0.2 * Math.floor(hero.value.eqUps[type] / 25) -
+      (hero.value.spCount >= 37 ? 0.075 * (hero.value.spCount / 6) : 0) -
+      (spaceShop.value[2].status ? 0.0125 * hero.value.spsCountMax : 0);
+    
+    power = (type == 'sword' && ascenPerks[63].level? power * 1.5: power);
+    power = Math.max(power, 1);
+  
+    let weaponPenalty = type !== 'spRing' ? Math.E ** (hero.value.eqUps[type] / 6) : 1;
+  
+    return Math.floor(
+      (hero.value.eqUps[type] + 1) * 20 * weaponPenalty *
+      (1 + 10 * (hero.value.eqUps[type] / 10)) ** power * dark_d_penalty
+    );
+  }
+  
+  const handleExtraEnhanceChance = (type) => {
+    hero.value.eqUps[type] +=
+      1 +
+      Math.floor(hero.value.multEnchance / 100) +
+      (Math.random() * 100 + (hero.value.multEnchance % 100) >= 100 ? 1 : 0);
+  
+    if (type === 'spRing') {
+      let spRingMax = 500;
+      hero.value.eqUps[type] = Math.min(hero.value.eqUps[type], spRingMax);
+      if (hero.value.eqUps[type] >= spRingMax) return -1;
+    } else if (type === 'sword' && ascenPerks[63].level) {
+      let swordMax = (hero.value.equipmentTiers[type] + hero.value.freeEnchances) * 2;
+      hero.value.eqUps[type] = Math.min(hero.value.eqUps[type], swordMax);
+      if (hero.value.eqUps[type] >= swordMax) return -1;
+    } else {
+      let maxEnhances = hero.value.equipmentTiers[type] + hero.value.freeEnchances;
+      hero.value.eqUps[type] = Math.min(hero.value.eqUps[type], maxEnhances);
+      if (hero.value.eqUps[type] >= maxEnhances) return -1;
+    }
+  
+    return 1;
+  }
+  
+  
+  const autoForgeAll = () => {
+    if(!hero.value.isAutoForge || hero.value.stage < 2) return;
+  
+    const weapons = ['sword', 'armor', 'boots', 'ring', 'spRing']; 
+  
+    for (let type of weapons) {
+      
+      let totalUps =
+        type === 'spRing'
+          ? 500
+          : type === 'sword' && ascenPerks[63].level
+          ? (hero.value.equipmentTiers[type] + hero.value.freeEnchances) * 2
+          : hero.value.equipmentTiers[type] + hero.value.freeEnchances;
+      
+      if(!forgeReq(type)) continue;
+      
+      if(hero.value.eqUps[type] < totalUps) {
+        const cost = eqUpCost(type);
+        if (hero.value.stardust < cost) continue;
+  
+        hero.value.stardust -= cost;
+        handleExtraEnhanceChance(type);
+      }
+    }
+  }
+
+  const forgeReq = (type) => {
+    switch(type){
+      case 'sword':  return hero.value.spCount >= 1;
+      case 'armor':   return hero.value.spCount >= 7;
+      case 'boots':  return hero.value.spCount >= 11;
+      case 'ring':   return hero.value.spCount >= 21;
+      case 'spRing': return hero.value.spCount >= 12;
+      default: return false;
+    }
+  }
+  
+  
+  
   const test = () => {
+    return;
+    
+    //dimensions.value[32].infTier = 20;
+   // enemy.value.darkEnergy.totalBosses = 0;
+    //hero.value.spsCount = 0;
+    //hero.value.singularityKills = 1e4;
+    //hero.value.singularity = 8;
+    //dimensions.value[33].infTier = 25;
+    //hero.value.stardust = 1e27;
+    //hero.value.infTier = 25;
+    //hero.value.mainInfTier = 60;
+    //hero.value.spsCount = 0;
+    //hero.value.spsCountMax = 12;
+    //hero.value.ascensionShards = 1e24;
+    //hero.value.abyssDStages = 240;
+    //hero.value.mainInfTier = 49;
+    //hero.value.infTier = 18;
+    //dimensions.value[28].infTier = 20
+    //hero.value.abyssDStages = 220;
+    //enemy.value.darkEnergy.totalBosses = 7;
+    
+    //hero.value.infTier = 5;
+    //hero.value.mainInfTier = 45;
+    //hero.value.singularity = 1;
+    //dimensions.value[37].infTier = 6;
+   //hero.value.infTier = 6;
+    //hero.value.infTier = 10;
+    //hero.value.mainInfTier = 7;
+    //hero.value.mainInfTier = 60;
+    //hero.value.bhTier = 0;
+  //dimensions.value[9].infTier = 7;
+    //dimensions.value[34].infTier = 25;
+    //dimensions.value[29].infTier = 25;
+    //enemy.value.darkEnergy.totalBosses = 15;
+    //buffs.value[1].tier = 1;
+    //dimensions.value[40].infTier = 45;
+    //hero.value.survivalLife = 5;
+    //enemy.value.darkEnemyReq = [true, true, true, true, true, true, true, true, false, false];
+    //dimensions.value[31].infTier = 7;
+    //enemy.value.rage = 100;
     //dimensions.value[9].infTier = 7;
    //hero.value.infPoints = 7000;
     //hero.value.infPointsGoals = 3000;
@@ -3239,7 +4850,19 @@ export function useBattle(hero, enemy, buffs) {
     //hero.value.stage = 20;
     //dimensions.value[27].infTier = 15;
     //hero.value.eLevel = 700;s
-    //hero.value.infTier = 4;
+    //hero.value.infTier = 5;
+    //dimensions.value[4].infTier = 5;
+    //hero.value.stage = 50;
+    //radPerks[10].level = 0;
+    //hero.value.ascensionShards = 1e25;
+    
+    //hero.value.souls = 41;
+    //dimensions.value[31].infTier = 1;
+    //hero.value.attack *= 1e12;
+    //hero.value.overkill = 1000;
+    //hero.value.attacksPerSecond = 4;
+    //hero.value.ascensionShards = 1e20;
+    //enemy.value.darkEnemyLoot[0] = 0;
   }
 
   createEnemy();

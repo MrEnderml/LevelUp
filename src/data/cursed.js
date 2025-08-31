@@ -1,3 +1,5 @@
+import { getSvgIconHTML } from "../composables/svgIcon"
+
 export const cursed = [
     {
         name: "Penetration",
@@ -66,24 +68,24 @@ export const cursed = [
         icon: "🛡️",
         tier: [
             {
-                effect: "Block 10% DMG",
+                effect: "Absorb 10% DMG",
                 bonus: 1.1
             },
             {
-                effect: "Block 20% DMG",
+                effect: "Absorb 20% DMG",
                 bonus: 2.2
             },
             {
-                effect: "Block 30% DMG",
+                effect: "Absorb 30% DMG",
                 bonus: 4.4
             },
             {
-                effect: "Block 40% DMG",
+                effect: "Absorb 40% DMG",
                 bonus: 8.8,
                 status: false
             },
             {
-                effect: "Block 60% DMG",
+                effect: "Absorb 50% DMG",
                 bonus: 17.6,
                 status: false
             }
@@ -217,24 +219,24 @@ export const cursed = [
         icon: "🔪",
         tier: [
             {
-                effect: "Each of your attack deals you 2% Max HP",
+                effect: "Each of enemy attack deals hero 2% Max HP",
                 bonus: 5
             },
             {
-                effect: "Each of your attack deals you 3% Max HP",
+                effect: "Each of enemy attack deals hero 3% Max HP",
                 bonus: 10
             },
             {
-                effect: "Each of your attack deals you 4% Max HP",
+                effect: "Each of enemy attack deals hero 4% Max HP",
                 bonus: 20
             },
             {
-                effect: "Each of your attack deals you 5% Max HP",
+                effect: "Each of enemy attack deals hero 5% Max HP",
                 bonus: 40,
                 status: false
             },
             {
-                effect: "Each of your attack deals you 8% Max HP",
+                effect: "Each of enemy attack deals hero 8% Max HP",
                 bonus: 80,
                 status: false
             }
@@ -389,6 +391,257 @@ export const cursed = [
             {
                 effect: "x3 Attack",
                 bonus: 160,
+                status: false
+            }
+        ],
+        status: false
+    },
+    {
+        name: "Perdition of Decay",
+        id: 13,
+        icon: getSvgIconHTML('witheredAegis', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Recovering from death takes longer by 1.25",
+                bonus: 20
+            },
+            {
+                effect: "Recovering from death takes longer by 1.5",
+                bonus: 40
+            },
+            {
+                effect: "Recovering from death takes longer by 1.75",
+                bonus: 80
+            },
+            {
+                effect: "Recovering from death takes longer by 2.25",
+                bonus: 160,
+                status: false
+            },
+            {
+                effect: "Recovering from death takes longer by 3",
+                bonus: 320,
+                status: false
+            }
+        ],
+        status: false,
+        timer: 0,
+    },
+    {
+        name: "Perdition of Fragility",
+        id: 14,
+        icon: getSvgIconHTML('bloodOath', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Only critical hits can deal damage",
+                bonus: 30
+            },
+            {
+                effect: "Only critical hits can deal damage",
+                bonus: 60
+            },
+            {
+                effect: "Only critical hits can deal damage",
+                bonus: 120
+            },
+            {
+                effect: "Only critical hits can deal damage",
+                bonus: 240,
+                status: false
+            },
+            {
+                effect: "Only critical hits can deal damage",
+                bonus: 480,
+                status: false
+            }
+        ],
+        crit: false,
+        status: false
+    },
+    {
+        name: "Perdition of Thorns",
+        id: 15,
+        icon: getSvgIconHTML('famineToll', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Heal 2% of HP on a successful Block. (Block - when Defense absorbs the full damage)",
+                bonus: 30
+            },
+            {
+                effect: "Heal 3% of HP on a successful Block. (Block - when Defense absorbs the full damage)",
+                bonus: 60
+            },
+            {
+                effect: "Heal 4% of HP on a successful Block. (Block - when Defense absorbs the full damage)",
+                bonus: 120
+            },
+            {
+                effect: "Heal 5% of HP on a successful Block. (Block - when Defense absorbs the full damage)",
+                bonus: 240,
+                status: false
+            },
+            {
+                effect: "Heal 6% of HP on a successful Block. (Block - when Defense absorbs the full damage)",
+                bonus: 480,
+                status: false
+            }
+        ],
+        status: false
+    },
+    {
+        name: "Perdition of Ferocity",
+        id: 16,
+        icon: getSvgIconHTML('blindJustice', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "10% chance to deal an extra hit. The extra hit deals double damage",
+                bonus: 35
+            },
+            {
+                effect: "15% chance to deal an extra hit. The extra hit deals double damage",
+                bonus: 70
+            },
+            {
+                effect: "20% chance to deal an extra hit. The extra hit deals double damage",
+                bonus: 140
+            },
+            {
+                effect: "25% chance to deal an extra hit. The extra hit deals double damage",
+                bonus: 280,
+                status: false
+            },
+            {
+                effect: "30% chance to deal an extra hit. The extra hit deals double damage",
+                bonus: 560,
+                status: false
+            }
+        ],
+        status: false
+    },
+    {
+        name: "Perdition of Poverty",
+        id: 17,
+        icon: getSvgIconHTML('perditionPoverty', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Gives 95% less resources upon death",
+                bonus: 40
+            },
+            {
+                effect: "Gives 90% less resources upon death",
+                bonus: 80
+            },
+            {
+                effect: "Gives 85% less resources upon death",
+                bonus: 160
+            },
+            {
+                effect: "Gives 80% less resources upon death",
+                bonus: 320,
+                status: false
+            },
+            {
+                effect: "Gives 75% less resources upon death",
+                bonus: 640,
+                status: false
+            }
+        ],
+        loot: 1,
+        status: false
+    },
+    {
+        name: "Perdition of Reflexes",
+        id: 18,
+        icon: getSvgIconHTML('perditionReflexes', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Heal 2% of max HP on successful avoidance",
+                bonus: 45
+            },
+            {
+                effect: "Heal 3% of max HP on successful avoidance",
+                bonus: 90
+            },
+            {
+                effect: "Heal 4% of max HP on successful avoidance",
+                bonus: 180
+            },
+            {
+                effect: "Heal 5% of max HP on successful avoidance",
+                bonus: 360,
+                status: false
+            },
+            {
+                effect: "Heal 6% of max HP on successful avoidance",
+                bonus: 720,
+                status: false
+            }
+        ],
+        status: false
+    },
+    {
+        name: "Perdition of Resilience",
+        id: 19,
+        icon: getSvgIconHTML('perditionResilience', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Take 10% reduced damage from critical attacks.",
+                bonus: 50
+            },
+            {
+                effect: "Take 15% reduced damage from critical attacks.",
+                bonus: 100
+            },
+            {
+                effect: "Take 20% reduced damage from critical attacks.",
+                bonus: 200
+            },
+            {
+                effect: "Take 25% reduced damage from critical attacks.",
+                bonus: 400,
+                status: false
+            },
+            {
+                effect: "Take 30% reduced damage from critical attacks.",
+                bonus: 800,
+                status: false
+            }
+        ],
+        status: false
+    },
+    {
+        name: "Perdition of Onslaught",
+        id: 20,
+        icon: getSvgIconHTML('perditionOnslaught', '1.5em'),
+        perdition: 1,
+        tier: [
+            {
+                effect: "Next enemy spawns after 0.1s.",
+                bonus: 55
+            },
+            {
+                effect: "Next enemy spawns after 0.2s.",
+                bonus: 110
+            },
+            {
+                effect: "Next enemy spawns after 0.3s.",
+                bonus: 220
+            },
+            {
+                effect: "Next enemy spawns after 0.4s.",
+                bonus: 440,
+                status: false
+            },
+            {
+                effect: "Next enemy spawns after 0.5s.",
+                bonus: 880,
                 status: false
             }
         ],

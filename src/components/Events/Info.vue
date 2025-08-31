@@ -48,6 +48,41 @@
         </div>
       </div>
     </div>
+     
+    <div v-if="activeEvent === 'Lore'" class="info-card lore-section">
+      <div class="tabs">
+        <button
+          v-for="author in authors"
+          :key="author"
+          :disabled="!isAuthorUnlocked(author)"
+          @click="activeAuthor = author"
+          :class="{ active: activeAuthor === author }"
+          :style="{ color: authorColors[author] || '#ccc' }"
+        >
+          {{ author }}
+        </button>
+      </div>
+
+      <div class="lore-wrapper">
+        <div
+          v-for="section in filteredLoreSections"
+          :key="section.id"
+          class="lore-card"
+          :class="{ hidden: !section.visible, locked: section.locked }"
+          @click="unlockLoreSection(section)"
+        >
+          <h3 class="lore-title">{{ section.title }}</h3>
+
+          <div class="lore-meta">
+            <span class="lore-author" v-if="section.author">From: {{ section.author }}</span>
+            <span class="lore-location" v-if="section.location"> Location: {{ section.location }}</span>
+          </div>
+
+          <div v-if="!section.locked" class="lore-content" v-html="section.content.join('<br>')"></div>
+          <p v-else class="lore-locked">🔒 Information locked. Complete the requirement to unlock.</p>
+        </div>
+      </div>
+    </div>
 
     <div v-if="activeEvent === 'Stats'" class="stats-panel">
       <div class="tabs">
@@ -68,7 +103,7 @@
       <div class="stats-content">
         <ul v-if="currentSection">
           <li
-            v-for="(item, index) in currentSection.content"
+            v-for="(item, index) in currentSection.content.filter(c => !c.req || c.req())"
             :key="index"
             class="stat-item"
           >
@@ -90,10 +125,10 @@
 </template>
 
 <script setup>
+import { watchEffect, watch, ref, computed } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { useBuff } from '../../data/buffs.js';
-import { ref, computed, watch } from 'vue';
 import { equipment } from '../../data/equipment.js';
 import { perks as ascenPerks } from '../../data/ascension.js';
 import { perks } from '../../data/perks.js';
@@ -101,6 +136,9 @@ import { perks as radPerks } from '../../data/radPerks.js';
 import { amulets } from '../../data/amulets.js';
 import { dimensions } from '../../data/dimensions.js';
 import { cursed } from '../../data/cursed.js';
+import { goals as infGoals } from '../../data/infGoals.js';
+import { spaceShop } from '../../data/spaceShop.js';
+import { divineSkills } from '../../data/quasarCore.js';
 
 const { hero } = useHero();
 const { buffs } = useBuff();
@@ -165,7 +203,9 @@ const handleLinkClick = (event) => {
 
 
 const events = [
+  'Update',
   'Lore',
+  'Info',
   'Tree',
   'Equipment',
   'Ascension',
@@ -183,27 +223,1025 @@ const events = [
   'Stats',
 ];
 
+
+
+
+
+
+
+
+
+
+
+const loreSection = [
+  {
+    title: 'Message',
+    id: 0,
+    author: 'Unknown',
+    location: 'Level 1',
+    visible: true,
+    locked: false, 
+    content: [
+      `Do you realize how powerful you are? Traveling between Dimensions, destroying Galaxies and Celestials.`,
+      `But what you may not know is that <span class="rainbow-text">[D-Rule]</span> is watching you, and when you are weak enough, he will destroy you, because only one can be the Chosen One.`,
+      `Ask me when you find me between all these dimensions.`
+    ]
+  },
+  {
+    title: 'Ancient Note I',
+    id: 1,
+    author: 'Unknown',
+    location: 'Infinity [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `It was a time when chaos was part of every creature in the entire world.  
+      Every race was searching for a place of peace and existence.  
+      The fate of every creature was in their own hands, but no one could do anything about it in the face of death itself.
+      `
+    ]
+  },
+  {
+    title: 'Ancient Note II',
+    id: 2,
+    author: 'Unknown',
+    location: 'Infinity [T3]',
+    visible: true,
+    locked: true, 
+    content: [
+      `One of the most powerful races, humans, could not avoid the total destruction of their kind. 
+      Watching the collapse of the imperium, they set out in search of a safer place to prolong their fragile existence.
+      `
+    ]
+  },
+  {
+    title: 'Ancient Note III',
+    id: 3,
+    author: 'Unknown',
+    location: 'Infinity [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `A thousand astronomical units passed until humanity found a small corner at the edge of the universe. 
+      This place was the very image of calm and serenity, untouched by chaos—absolute harmony and purity. 
+      It was a sign, a sign that it was time for humanity to return, to return and recreate the imperium anew.
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note IV',
+    id: 4,
+    author: 'Unknown',
+    location: 'Infinity [T8]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Humanity—perhaps one of the most primitive, and at the same time the most tenacious and adaptive races—when placed 
+      in favorable conditions, recovered from the collapse of the imperium and prepared for new conquests. 
+      Or so they thought...
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note V',
+    id: 5,
+    author: 'Unknown',
+    location: 'Infinity [T10]',
+    visible: true,
+    locked: true, 
+    content: [
+      `At the dawn of existence, when galaxies were forming and dimensions were uniting, and life was just beginning to emerge,
+       beings not bound by any law or time existed and manifested themselves—indescribable in a single word, 
+       as if these beings were the law itself, standing at the pinnacle of the entire world.
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note VI',
+    id: 6,
+    author: 'Unknown',
+    location: 'Dimension [R0-X9a] [2] [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Clumps of inexplicable energy in different colors moved and radiated an unfathomable power. 
+      After a short time, the purple essence spread across the sky and began to speak in human language.
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note VII',
+    id: 7,
+    author: 'Unknown',
+    location: 'Dimension [K7-D4n] [3] [T8]',
+    visible: true,
+    locked: true, 
+    content: [
+      `"Humanity—observing one of the superior races is quite pleasant for a creature like me. However, 
+      I must point out that your presence here is unforgivable, and I would even say impossible. 
+      And yet, your emergence is the result of our impossible mistake".
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note VIII',
+    id: 8,
+    author: 'Unknown',
+    location: 'Dimension [K7-D4n] [1] [T2]',
+    visible: true,
+    locked: true, 
+    content: [
+      `"This place is the stronghold of our creation. As incomprehensible and wondrous as we are, it was never 
+      intended for this place to be filled with beings of living matter. 
+      Our law is not to interfere with the lives of lesser races—this is a taboo, a decree, a rule, call it what you will, 
+      but one we must observe".
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note IX',
+    id: 9,
+    author: 'Unknown',
+    location: 'Dimension [M2-Λ1s] [4] [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `"Your existence here violates the harmony and balance of this fragile world. 
+      No one can ever escape chaos. Whether you live or die, the fate of races must follow its own path, 
+      and the paradox in which you now find yourself corrupts the universal formula of this entire world".
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note X',
+    id: 10,
+    author: 'Unknown',
+    location: 'Dimension [V6-B3n] [6] [T15]',
+    visible: true,
+    locked: true, 
+    content: [
+      `"Therefore, as beings of a higher order, for our mistake, we grant you—humanity—one astronomical unit of time 
+      to leave this place. To return to the open world, the one from which you came. 
+      Understand: the transfer of our creation into your dimension could lead to the death of an entire race, 
+      which is unacceptable to us. And yet, there will always be victims. 
+      Remember: not a single creature has ever escaped chaos. 
+      So it is, so it was, and so it shall be. This is the essence of the entire world".
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note XI',
+    id: 11,
+    author: 'Unknown',
+    location: 'Dimension [DD-zΘaYY] [9] [T7]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The culmination of humanity’s efforts was the creation of a perfect being, forged with all the technologies they 
+      possessed. Its purpose was to find a suitable place for the continued existence of humanity. 
+      Yet everyone understood that, after the fall of the imperium, humanity would once again be reduced to mere survival.
+      They had only one chance, and they chose to stake everything upon it.
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note XII',
+    id: 12,
+    author: 'Unknown',
+    location: 'Dimension [QZ-µaTT] [11] [T15]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Clumps of inexplicable energy in different colors moved and radiated an unfathomable power. 
+      After a short time, the purple essence spread across the sky and began to speak in human language.
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 13,
+    author: '[D-Infinity]',
+    location: 'Infinity [T10]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Your pathetic attempts to scuttle like a rat through my domain are beginning to irritate me.  
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 14,
+    author: '[D-Infinity]',
+    location: 'Infinity [T20]',
+    visible: true,
+    locked: true, 
+    content: [
+      `If a lower being like you does not know its place, it must be destroyed according to the laws of this world.    
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 15,
+    author: '[D-Infinity]',
+    location: 'Infinity [T40]',
+    visible: true,
+    locked: true, 
+    content: [
+      `And if you are so confident in your powers, do not dare to die quickly—I want to see you suffer.
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 16,
+    author: '[D-Infinity]',
+    location: 'Infinity [T60]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Why does a small, pathetic, deplorable creature like you still exist? Remember, the further you go, the more I sense your presence. 
+      Do not die before your time—a toy like you will be a delightful bonus in my hands.
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 17,
+    author: '[D-Gravity]',
+    location: 'Singularity [T0]',
+    visible: true,
+    locked: true, 
+    content: [
+      `And who has come to me?  You must be very brave to enter my trial. 
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 18,
+    author: '[D-Gravity]',
+    location: 'Singularity [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `You should not fear the path that is destined for you.
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 19,
+    author: '[D-Gravity]',
+    location: 'Singularity [T2]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The shackles of this world are gradually falling away—do you feel it too? 
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 20,
+    author: '[D-Gravity]',
+    location: 'Singularity [T3]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Your body is as heavy as ten suns, and your eyes burn with the fire of a thousand more.  
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 21,
+    author: '[D-Gravity]',
+    location: 'ISingularity [T4]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Do not look at other creatures crushed by gravity; you have your own path to follow.
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 22,
+    author: '[D-Gravity]',
+    location: 'Singularity [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Even the heaviest of bodies will eventually rise, if they align with the true pull of their destiny.
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 23,
+    author: '[D-Gravity]',
+    location: 'Singularity [T6]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Gravity binds all, yet the spirit that resists it carves its own orbit among the stars.
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 24,
+    author: '[D-Gravity]',
+    location: 'Singularity [T7]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Those who are crushed by gravity see only the ground; those who embrace it see the cosmos
+      .`
+    ]
+  },
+   {
+    title: 'Message',
+    id: 25,
+    author: '[D-Gravity]',
+    location: 'Singularity [T8]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The force that holds you down is the same force that can propel you beyond all limits.
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 26,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T0]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Even light cannot escape the pull of a black hole, yet in its darkness lies the seed of creation
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 27,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `All paths converge toward the void, and yet those who embrace it understand the true weight of existence
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 28,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T2]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The closer you fall into the singularity, the clearer the illusion of time and self becomes
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 29,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T3]',
+    visible: true,
+    locked: true, 
+    content: [
+      `To tear the fabric of the universe, you must first shatter the chains that bind all existence. 
+      That singularity of energies will become both a new beginning… and a new end
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 30,
+    author: '[D-Corruption]',
+    location: 'Infinity [T60]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The time has come for me to unveil my eternal self.
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 31,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Entities beyond control must be annihilated.
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 32,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T2]',
+    visible: true,
+    locked: true, 
+    content: [
+      `All that escapes control is a threat to order.
+      `
+    ]
+  },
+  {
+    title: 'Message',
+    id: 33,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T3]',
+    visible: true,
+    locked: true, 
+    content: [
+      `No entity can remain beyond the reach of dominion
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 34,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T4]',
+    visible: true,
+    locked: true, 
+    content: [
+      `To resist control is to invite destruction
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 35,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Chaos knows no mercy, but control shall claim all who dare resist it
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 36,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T6]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Chaos knows no mercy, but control shall claim all who dare resist it
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 37,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T7]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The world itself demands obedience; those beyond its grasp shall be undone
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 38,
+    author: '[D-Space]',
+    location: 'Dimension [Ω VL-χtAR] [31] Infinity [T8]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Those who escape the grasp of control threaten the balance of all creation and must be subdued
+      .`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 39,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `What audacity—and at the same time, what courage—to challenge something so utterly incomprehensible.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 40,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T3]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Those who dare defy the laws of the cosmos are rewarded with the power that others fear to touch.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 41,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T6]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Any who challenge the immutable rules of creation shall ascend beyond the reach of the cautious.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 42,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T10]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The entire world tests the bold; those who transgress its boundaries are granted gifts denied to the meek.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 43,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T12]',
+    visible: true,
+    locked: true, 
+    content: [
+      `To oppose the foundations of reality is to seize the power that lies beyond fear.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 44,
+    author: '[D-Ultimatum]',
+    location: 'Dimension [Ω LD-δrAK] [38] Infinity [T15]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Your existence is alluring to the forces of disorder that threaten this fragile balance. I will await you in my dimension—if, of course, you dare to come.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 45,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T4]',
+    visible: true,
+    locked: true, 
+    content: [
+      `It is time to learn how to control time. Be prepared—it will take no less than an eternity.`
+    ]
+  },
+  {
+    title: 'Ancient Note XIII',
+    id: 46,
+    author: 'Unknown',
+    location: 'Dimension [BZ-ΦeLL] [15] [T20]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The entire technology of the human race set forth through the dying world of chaos, 
+      overcoming powerful beings and uncontrollable laws, poisoned yet driven by the 
+      last chance for humanity — a chance for existence.`
+    ]
+  },
+  {
+    title: 'Ancient Note XIV',
+    id: 47,
+    author: 'Unknown',
+    location: 'Dimension [HZ-βcTR] [19] [T25]',
+    visible: true,
+    locked: true, 
+    content: [
+      `It could be described in no other way than as a gift from a great being who 
+      guided mankind and left subtle hints. Yet one could only 
+      grasp a single truth: either there truly is a benevolent being in this world… 
+      or this being requires something of us.`
+    ]
+  },
+  {
+    title: 'Ancient Note XV',
+    id: 48,
+    author: 'Unknown',
+    location: 'Dimension [YY-θsJP] [18] Stage: 101',
+    visible: true,
+    locked: true, 
+    content: [
+      `Long before the journey began, enclosed within the life-support capsule, a single phrase echoed in my mind: 
+      find me among all these dimensions.`
+    ]
+  },
+  {
+    title: 'Ancient Note XVI',
+    id: 49,
+    author: 'Unknown',
+    location: 'Dimension [DV-χuQZ] [20] [T20]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Gazing upon the lifeless surroundings, the absolute emptiness of space, one cannot help but believe 
+      that it was not always so — or at least, we wanted to believe.`
+    ]
+  },
+  {
+    title: 'Ancient Note XVII',
+    id: 50,
+    author: 'Unknown',
+    location: 'Dimension [KL-σrXZ] [13] [T25]',
+    visible: true,
+    locked: true, 
+    content: [
+      `No one can say when it began — when new life ceased to emerge, when the lands stopped yielding crops, 
+       when planets stopped being born. One can only say this:
+       the catharsis of all life can arise so suddenly that we do not even notice it.`
+    ]
+  },
+  {
+    title: 'Ancient Note XVIII',
+    id: 51,
+    author: 'Unknown',
+    location: 'Dimension [JK-λbYX] [22] [T35]',
+    visible: true,
+    locked: true, 
+    content: [
+      `What is chaos? It is difficult to define in a single word. It is more like the 
+      state of our world: a world that walks in the footsteps of death. Lifeless and empty, 
+      a world torn by fluctuations and black holes. The absolute harmony of emptiness.`
+    ]
+  },
+  {
+    title: 'Ancient Note XIX',
+    id: 52,
+    author: 'Unknown',
+    location: 'Dimension [Et-n1t1] [24]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The energy of this place feels different, 
+      and yet that voice in my head grows stronger. Perhaps I am on the right path.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 53,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Chaous = Entropy.`
+    ]
+  },
+  {
+    title: 'Message',
+    id: 54,
+    author: '[D-Gravity]',
+    location: 'Black Hole [T6]',
+    visible: true,
+    locked: true, 
+    content: [
+      `It is time to learn how to control time. Be prepared—it will take no less than an eternity.`
+    ]
+  },
+  {
+    title: 'Ancient Note XX',
+    id: 55,
+    author: 'Unknown',
+    location: 'Dimension [Ω DR-σvTH] [26] [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `[D-Corruption] is one of the most ancient supreme beings. 
+      Its influence spreads across all possible dimensions, yet its true habitat remains unknown to others. 
+      The only thing worth understanding is this:
+       its mere presence alone can plunge the entire world into the abyss of corruption.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXI',
+    id: 56,
+    author: 'Unknown',
+    location: 'Dimension [Ω NX-λrAZ] [28] [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `It is unknown when or how *Doom* appeared here.
+       Ancient notes speak of the experiments of supreme beings, 
+       seeking to create a vessel for controlling dark energy.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXII',
+    id: 57,
+    author: 'Unknown',
+    location: 'Dimension [Ω VL-χtAR] [31] [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `If you ask who holds greater power, everyone will answer the same: power 
+      belongs to the one who commands all creatures.
+      Yet in the pursuit of truth, the greatest danger is becoming such a creature yourself.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXIII',
+    id: 58,
+    author: 'Unknown',
+    location: 'Dimension [Ω TH-μrAK] [34] [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Ancient records of explorers describe shards of dimensions as remnants of a once-mighty world that
+       possessed intelligence. Now, only broken shards remain—each carrying immense power within itself`
+    ]
+  },
+  {
+    title: 'Ancient Note XXIV',
+    id: 59,
+    author: 'Unknown',
+    location: 'Dimension [Ω TH-μrAK] [34] [T5]',
+    visible: true,
+    locked: true, 
+    content: [
+      `Every being in existence felt the echo of a battle in this place, a clash between [D-Gravity] and an ancient entity. 
+       consequence was nothing less than the annihilation of an entire dimension.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXV',
+    id: 60,
+    author: 'Unknown',
+    location: 'Dimension [Ω TH-μrAK] [34] [T10]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The Ancient Titans were among the few who could rival the powers of the laws. Their strength was as old as their very existence. 
+      Traces of their power — or of their disappearance — are nearly impossible to find.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXV',
+    id: 61,
+    author: 'Unknown',
+    location: 'Dimension [Ω TH-μrAK] [34] [T15]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The Ancient Titans were among the few who could rival the powers of the laws. Their strength was as old as their very existence. 
+      Traces of their power — or of their disappearance — are nearly impossible to find.`
+    ]
+  },
+  {
+    title: 'Ancient Note XXVI',
+    id: 62,
+    author: 'Unknown',
+    location: 'Dimension [Ω TH-μrAK] [34] [T20]',
+    visible: true,
+    locked: true, 
+    content: [
+      `The Ancient Titans were not only majestic, but also the very first who can grasp the essence of the laws’ power — long before their feud with the [D-Overlords].
+      .`
+    ]
+  },
+  {
+    title: 'Ancient Note XXVII',
+    id: 63,
+    author: 'Unknown',
+    location: 'Dimension [Ω LD-δrAK] [38] [T1]',
+    visible: true,
+    locked: true, 
+    content: [
+      `There exists a creature, granted absolute freedom and a vile nature. Never accept its bargains—if you value your life.
+      .`
+    ]
+  },
+]
+
+
+const authorColors = {
+  'Unknown': '#2dffbd',
+  '[D-Infinity]': 'gold',
+  '[D-Gravity]': '#00fdff',
+  '[D-Space]': 'orange',
+  '[D-Ultimatum]': '#ff6b6b',
+  '[D-Corruption]': '#d300f7',
+  '[D-Eternal]': '#feafff',
+  '[D-Rule]': '#ffffff',
+};
+
+
+const activeAuthor = ref(null);
+
+
+const authors = computed(() => {
+  return Array.from(
+    new Set(
+      loreSection
+        .filter(s => s.content && s.content.length > 0 && s.visible && !s.locked)
+        .map(s => s.author || 'Unknown')
+    )
+  );
+});
+
+
+const filteredLoreSections = computed(() => {
+  if (!activeAuthor.value) return [];
+  return loreSection.filter(s => s.author === activeAuthor.value);
+});
+
+
+const isAuthorUnlocked = (author) => {
+  return loreSection.some(
+    s => s.author === author && s.visible && !s.locked
+  );
+};
+
+
+const unlockLoreSection = (section) => {
+  if (section.locked && checkUnlockCondition(section)) {
+    section.locked = false;
+  }
+};
+
+
+const checkUnlockCondition = (section) => {
+  return section.visible && loreCondition(section.id);
+};
+
+
+const loreCondition = (id) => {
+  switch(id){
+    case 1: return hero.value.mainInfTier >= 1;
+    case 2: return hero.value.mainInfTier >= 3;
+    case 3: return hero.value.mainInfTier >= 5;
+    case 4: return hero.value.mainInfTier >= 8;
+    case 5: return hero.value.mainInfTier >= 10;
+    case 6: return dimensions.value[2].infTier >= 5;
+    case 7: return dimensions.value[3].infTier >= 8;
+    case 8: return dimensions.value[1].infTier >= 2;
+    case 9: return dimensions.value[4].infTier >= 5;
+    case 10: return dimensions.value[6].infTier >= 15;
+    case 11: return dimensions.value[9].infTier >= 7;
+    case 12: return dimensions.value[11].infTier >= 15;
+    case 13: return hero.value.mainInfTier >= 10;
+    case 14: return hero.value.mainInfTier >= 20;
+    case 15: return hero.value.mainInfTier >= 40;
+    case 16: return hero.value.mainInfTier >= 60;
+    case 17: return hero.value.mainInfTier >= 6;
+    case 18: return hero.value.singularity > 0;
+    case 19: return hero.value.singularity > 1;
+    case 20: return hero.value.singularity > 2;
+    case 21: return hero.value.singularity > 3;
+    case 22: return hero.value.singularity > 4;
+    case 23: return hero.value.singularity > 5;
+    case 24: return hero.value.singularity > 6;
+    case 25: return hero.value.singularity > 7;
+    case 26: return hero.value.rebirthPts >= 1e7;
+    case 27: return hero.value.bhTier >= 1;
+    case 28: return hero.value.bhTier >= 2;
+    case 29: return hero.value.bhTier >= 3;
+    case 30: return hero.value.mainInfTier >= 60;
+    case 31: return dimensions.value[31].infTier >= 1;
+    case 32: return dimensions.value[31].infTier >= 2;
+    case 33: return dimensions.value[31].infTier >= 3;
+    case 34: return dimensions.value[31].infTier >= 4;
+    case 35: return dimensions.value[31].infTier >= 5;
+    case 36: return dimensions.value[31].infTier >= 6;
+    case 37: return dimensions.value[31].infTier >= 7;
+    case 38: return dimensions.value[31].infTier >= 8;
+    case 39: return dimensions.value[38].infTier >= 1;
+    case 40: return dimensions.value[38].infTier >= 3;
+    case 41: return dimensions.value[38].infTier >= 6;
+    case 42: return dimensions.value[38].infTier >= 10;
+    case 43: return dimensions.value[38].infTier >= 12;
+    case 44: return dimensions.value[38].infTier >= 15;
+    case 45: return hero.value.bhTier >= 4;
+    case 46: return dimensions.value[15].infTier >= 20;
+    case 47: return dimensions.value[19].infTier >= 25;
+    case 48: return hero.value.abyssDStages > 100;
+    case 49: return dimensions.value[20].infTier >= 20;
+    case 50: return dimensions.value[13].infTier >= 25;
+    case 51: return dimensions.value[22].infTier >= 35;
+    case 52: return dimensions.value[22].infTier >= 35 && dimensions.value[13].infTier >= 25 && hero.value.mainInfTier >= 35;
+    case 53: return hero.value.bhTier >= 5;
+    case 54: return hero.value.bhTier >= 6;
+    case 55: return dimensions.value[26].infTier >= 1;
+    case 56: return dimensions.value[28].infTier >= 1;
+    case 57: return dimensions.value[31].infTier >= 1;
+    case 58: return dimensions.value[34].infTier >= 1;
+    case 59: return dimensions.value[34].infTier >= 5;
+    case 60: return dimensions.value[34].infTier >= 10;
+    case 61: return dimensions.value[34].infTier >= 15;
+    case 62: return dimensions.value[34].infTier >= 20;
+    case 63: return dimensions.value[38].infTier >= 1;
+    default: return false;
+  }
+};
+
+watchEffect(() => {
+  loreSection.forEach(section => {
+    if (section.locked && checkUnlockCondition(section)) {
+      section.locked = false;
+    }
+  });
+});
+
+
+watch(authors, () => {
+  const unlocked = authors.value.find(a => isAuthorUnlocked(a));
+  if (unlocked) activeAuthor.value = unlocked;
+}, { immediate: true });
+
+
+
+
+
+
+
 const styledSections = [
  {
-    title: 'Upadte 0.4 [Dimension Atlas part 2]',
-    class: 'endless-section lore',
+    title: 'Update 0.5 [Dark Dimensions]',
+    class: 'update-section update',
     content: [
-      `<strong>Important changes</strong><br>
-      New Dimensions<br>
-      Singularity BH<br>
-      IP Recalculation<br>
-      AFK Reworked<br>
-      UI changes<br>
-      Quick access to information: click on [ℹ️] to go to the info section<br>
-      Star Forge reworked:<br> You can hold the mouse button for fast echance<br>
-      Reworked the chance of Enhance<br>
-      Fix and add bugs<br>`,
-      `There are already 100 of us in the Discord. In honor of this, everyone will receive 20 free IP`
+        `<span style="color: red">The update is in alpha. There may be bugs, as well as issues with files and game balance.
+        Future patches may introduce many changes and additions.</span>`,
+        
+        `<strong>Important changes</strong><br>`,
+
+        `<span style="color: #ef37ef"><strong>Dimensions</strong></span><br>
+        Dark Dimensions added.<br>
+        Two Dimension view modes.<br>
+        Progression view for Dimensions.<br>
+        The Home button now teleports directly into the Dimension (previously it teleported to the Dimension’s location in the Atlas).<br>`,
+
+        `<span style="color: #00c0ff"><strong>Singularity</strong></span><br>
+        Progression has become easier. The required number of kills now depends on the Singularity tier. [T0] - 1250, [T1] - 2500...<br>`,
+
+        `<span style="color: gold"><strong>Infinity</strong></span><br>
+        Milestone section.<br>
+        New Infinity bonuses.<br>
+        Quasar Core [Endgame content].<br>`,
+
+        `<span style="color: #d4ff00"><strong>Radiation</strong></span><br>
+        Hover over a creature to see details.<br>
+        Danger Perk upgrades faster.<br>`,
+
+        `<span style="color: orange"><strong>Space</strong></span><br>
+        Auto-system for Space.<br>
+        Space creatures now have a cooldown for fighting (Auto-Fighting).<br>
+        Space-INF and Astralis [Midgame content].<br>`,
+
+        `<span style="color: lightgreen"><strong>Rebirth</strong></span><br>
+        [T80] now capped at [T200].<br>`,
+
+        `<span style="color: purple"><strong>Souls</strong></span><br>
+        UI changes.<br>
+        Souls now provide a multiplier to Stardust and Mutagen drop.<br>`,
+
+        `<span style="color: gold"><strong>Buffs</strong></span><br>
+        New Buffs layout.<br>
+        Double-click the layout to open the edit menu.<br>
+        Prioritization system: buffs will be updated when the number of available buffs changes (chooses the most useful buffs first).<br>`,
+
+        `<span style="color: lightblue"><strong>Equipment</strong></span><br>
+        Added Starforge Tier that improves the power of Enhances. The Tier depends on total Enhances.<br>
+        Min Chance removed and replaced with Extra Enhance Chance.<br>
+        Extra Enhance applies to both normal Enhances and [MAX].<br>`,
+
+        `<span style="color: green"><strong>Tree</strong></span><br>
+        Some Inf-perks related to DMG now have a higher cost.<br>`,
+
+        `<span style="color: yellow"><strong>Combat</strong></span><br>
+        UI progression changes.<br>
+        Curses and most icons now show information when hovered.<br>
+        Icons now have static positions and a safety check (Settings).<br>`,
+
+        `<span style="color: yellow"><strong>The next patch includes</strong></span><br>
+        Stats panel showing detailed stats.<br>
+        Rebalancing.<br>
+        Small visual fixes.<br>
+        Damage display?<br>`,
       ]
   },
   {
     title: 'Links',
-    class: 'auto-section lore',
+    class: 'auto-section info',
     content: [
       `
       <a href="https://discord.gg/EVnTk9HZwu" target="_blank">
@@ -220,25 +1258,15 @@ const styledSections = [
   },
   {
     title: 'Endless Progress',
-    class: 'endless-section lore',
+    class: 'endless-section info',
     content: [
-      'Endgame content is The Dimension [Et-n1t1]',
-      'Next update 0.5: The Dark Dimensions'
+      'Endgame content is The Black Hole [T4]',
+      'Next update 0.6: Dimensional Merge'
       ]
   },
   {
-    title: 'Why LevelUp?',
-    class: 'lore-section',
-    content: [`
-    Do you realize how powerful you are? Traveling between Dimensions, destroying Galaxies and Celestials. 
-    But what you may not know is that D-Rule is watching you, and when you are weak enough, he will destroy you, because only one can be the Chosen One.
-     What is it that makes you want to be stronger every time, and break down every wall that stands in your way. 
-     Ask me when you <span>find me</span> between all these dimensions.
-    `]
-  },
-  {
     title: 'Usefull Info',
-    class: 'lore-section',
+    class: 'endless-section info',
     content: [
       'S - Can be stacked with the same effect',
       '* - When you hover over it, a pop-up window appears with information',
@@ -249,13 +1277,12 @@ const styledSections = [
       'Total Level = Current Level + MIN Level',
       'True Max Level - Level without any effects',
       '<strong>Event information is revealed when you reach that event.</strong>',
-      'Green circle next to progress(GCNP) - activate to stop in current zone. Useful for farming. Maximum farming efficiency when you kill an enemy with one hit',
       'Stats from the level are added only those that are in the range of the maximum level + minimum level *When your current Level is higher than the Maximum Level*'
     ]
   },
   {
     title: 'AFK',
-    class: 'afk-section lore',
+    class: 'afk-section info',
     content: [
       'You can kill a maximum of 1 enemy per second.',
       'Max AFK Kills = Max Stage Passed × 75.',
@@ -266,7 +1293,7 @@ const styledSections = [
   },
   {
     title: 'Auto',
-    class: 'auto-section lore',
+    class: 'auto-section info',
     content: [
       `Unlock *Stop at Stage* after reaching Infinity [T0]`,
       `Unlock *Auto-Ascension* after reaching Infinity [T2]`,
@@ -359,6 +1386,7 @@ const styledSections = [
       hero.value.soulsMax >= 30 && `Abyss T2 - After complete you will be cursed by 3 new curses. Soul CAP -> 40. There are new enemies after 20 stages that drops Ascension Shards.
   Ascension Shards now affect to enemies make them weaker.`,
       hero.value.soulsMax >= 40 && 'Abyss T3 - Break Rebirth Limits. Open Corruption. Unlock the Second Space Fragment',
+      hero.value.spCount >= 25 && `The bonuses from Abyss D will apply only after open Abyss D`, 
       hero.value.spCount >= 15 && `Abyss D: `,
       hero.value.abyssDStages >= 20 && `Reach Stage 20: High Tier Curses appear more often`,
       hero.value.abyssDStages >= 30 && `Reach Stage 30: Level scales based on Max Stage in Abyss `,
@@ -404,23 +1432,9 @@ const styledSections = [
       <strong>Mutation</strong> [T4] from <strong>Stage</strong> 45.`,
       `<strong>Tip: Increase the chance of Curse [T3] and the frequency of enemy spawns</strong>`,
       `Each  Curse [T4] grants an additional [^0.1] curse bonus. For information on the additional bonus, see the Info -> Amulet Section.`,
-      'Danger ↑ = special enemy chance ↑ + power ↑.',
-      'Danger doesnt work in Abyss and Singularity',
-      `Danger Levels:<br>10: Soul Chance<br>20: Ascension Shard MULT for Ascension Souls<br>`,
+      'Danger ↑ = <strong>special enemy chance</strong> ↑ + power ↑.',
+      '<strong>Danger Power does not work in Abyss and Singularity</strong>',
       `Hold the button to upgrade quickly`,
-      hero.value.infTier >= 4 && `Infinite Creatures:<br>
-      Infinite creatures do not reset during Infinity, and each creature has its own personal Drop and MAX Drop<br>
-      Ω-Infinity - [Danger 100 & Stage 60+]: +1 Potential [${enemy.value.dangerEnemyLoot[0]} / 60]<br>
-      Mirror of the Infinity - [Danger 150 & Stage 65+]: +1 IP [${enemy.value.dangerEnemyLoot[1]} / 1000]<br>
-      The Infinite One - [Danger 200 & Stage 70+]: +1 ST [${enemy.value.dangerEnemyLoot[2]} / 5]<br>`,
-      dimensions.value[15].infTier == dimensions.value[15].maxInfTier && `Dimension Creatures:<br>
-      Twisted Rootspawn - [Danger 400 & Stage 120+]: +1 Tree Point(TP) [${enemy.value.dEnemyLoot[0]} / 200]<br>
-      Voidpulse Entity - [Danger 400 & Stage 140+]: +1 Space Power(SP) [${enemy.value.dEnemyLoot[1]} / 50]<br>
-      Fracture Beast - [Danger 600 & Stage 135+]: +1 Dimension Shard(DS) [${enemy.value.dEnemyLoot[2]} / 5]<br>
-      Clot of Dark Energy - [Danger 400 & Stage 120+]: Enemies are getting weaker by 1% [${enemy.value.dEnemyLoot[3]} / 90]<br>
-      Infinitron Prime - [Danger 600 & Stage 145+]: +0.01 IP MULT [${enemy.value.dEnemyLoot[4]} / 25]<br>
-      Entropy Reaver - [Danger 700 & Stage 150+]: -0.01 INF Penalty [${enemy.value.dEnemyLoot[5]} / 5]<br>
-      `
     ]
   },
   {
@@ -433,75 +1447,21 @@ const styledSections = [
     ]
   },
   {
-    title: 'Infinity',
-    class: 'infinity-section',
-    content: [
-      'Each Infinity provides rebuild mechanic, but everything is reset(except Abyss D)',
-      'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
-      'Infinity Bonuses depends on IP',
-      `Inf penalty reduction(IPR): The full power of the IPR only works on the main dimension. But after the 20th main dimension, the IPR will start to spread among other dimensions. The greater the infinity in the main dimension, the stronger the IPR for other dimensions`,
-      `Infinity Discoveries:`,
-      `Infinity [T1]: Reset everyting you've got(except Abyss D), but you will get Inf-Tree. Force any perk to serve you forever, but everything has its own price. Auto-Tree. Double Points gaining. Auto-Stage`,
-      hero.value.mainInfTier >= 1 && `Infinity [T2]: Reset everyting you've got(except Abyss D), but you will get Ascend Permission. You have 5 Infinity Ascension Perks to serve you forever even after Infinity Reset. Extra skip stages until +25% Max Stage (S). You can get Shards from Bosses. Auto-Ascension`,
-      hero.value.mainInfTier >= 2 && `Infinity [T3]: Reset everyting you've got(except Abyss D), but you will get Integration of Rebirth. Your Rebirth Tier are unlimmited. Enemy Power equals to 1. Auto-Rebirth`,
-      hero.value.mainInfTier >= 3 && `Infinity [T4]: Reset everyting you've got(except Abyss D), but you will get Gamma Learning. Gain mutagens as if you have mutagen [T5]. Increase MAX Levels. Danger System scalles better. Danger System opens new Inf-Enemy`,
-      hero.value.mainInfTier >= 4 && `Infinity [T5]: Reset everyting you've got(except Abyss D), but you will get Expansion of Space. Unlock Space [T5]. x2 stardust. Auto-Fight`,
-      hero.value.mainInfTier >= 5 && `Infinity [T6]: Reset everyting you've got(except Abyss D), but you will get Thirst for Souls . D-Soul gives you a 100% chance to meet a soul, but its power will be limitless. Every Soul Tier gives you +1 MIN Level. EXP CAP SOULS - +40`,
-      hero.value.mainInfTier >= 6 && `Infinity [T7]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T0]`,
-      hero.value.mainInfTier >= 7 && `Infinity [T8]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T1]`,
-      hero.value.mainInfTier >= 8 && `Infinity [T9]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T2]`,
-      hero.value.mainInfTier >= 9 && `Infinity [T10]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T3]`,
-      hero.value.mainInfTier >= 10 && `Infinity [T11]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T4]`,
-      hero.value.mainInfTier >= 11 && `Infinity [T12]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T5]`,
-      hero.value.mainInfTier >= 12 && `Infinity [T13]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T6]`,
-      hero.value.mainInfTier >= 13 && `Infinity [T14]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T7]`,
-      hero.value.mainInfTier >= 14 && `Infinity [T15]: Reset everyting you've got(except Abyss D). Complete to open Singularity [T8]`,
-      hero.value.mainInfTier >= 20 && `Infinity [T20]: The D-Rule tears the tissue of the universe, worsening the drop of stardust`,
-      hero.value.mainInfTier >= 25 && `Infinity [T25]: The D-Rule destroys all Celestial making them insignificant, worsening the drop of mutagen `,
-      hero.value.mainInfTier >= 30 && `Infinity [T30]: Dimensions are being consumed by the power of the multiverse. Curses are getting stronger`,
-      hero.value.mainInfTier >= 40 && `Infinity [T40]: You feel the touch of the unknown, but you do not know how to get to it.`,
-    ]
+  title: 'Infinity',
+  class: 'infinity-section',
+  content: [
+    'Each Infinity provides a rebuild mechanic, but everything is reset (except Abyss D).',
+    'You can reset the influence of Infinity in the settings if you are not strong enough to overcome this challenge.',
+    'Infinity bonuses depend on IP.',
+    `Inf penalty reduction (IPR): The full power of the IPR only works on the main dimension. After the 20th main dimension, the IPR starts spreading to other dimensions. The greater the Infinity in the main dimension, the stronger the IPR for other dimensions.`
+  ],
   },
   {
     title: 'Singularity',
     class: 'singularity-section',
     content: [
-      `Singularity levels: increase the threshold after Max Level 700. After Level 700 your stats are getting double.`,
-      hero.value.singularity >= 0 && 'Singularity [T0]',
-      hero.value.singularity >= 0 && 'Challenge: Enter the singularity, where gravity devours space, opponents under the influence of gravity destroy galaxies and your level is on the verge of destruction.',
-      hero.value.singularity >= 0 && 'Reward: Complete the singularity to obtain 1.05 MULT IP, +25 singularity levels. Overkill [T4], +2% to skip stage per Singularity Tier (S), level up while your level is below 2% of Max Level per Singularity Tier (S).',
-
-      hero.value.singularity >= 1 && 'Singularity [T1]',
-      hero.value.singularity >= 1 && 'Challenge: Enter the singularity, where the opponents have learned to recognize the essence of curses',
-      hero.value.singularity >= 1 && 'Reward: Each curse gets a bonus from the next Tier. 1.05 MULT IP. +25 singularity levels.',
-
-      hero.value.singularity >= 2 && 'Singularity [T2]',
-      hero.value.singularity >= 2 && 'Challenge: Enter the singularity, where The Tree is locked.',
-      hero.value.singularity >= 2 && 'Reward: +1 Tree Tier. 1.05 MULT IP. +25 singularity levels.',
-
-      hero.value.singularity >= 3 && 'Singularity [T3]',
-      hero.value.singularity >= 3 && 'Challenge: Enter the singularity, where Ascension is locked.',
-      hero.value.singularity >= 3 && 'Reward: Ascension no longer resets during Infinity. Open Tier-S. Unlock a Perk in Tier-S for each Singularity Tier. 1.05 MULT IP. +25 singularity levels.',
-
-      hero.value.singularity >= 4 && 'Singularity [T4]',
-      hero.value.singularity >= 4 && 'Challenge: Enter the singularity, where Space is locked.',
-      hero.value.singularity >= 4 && 'Reward: +1 Space Tier. Celestials from available dimensions see you. Auto is always opened. 1.05 MULT IP. +25 singularity levels.',
-
-      hero.value.singularity >= 5 && 'Singularity [T5]',
-      hero.value.singularity >= 5 && 'Challenge: Enter the singularity, where Buff is locked.',
-      hero.value.singularity >= 5 && 'Reward: Buffs no longer reset during Infinity. +1 Max Buff. 1.05 MULT IP. +25 singularity levels.',
-      
-      hero.value.singularity >= 6 && 'Singularity [T6]',
-      hero.value.singularity >= 6 && 'Challenge: Enter the singularity, where Equipment is locked.',
-      hero.value.singularity >= 6 && 'Reward: +1 Enhance Level per each Singularity Tier. Unlock Awakened Equipment. 1.05 MULT IP. +25 singularity levels.',
-      hero.value.singularity >= 6 && `Awakened Equipment: Reach the certain Tier of Equipment to increase a Base Drop Chance and the effectiveness of Enhanced generic parameter by 1%, additional parameter by 0.5%. +1 Gem Slot(Future content)`,
-    
-      hero.value.singularity >= 7 && 'Singularity [T7]',
-      hero.value.singularity >= 7 && 'Challenge: Enter the singularity, where Rebirth is locked.',
-      hero.value.singularity >= 7 && 'Reward: 1.05 MULT IP. +25 singularity levels. You start with 100000 Rebirth Pts. Unclock Singularity Pts',
-
-      hero.value.singularity >= 8 && `Singularity BH`,
-      hero.value.singularity >= 8 && `Kill an enemy with Curse [T5] to get extra bonus and double EXP, EXP BUFF, Stardust, Mutagen. See the chance of Curse [T5] in Amulet Section`
+      'Singularity levels increase the threshold after Max Level 700. After Level 700, your stats are doubled.',
+      hero.value.singularity >= 8 && 'Kill an enemy with Curse [T5] to get extra bonus and double EXP, EXP buff, Stardust, and Mutagen. See the chance of Curse [T5] in the Amulet section.'
     ]
   },
   {
@@ -520,7 +1480,7 @@ const styledSections = [
 ];
 
 const statTabs = ['Level', 'IP', 'EXP', 'BUFF EXP', 'Equipment', 'Curse', 'Ascension', 'Stardust', 'Mutagen', 'Rebirth', 
-'Potential', 'Danger', 'Damage', 'HP', 'DEF', 'ApS'];
+'Potential', 'Danger', 'Damage', 'HP', 'DEF', 'ApS', 'Rush', 'Corrupt.'];
 
 
 const statSections = [
@@ -753,7 +1713,7 @@ const statSections = [
       },
       {
         desc: 'Rebirth Tier',
-        value: () => ( (hero.value.rebirthTier >= 80? 1.015 ** (Math.min(hero.value.rebirthTier, 125) - 79) - 1: 0)).toFixed(2),
+        value: () => (hero.value.rebirthTier >= 80? 0.025 * (Math.min(hero.value.rebirthTier, 200) - 79): 0).toFixed(2),
         color: 'lightgreen',
       },
       {
@@ -872,68 +1832,125 @@ const statSections = [
     title: 'IP',
     id: 'only ip',
     content: [
-      { desc: 'IP', value: '', color: 'gold',  uppercase: true, },
+      { desc: 'IP', value: '', color: 'gold',  uppercase: true, req: () => true },
       {
         desc: 'Infinity Challenges',
         value: () => (hero.value.infPointsGoals),
         color: 'gold',
+        req: () => hero.value.infPointsGoals > 0,
       },
       {
         desc: 'Mirror of the Infinity',
         value: () => (enemy.value.dangerEnemyLoot[1]),
         color: 'gold',
+        req: () => enemy.value.dangerEnemyLoot[1] > 0,
       },
       {
         desc: 'Secrets',
         value: () => (Object.values(hero.value.secrets).filter(v => v).length * 20),
         color: 'orange',
+        req: () => Object.values(hero.value.secrets).some(v => v),
       },
       {
         desc: 'Discord support',
-        value: () => (200),
+        value: () => (400),
         color: 'blue',
+        req: () => true,
       },
       {
-        desc: 'Total',
-        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + 200 + Object.values(hero.value.secrets).filter(v => v).length * 20),
+        desc: 'Space Ring [Prefix]',
+        value: () => (hero.value.eqUpsMult['spRing'].infPoints),
         color: 'gold',
+        req: () => spaceShop.value[10].status,
       },
-      { desc: 'IP MULT', value: '', color: 'gold',  uppercase: true, },
+      { desc: 'TOTAL IP', value: '', color: 'gold',  uppercase: true, req: () => true },
+      {
+        desc: 'Total',
+        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + 200 + Object.values(hero.value.secrets).filter(v => v).length * 20 + hero.value.eqUpsMult['spRing'].infPoints),
+        color: 'gold',
+        req: () => true,
+      },
+      { desc: 'IP MULT', value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPointsMult > 1 },
       {
         desc: 'Base',
         value: 1,
         color: '',
+        req: () => hero.value.infPointsMult > 1,
       },
       {
         desc: 'Singularity Challenges',
         value: () => formatNumber(0.05 * hero.value.singularity, true),
         color: '#66ffcc',
+        req: () => hero.value.singularity > 0,
       },
        {
         desc: 'Singularity Pts',
         value: () => formatNumber(hero.value.rebirthPts >= 5e6? Math.log(hero.value.rebirthPts)*0.015: 0, true),
         color: '#a4ffe1',
+        req: () => hero.value.rebirthPts > 5e6,
       },
        {
         desc: 'Dimension creature',
         value: () => formatNumber(enemy.value.dEnemyLoot[4]*0.01, true),
         color: '#b51fb5',
+        req: () => enemy.value.dEnemyLoot[4] > 0,
       },
        {
         desc: 'Dimension [JK-λbYX] [22]',
-        value: () => formatNumber(dimensions.value[22].infTier == dimensions.value[22].maxInfTier?hero.value.mainInfTier * 0.01: 0, true),
+        value: () => formatNumber(dimensions.value[22].infTier >= dimensions.value[22].maxInfTier?hero.value.mainInfTier * 0.01: 0, true),
         color: '#f84bf9',
+        req: () => dimensions.value[22].infTier >= dimensions.value[22].maxInfTier
       },
+      {
+        desc: 'Ascension [TIER-D]',
+        value: () => formatNumber((ascenPerks[60].level? infGoals.value.map(g => g.tier == g.maxTier).length * 0.01: 0), true),
+        color: 'lightblue',
+        req: () => dimensions.value[9].infTier >= dimensions.value[9].maxInfTier
+      },
+      {
+        desc: 'Quasar Core [Dark Power]',
+        value: () => formatNumber((hero.value.dId.startsWith('d-') && hero.value.selectedDivSkills.includes(9) && hero.value.overcorruption >= 10? divineSkills.value[9].values[0]: 0), true),
+        color: '#00fdff',
+        req: () => hero.value.mainInfTier >= 50,
+      },
+      {
+        desc: 'Black Hole',
+        value: () => formatNumber(0.05 * hero.value.bhTier, true),
+        color: '#00fdff',
+        req: () => hero.value.bhTier > 0,
+      },
+      {
+        desc: 'Transcendence [MAIN]',
+        value: () => formatNumber((hero.value.bhTier >= 4 && hero.value.dId == 'main'? 0.005 * hero.value.transcendence: 0), true),
+        color: '#00fdff',
+        req: () => hero.value.bhTier >= 4,
+      },
+      {
+        desc: 'Transcendence [BLACK HOLE]',
+        value: () => formatNumber((hero.value.bhTier >= 4 && hero.value.dId == 'bh'? 0.005 * hero.value.transcendenceBH: 0), true),
+        color: '#00fdff',
+        req: () => hero.value.bhTier >= 4,
+      },
+      { desc: 'IP Penalty', value: '', color: 'red',  uppercase: true, req: () => hero.value.mainInfTier >= 50 },
+      {
+        desc: 'Quasar Core [Event Horizon]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(2)? divineSkills.value[2].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50,
+      },
+      { desc: 'IP MULT TOTAL', value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPointsMult > 1 },
        {
         desc: 'Total',
         value: () => formatNumber(hero.value.infPointsMult, true),
         color: 'gold',
+        req: () => hero.value.infPointsMult > 1,
       },
-      { desc: 'IP TOTAL', value: '', color: 'gold',  uppercase: true, },
+      { desc: 'IP TOTAL', value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPoints > 0 },
       {
         desc: 'Total',
         value: () => formatNumber(hero.value.infPoints, true),
         color: 'gold',
+        req: () => hero.value.infPoints > 0
       },
     ],
   },
@@ -1087,7 +2104,14 @@ const statSections = [
       },
       {
         desc: 'BUFF: Overkill [T4]',
-        value: () => formatNumber(hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 4? hero.value.overkill*(0.1 (dimensions.value[19].infTier == dimensions.value.maxInfTier? 0.05: 0)): 1, true),
+        value: () => formatNumber(
+          hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 4
+            ? hero.value.overkill * (
+                0.1 * (dimensions.value[19].infTier == dimensions.value.maxInfTier ? 0.05 : 0)
+              )
+            : 1,
+          true
+        ),
         color: 'orange',
       },
       {
@@ -2355,6 +3379,126 @@ const statSections = [
       },
     ],
   },
+  {
+    title: 'Rush',
+    id: 'rush',
+    content: [
+      { desc: 'Stage Rush', value: '', color: 'blue',  uppercase: true, },
+      { desc: 'Stage Rush - Increases your stage while your stage is below x% of max Stage', value: '', color: 'blue',  uppercase: false, },
+      {
+        desc: 'Infinity [T2]',
+        value: () => (hero.value.infEvents >= 2 || hero.value.infTier >= 2? 0.25: 0),
+        color: 'gold',
+      },
+      {
+        desc: 'Rebirth [Pts]',
+        value: () => (hero.value.rebirthPts >= 20000? 0.15: 0),
+        color: 'lightgreen',
+      },
+      {
+        desc: 'Singularity',
+        value: () => formatNumber(0.02 * hero.value.singularity, true),
+        color: 'rayn',
+      },
+      {
+        desc: 'Black Hole',
+        value: () => formatNumber(0.05 * hero.value.bhTier, true),
+        color: 'rayn',
+      },
+      { desc: 'Total', value: '', color: 'gold',  uppercase: true, },
+      {
+        desc: 'Total',
+        value: () => formatNumber(hero.value.lacrimose * 100, true),
+        color: 'gold',
+      },
+      { desc: 'Level Rush', value: '', color: 'blue',  uppercase: true, },
+      { desc: 'Level Rush - Increases your level while your level is below x% of max level', value: '', color: 'blue',  uppercase: false, },
+      {
+        desc: 'Radiation Tree Perk',
+        value: () => formatNumber((perks.value[3].status? 0.1 + 0.01 * (dimensions.value[40].infTier - 40): 0), true),
+        color: 'green',
+      },
+      {
+        desc: 'Souls',
+        value: () => (hero.value.soulsMax >= 40? 0.1: 0),
+        color: 'purple',
+      },
+      {
+        desc: 'Rebirth [Pts]',
+        value: () => (hero.value.rebirthPts >= 70000? 0.1: 0),
+        color: 'lightgreen',
+      },
+      {
+        desc: 'Singularity',
+        value: () => formatNumber(0.02 * hero.value.singularity, true),
+        color: 'rayn',
+      },
+      {
+        desc: 'Black Hole',
+        value: () => formatNumber(0.05 * hero.value.bhTier, true),
+        color: 'rayn',
+      },
+      { desc: 'Total', value: '', color: 'gold',  uppercase: true, },
+      {
+        desc: 'Total',
+        value: () => formatNumber(hero.value.levelRush * 100, true),
+        color: 'gold',
+      },
+    ]
+  },
+  {
+    title: 'Corrupt.',
+    id: 'corruption',
+    content: [
+      { desc: 'Corruption', value: '', color: 'blue',  uppercase: true, },
+      {
+        desc: 'Base',
+        value: 0.1,
+        color: '',
+      },
+      {
+        desc: 'Space',
+        value: () => formatNumber((hero.value.spCount >= 22? 1.002 ** hero.value.sp - 1: 0), true),
+        color: 'orange',
+      },
+      {
+        desc: 'Radiation',
+        value: () => formatNumber((radPerks[11].level? 0.01 * Math.floor((hero.value.maxStage-5)/5): 0), true),
+        color: 'green',
+      },
+      {
+        desc: 'Abyss D',
+        value: () => formatNumber((hero.value.spCount >= 15 && hero.value.abyssDStages >= 40? (1 - (1 / (Math.sqrt(hero.value.abyssDStages - 39) ** 0.15))): 0), true),
+        color: 'purple',
+      },
+      {
+        desc: 'Infinity',
+        value: () => formatNumber(hero.value.infCorruption, true),
+        color: 'gold',
+      },
+      {
+        desc: 'Rebirth Tier',
+        value: () => formatNumber((hero.value.rebirthTier >= 70? (1.02 ** Math.sqrt(hero.value.rebirthTier) - 1): 0), true),
+        color: 'lightgreen',
+      },
+      {
+        desc: 'Dimension [22]',
+        value: () => formatNumber(((dimensions.value[22].infTier - 25) * 0.1), true),
+        color: 'purple',
+      },
+      {
+        desc: 'Dimension [26]',
+        value: () => formatNumber((dimensions.value[26].infTier * 0.2), true),
+        color: 'lightgreen',
+      },
+      { desc: 'Total', value: '', color: 'gold',  uppercase: true, },
+      {
+        desc: 'Total',
+        value: () => formatNumber(hero.value.overcorruption, true),
+        color: 'gold',
+      },
+    ]
+  }
 ]
 
 const  formatNumber = (num, f = false) => {
@@ -2434,6 +3578,7 @@ const  formatNumber = (num, f = false) => {
   padding-left: 1rem;
 }
 
+.update-section { border : 1px solid gold }
 .endless-section { border: 1px solid #ffaa00; }
 .lore-section { border: 1px solid #9999ff; }
 .afk-section { border: 1px solid #22cccc; }
@@ -2566,4 +3711,82 @@ const  formatNumber = (num, f = false) => {
   font-weight: 600;
   font-size: 16px;
 }
+
+
+
+
+.lore-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+}
+
+
+
+.lore-card {
+  background: #1e1e2f;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  color: #f0f0f0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+
+.lore-card:hover {
+  transform: translateY(-2px);
+}
+
+.lore-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.lore-author {
+  color: #a0ff9f;
+  font-weight: 500;
+}
+
+.lore-location {
+  color: #ffd166; 
+  font-weight: 500;
+}
+
+.lore-locked {
+  font-style: italic;
+  color: #ff6b6b;
+}
+
+
+.rainbow-text {
+  font-size: 50px;
+  font-weight: bold;
+  background: linear-gradient(
+    90deg, 
+    red, orange, yellow, green, blue, indigo, violet
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  background-clip: text;
+  color: transparent;
+}
+
+
+.tabs button.active {
+  font-weight: bold;
+  border-bottom: 2px solid yellow;
+}
+.tabs button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.lore-card.locked {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
 </style>

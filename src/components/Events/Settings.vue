@@ -3,121 +3,67 @@
     <div class="settings-panel">
       <h2>⚙️ Settings</h2>
 
-      <button @click="saveGame">💾 Save</button>
-      <button @click="exportGame">📤 Export</button>
-      <button @click="triggerFileInput">📥 Import</button>
-      <input type="file" ref="fileInput" accept=".json, .enc" style="display: none" />
-      <button @click="resetGame">🧹 Reset</button>
-      <button v-if="hero.infTier > 0" @click="resetInf">
-        <span class="infinity-glow">∞</span> Reset Infinity
-      </button>
-
-      <div class="settings-panel-popup">
-        <div class="setting-item toggle">
-          <label class="switch-label">
-            <span>Popup AFK</span>
-            <ToggleSwitch v-model="hero.showAfkPopupRule" />
-          </label>
-        </div>
-      </div>
-      <div class="settings-panel-gcnp">
-        <div class="setting-item toggle">
-          <label class="switch-label">
-            <span>Off/On GCNP after Ascension/Rebirth/Infinity</span>
-            <ToggleSwitch v-model="hero.gcnpSetting" />
-          </label>
-        </div>
-      </div>
-      <div class="settings-panel-gcnp" v-if="hero.ascensionAutoUnlock">
-        <div class="setting-item toggle">
-          <label class="switch-label">
-            <span>Ascension Auto-Buyer</span>
-            <ToggleSwitch v-model="hero.ascensionAuto" />
-          </label>
-        </div>
-      </div>
-    </div>
-    <div class="auto-panel-wrapper">
-      <div class="auto-panel" v-if="hero.mainInfTier >= 2 || hero.infEvents >= 2">
-        <h3>🌌 Auto Ascension</h3>
-        <label>
-          Min Shards:
-          <input type="number" v-model.number="auto.ascension.minShards" />
-        </label>
-        <label>
-          Min Stage:
-          <input type="number" v-model.number="auto.ascension.minStage" />
-        </label>
+      <div class="actions">
+        <button class="btn" @click="saveGame">💾 Save</button>
+        <button class="btn" @click="exportGame">📤 Export</button>
+        <button class="btn" @click="triggerFileInput">📥 Import</button>
+        <input type="file" ref="fileInput" accept=".json, .enc" style="display: none" />
+        <button class="btn danger" @click="resetGame">🧹 Reset</button>
+        <button v-if="hero.mainInfTier >= 6" class="btn infinity" @click="resetInf">
+          <span class="infinity-glow">∞</span> Reset Infinity
+        </button>
       </div>
 
-      <div class="auto-panel" v-if="hero.mainInfTier >= 3 || hero.infEvents >= 3">
-        <h3>♻️ Auto Rebirth</h3>
-        <label>
-          Min Rebirth Pts:
-          <input type="number" v-model.number="auto.rebirth.minPts" />
-        </label>
-        <label>
-          Min Level(100+):
-          <input type="number" v-model.number="auto.rebirth.minLevel" />
-        </label>
-        <label>
-          Level +:
-          <input type="number" v-model.number="auto.rebirth.minLevelNext" />
-        </label>
-      </div>
+      <div class="toggles">
+        <div class="setting-item">
+          <span>AFK Reminder</span>
+          <div 
+            class="chip" 
+            :class="{ active: hero.showAfkPopupRule }" 
+            @click="hero.showAfkPopupRule = !hero.showAfkPopupRule"
+          >
+            {{ hero.showAfkPopupRule ? 'ON' : 'OFF' }}
+          </div>
+        </div>
 
-      <div class="auto-panel">
-        <h3>⚔️ Stop at Stage</h3>
-        <label>
-          Stage to Stop:
-          <input type="number" v-model.number="auto.stop.stage" />
-        </label>
-        <label>
-          Stage +:
-          <input type="number" v-model.number="auto.stop.stageNext" />
-        </label>
-        <label>
-          Stop Until Kills:
-          <input type="number" v-model.number="auto.stop.untilKills" />
-        </label>
+        <div class="setting-item">
+          <span>Idle System (On after Reset)</span>
+          <div 
+            class="chip" 
+            :class="{ active: hero.gcnpSetting }" 
+            @click="hero.gcnpSetting = !hero.gcnpSetting"
+          >
+            {{ hero.gcnpSetting ? 'Enabled' : 'Disabled' }}
+          </div>
+        </div>
+
+        <div class="setting-item" v-if="hero.ascensionAutoUnlock">
+          <span>Auto-Perk Buyer [Ascension]</span>
+          <div 
+            class="chip" 
+            :class="{ active: hero.ascensionAuto }" 
+            @click="hero.ascensionAuto = !hero.ascensionAuto"
+          >
+            {{ hero.ascensionAuto ? 'ON' : 'OFF' }}
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <span>Safety Check </span>
+          <div 
+            class="chip" 
+            :class="{ active: hero.eventDoubleClick }" 
+            @click="hero.eventDoubleClick = !hero.eventDoubleClick"
+          >
+            {{ hero.eventDoubleClick ? 'ON' : 'OFF' }}
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
-  <div class="settings-wrapper">
-    <div class="afk-wrapper" v-if="dimensions[7].infTier == dimensions[7].maxInfTier">
-        <h3>🕒 AFK Reward</h3>
-
-        <div class="afk-bar-container">
-          <div class="afk-bar" :style="{ width: `${afkPercent}%` }"></div>
-          <span class="afk-time">{{ formatTime(Math.floor(hero.afkTimer)) }}</span>
-        </div>
-
-        <div class="afk-controls">
-          <label for="afkPercentInput">Use %:</label>
-          <input
-            id="afkPercentInput"
-            type="number"
-            v-model.number="hero.afkSpendPercent"
-            min="1"
-            max="100"
-          />
-          <button @click="useAfkTime">Use</button>
-        </div>
-    </div>
-    <div class="stage-wrapper" v-if="dimensions[3].infTier == dimensions[3].maxInfTier">
-        <h2>🌍 Stage Travel</h2>
-        <div class="stage-input-group">
-          <input
-            type="number"
-            v-model.number="targetStage"
-            :max="hero.maxStage"
-          />
-          <button @click="travelToStage">Travel</button>
-        </div>
-    </div>
-  </div>
-  
 </template>
+
 
 <script setup>
 import { computed } from 'vue';
@@ -135,6 +81,7 @@ import { ref, onMounted, onUnmounted, watch } from "vue";
 import { auto } from "../../composables/autoProgression.js";
 import { dimensions } from "../../data/dimensions.js";
 import { killHistory } from "../../composables/afkHandle.js";
+import { spaceShop } from "../../data/spaceShop.js";
 import CryptoJS from "crypto-js";
 import ToggleSwitch from '../ToggleSwitch.vue';
 
@@ -176,6 +123,7 @@ const saveGame = () => {
     auto: auto.value,
     dimensions: dimensions.value,
     hKill: killHistory,
+    spaceShop: spaceShop.value,
   };
   localStorage.setItem("gameSave", JSON.stringify(saveData));
   localStorage.setItem('lastOnline', Date.now().toString());
@@ -196,6 +144,7 @@ const exportGame = () => {
     auto: auto.value,
     dimensions: dimensions.value,
     hKill: killHistory,
+    spaceShop: spaceShop.value,
   };
   const json = JSON.stringify(data);
   const encrypted = CryptoJS.AES.encrypt(json, D_RULE).toString();
@@ -209,7 +158,7 @@ const exportGame = () => {
 
 const fileInput = ref(null);
 
-const triggerFileInput = () => {
+const triggerFileInputOld = () => {
   const input = fileInput.value;
   if (!input) return;
 
@@ -226,6 +175,42 @@ const triggerFileInput = () => {
         const decrypted = CryptoJS.AES.decrypt(raw, D_RULE).toString(
           CryptoJS.enc.Utf8
         );
+        data = JSON.parse(decrypted);
+      } catch (err) {
+        try {
+          data = JSON.parse(raw);
+        } catch (jsonErr) {
+          alert("Unable to load file: corrupted or invalid format");
+          return;
+        }
+      }
+
+      
+    };
+
+    reader.readAsText(file);
+  };
+
+  input.click();
+};
+
+const triggerFileInput = () => {
+  const input = fileInput.value;
+  if (!input) return;
+
+  input.value = "";
+
+  const handleChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let raw = e.target.result;
+      let data;
+
+      try {
+        const decrypted = CryptoJS.AES.decrypt(raw, D_RULE).toString(CryptoJS.enc.Utf8);
         data = JSON.parse(decrypted);
       } catch (err) {
         try {
@@ -322,38 +307,38 @@ const triggerFileInput = () => {
 
       if(data.dimensions) {
         for (let idx in data.dimensions){
-          if(idx > 23) continue;
+          if(idx > 41) break;
+          
+          if(idx > 23 && !hero.value.newUpdateChanges.dimensions){
+            hero.value.newUpdateChanges.dimensions = true;
+            break;
+          }
 
           dimensions.value[idx].infTier = data.dimensions[idx].infTier;
           if(idx == 1)
             dimensions.value[idx].ascension = data.dimensions[idx].ascension;
         }
-        dUpdate();
       }
 
       if (data.hKill?.length) {
         killHistory.splice(0, killHistory.length, ...data.hKill);
       }
+
+      if (data.spaceShop)
+        for(let idx in data.spaceShop)
+          spaceShop.value[idx].status = data.spaceShop[idx].status;
     };
 
     reader.readAsText(file);
+
+    input.removeEventListener("change", handleChange);
   };
 
+  input.addEventListener("change", handleChange);
   input.click();
 };
 
-const dUpdate = () => {
-  dimensions.value[9].infTier = (dimensions.value[9].infTier == 14? 6: dimensions.value[9].infTier);
-  dimensions.value[23].infTier = (dimensions.value[23].infTier == 30? 10: dimensions.value[23].infTier);
-  dimensions.value[10].infTier = (dimensions.value[10].infTier == 15? 10: dimensions.value[10].infTier);
-  dimensions.value[12].infTier = (dimensions.value[12].infTier == 10? 0: dimensions.value[12].infTier);  
-  dimensions.value[20].infTier = (dimensions.value[20].infTier == 15? 20: dimensions.value[20].infTier); 
-  dimensions.value[22].infTier = (dimensions.value[22].infTier == 15? 25: dimensions.value[22].infTier); 
-  dimensions.value[19].infTier = (dimensions.value[19].infTier == 15? 20: dimensions.value[19].infTier); 
-  dimensions.value[21].infTier = (dimensions.value[21].infTier == 15? 30: dimensions.value[21].infTier);
-  dimensions.value[13].infTier = (dimensions.value[13].infTier == 0? 15: dimensions.value[13].infTier);   
-  dimensions.value[18].infTier = (dimensions.value[18].infTier == 15? 20: dimensions.value[18].infTier);  
-}  
+
 
 const resetGame = () => {
   if (confirm("Are you sure you want to reset all progress?")) {
@@ -365,131 +350,12 @@ const resetGame = () => {
 const resetInf = () => {
   if (hero.value.infProgress == false && hero.value.dId == 'main') {
     hero.value.infProgress = true;
-    hero.value.infEvents--;
   }
 };
-
-
-const afkPercent = computed(() => (hero.value.afkTimer / hero.value.afkMaxTimer) * 100);
-
-function formatTime(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h}h ${m}m ${s}s - (${Math.floor((seconds / hero.value.afkMaxTimer)*100)}%)`;
-}
-
-function useAfkTime() {
-  const percent = Math.min(Math.max(hero.value.afkSpendPercent, 0), 100);
-  const usedTime = Math.floor((hero.value.afkMaxTimer * Math.min(percent, (hero.value.afkTimer / hero.value.afkMaxTimer) * 100)) / 100);
-  hero.value.afkTimer -= usedTime;
-  
-  let maxKill = hero.value.maxStage * 75;
-
-  let div = hero.value.enemyAfkHp * (usedTime ** 0.1) - hero.value.attack;
-  hero.value.afkKills = Math.min(div > 0? (hero.value.attack / (hero.value.enemyAfkHp * (usedTime ** 0.1))) * usedTime: usedTime, maxKill);
-  hero.value.afkTime = usedTime;
-  hero.value.afkLocked = true;
-}
-
-const targetStage = ref(1)
-function travelToStage() {
-  if(targetStage.value == 1111) {
-    console.log('Secret-4');
-    hero.value.secrets.travell = true;
-  }
-  targetStage.value = Math.max(Math.min(targetStage.value, hero.value.maxStage), 1);
-
-  hero.value.stage = targetStage.value < 100? (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15): targetStage.value): targetStage.value; 
-  hero.value.travellPenalty = 4;
-  hero.value.isTravell = true;
-}
 
 </script>
 
 <style scoped>
-.settings-wrapper {
-  display: flex;
-}
-
-.settings-panel {
-  background-color: #1e293b;
-  color: #fff;
-  padding: 1rem;
-  width: 400px;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.settings-panel button {
-  margin-bottom: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #334155;
-  border: none;
-  border-radius: 0.5rem;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  transition: background-color 0.2s;
-}
-
-.settings-panel button:hover {
-  background-color: #475569;
-}
-
-input[type="file"] {
-  margin: 0.5rem 0;
-  color: white;
-}
-
-.theme-toggle {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-}
-
-.setting-item {
-  margin-bottom: 1rem;
-  color: white;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.switch-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  margin-left: 10px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.settings-panel-popup {
-  background-color: #1e293b;
-  color: #fff;
-  padding: 1px;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.settings-panel-gcnp {
-  background-color: #1e293b;
-  color: #fff;
-  padding: 1px;
-  font-family: "Segoe UI", sans-serif;
-}
 
 .infinity-glow {
   font-size: 20px;
@@ -502,242 +368,89 @@ input[type="file"] {
   line-height: 20px;
 }
 
-.settings-section {
+.settings-panel {
+  padding: 16px;
+  background: var(--panel-bg, #1e1e2e);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.settings-card {
-  background-color: var(--bg-panel, #1e1e2f);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.settings-card h3 {
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-  color: var(--accent, #0ff);
-}
-
-.switch-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 42px;
-  height: 22px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  border-radius: 22px;
-  transition: 0.4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
-  background-color: #00ffff;
-}
-
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-.input-group {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.input-group input {
-  width: 80px;
-  padding: 4px;
-  background: #111827;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 6px;
-}
-
-.stop-stage-card {
-  border: 1px solid #ff5e5e;
-  box-shadow: 0 0 8px rgba(255, 50, 50, 0.4);
-}
-
-.auto-panel-wrapper {
-  flex-direction: column;
-  background-color: #1e293b;
-  padding: 8px;
-}
-
-.auto-panel {
-  background: rgba(30, 30, 50, 0.95);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #444;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-  color: #fff;
-  font-size: 14px;
-}
-
-.auto-panel h3 {
-  font-size: 15px;
-  margin-bottom: 8px;
-  color: #ffd700;
-}
-
-.auto-panel label {
-  display: flex;
-  justify-content: space-between;
-  margin: 4px 0;
-}
-
-.auto-panel input {
-  width: 80px;
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 6px;
-  color: #fff;
-  padding: 2px 6px;
-}
-
-
-
-.afk-wrapper {
-  background: #1e293b;
-  padding: 16px;
-  color: #eee;
-  width: 400px;
-  font-family: "Consolas", monospace;
-}
-
-.afk-bar-container {
-  background: #333;
-  border-radius: 8px;
-  height: 24px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.afk-bar {
-  height: 100%;
-  background: linear-gradient(to right, #00ffcc, #0099ff);
-  transition: width 0.4s ease;
-}
-
-.afk-time {
-  position: absolute;
-  left: 50%;
-  top: 2px;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: #fff;
-  text-shadow: 0 0 4px #000;
-}
-
-.afk-controls {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.afk-controls input {
-  width: 60px;
-  padding: 4px;
-  border: 1px solid #666;
-  border-radius: 4px;
-  background: #222;
+/* Кнопки действий */
+.btn {
+  background: #2a2a3d;
   color: #fff;
-}
-
-.afk-controls button {
-  padding: 6px 12px;
-  background: #28a745;
-  color: white;
+  padding: 6px 14px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+.btn:hover {
+  background: #3a3a4f;
+  transform: scale(1.05);
+}
+.btn:active {
+  transform: scale(0.95);
+}
+.btn.danger {
+  background: #7a1f1f;
+}
+.btn.danger:hover {
+  background: #9e2a2a;
+}
+.btn.infinity {
+  background: #2d1f7a;
+}
+.infinity-glow {
+  color: #ffd700;
+  text-shadow: 0 0 6px #ffea70;
 }
 
-.afk-controls button:hover {
-  background: #218838;
+/* Переключатели-чипы */
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-
-.stage-wrapper {
-  background: #1e293b;
-  padding: 16px;
-  max-width: 400px;
-  color: #eee;
+.chip {
+  padding: 4px 12px;
+  border-radius: 16px;
+  border: 1px solid #666;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+  min-width: 70px;
   text-align: center;
 }
-
-.stage-input-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.stage-input-group input {
-  padding: 8px;
+.chip.active {
+  background: linear-gradient(90deg, #6a5acd, #00c6ff);
   border: none;
-  border-radius: 6px;
-  width: 100px;
-  background: #333;
-  color: #fff;
-}
-
-.stage-input-group button {
-  background: #4caf50;
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
+  font-weight: 600;
 }
 
-.stage-input-group button:hover {
-  background: #66bb6a;
-}
+
 
 </style>

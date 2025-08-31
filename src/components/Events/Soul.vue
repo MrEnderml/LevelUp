@@ -5,38 +5,74 @@
       <h3>🎯 Target</h3>
       <p>[{{hero.souls}}<span v-if="radPerks[9].level == 0">/{{hero.soulsCap}}</span>] {{ soulNames[hero.souls%50] }} 
       <span :title="'Soul Chance'">*[{{chanceFormat(enemy.soulBuff.chance)}}%]</span></p>
-      <p style="text-align: left">Description:<br>
-        <span><strong>DMG MULT:</strong> [{{formatNumber(enemy.soulBuff.dmg, true)}}]</span><br>
-        <span><strong>HP MULT:</strong> [{{formatNumber(enemy.soulBuff.hp, true)}}]</span><br>
-        <span :title="'EXP, WEAPON CHANCE'"><strong>*LOOT MULT:</strong> [{{format(enemy.soulBuff.drop)}}]</span><br> 
-      </p>
-    </div>
-
-    <div class="souls-panel">
-      <h2 @click="hero.eLink = { set: 'Info', info: 'Souls' }"> <sup style="font-size: 12px">ℹ️</sup>Souls T[{{hero.soulTier}}]</h2>
-      <div class="progress-container">
-        <div class="soul-bar">
-          <div
-            class="soul-fill"
-            :style="{ height: ((hero.souls % 10) / 10) * 100 + '%' }"
-          ></div>
+      <div style="text-align: left"><br>
+        <div class="s-stats-wrapper">
+          <span class="s-stats-name">DMG</span>
+          <span class="s-stats-value">{{formatNumber(enemy.soulBuff.dmg, true)}}</span>
+        </div>
+        <div class="s-stats-wrapper">
+          <span class="s-stats-name">HP</span>
+          <span class="s-stats-value">{{formatNumber(enemy.soulBuff.hp, true)}}</span>
+        </div>
+        <div class="s-stats-wrapper">
+          <span class="s-stats-name">EXP</span>
+          <span class="s-stats-value">{{format(enemy.soulBuff.drop)}}</span>
+        </div>
+        <div class="s-stats-wrapper sp-stats-wrapper">
+          <span class="s-stats-name">Equipment Chance</span>
+          <span class="s-stats-value">{{format(enemy.soulBuff.drop)}}</span>
+        </div>
+        <div class="s-stats-wrapper" :class="{'s-stats-blocked': enemy.soulBuff.mutagen == 1}">
+          <Tooltip :text="'Improves drops from regular mobs'">
+            <span class="s-stats-name">*Mutagen</span>
+          </Tooltip>
+          <span class="s-stats-value">{{(hero.souls <= 40? 'Beat 40 souls': format(enemy.soulBuff.mutagen))}}</span>
+        </div>
+        <div class="s-stats-wrapper" :class="{'s-stats-blocked': enemy.soulBuff.stardust == 1}">
+          <Tooltip :text="'Improves drops from regular mobs'">
+            <span class="s-stats-name">*Stardust</span>
+          </Tooltip>
+          <span class="s-stats-value">{{(hero.souls <= 40? 'Beat 40 souls': format(enemy.soulBuff.stardust))}}</span>
         </div>
       </div>
     </div>
 
-    
-      <div class="tier-rewards">
-        <h3>Rewards</h3>
-        <ul>
-            <li v-for="(tierRewards, index) in unlockedTierRewards" :key="index">
-            <strong>T{{ index + 1 }}</strong>
-            <ul class="sub-rewards">
-                <li v-for="(reward, i) in tierRewards" :key="i">
-                {{ reward }}
-                </li>
-            </ul>
-            </li>
+    <div class="tier-rewards">
+      <h2 @click="hero.eLink = { set: 'Info', info: 'Souls' }">
+        <sup style="font-size: 12px">ℹ️</sup>
+        Souls [T{{ hero.soulTier }}]
+      </h2>
+
+      <div
+        v-for="(tierRewards, index) in unlockedTierRewards"
+        :key="index"
+        class="tier-block"
+      >
+        <div class="tier-title">T{{ index + 1 }}</div>
+        <ul class="reward-list">
+          <li v-for="(reward, i) in tierRewards" :key="i">
+            <template v-if="reward.startsWith('*')">
+              <span class="perk-reward">
+                <Tooltip :text="getPerkTooltip(reward)">
+                  <span>{{ reward }}</span>
+                </Tooltip>
+              </span>
+            </template>
+
+            <template v-else-if="reward.includes('BUFF')">
+              <span class="buff-reward">{{ reward }}</span>
+            </template>
+
+            <template v-else-if="reward.includes('(P)')">
+              <span class="perk-reward">{{ reward }}</span>
+            </template>
+
+            <template v-else>
+              <span>{{ reward }}</span>
+            </template>
+          </li>
         </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -47,11 +83,22 @@ import { useHero } from '../../composables/useHero.js';
 import { useEnemy } from '../../composables/useEnemy.js';
 import { rewards, soulNames } from '../../data/souls.js';
 import { perks as radPerks } from '../../data/radPerks.js';
+import { perks as ascension } from '../../data/ascension.js';
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
 
+const perkTooltips = {
+  "Level Rush": "Increases your level while your level is below x% of max level",
+  "Stage Rush": "Increases stage gain while your stage is below x% of max"
+};
 
+function getPerkTooltip(rewardText) {
+  if(rewardText.includes('Level Rush'))
+    return perkTooltips['Level Rush']
+
+  return 'No description available';
+}
 
 const unlockedTierRewards = computed(() => {
   return rewards.slice(0, hero.value.soulTier + 1);
@@ -100,9 +147,8 @@ function chanceFormat(value){
   margin-left: 200px;
 }
 
-/* Общие стили заголовков */
+
 .soul-target h3,
-.souls-panel h2,
 .tier-rewards h3 {
   font-size: 1.4rem;
   font-weight: bold;
@@ -111,9 +157,8 @@ function chanceFormat(value){
   margin-bottom: 0.5rem;
 }
 
-/* Общие стили текста */
+
 .soul-target p,
-.souls-panel p,
 .tier-rewards li {
   font-size: 0.95rem;
   line-height: 1.4;
@@ -121,9 +166,8 @@ function chanceFormat(value){
   text-shadow: 0 0 2px #9333ea;
 }
 
-/* Общие стили блоков */
+
 .soul-target,
-.souls-panel,
 .tier-rewards {
   padding: 1rem;
   border-radius: 1rem;
@@ -136,6 +180,7 @@ function chanceFormat(value){
   background-color: #3b0764;
   width: 250px;
   text-align: center;
+  min-height: 450px;
 }
 
 .souls-panel {
@@ -151,14 +196,28 @@ function chanceFormat(value){
   max-width: 300px;
 }
 
-/* Прогресс-бар */
-.progress-container {
-  height: 200px;
+
+.stats-wrapper,.s-stats-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  margin: 1rem 0;
-  position: relative;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dashed #555;
+}
+
+.sp-stats-wrapper {
+  border-bottom: 1px dashed #e94747;
+}
+
+.stats-name, .s-stats-name {
+  font-weight: bold;
+}
+
+.stats-value {
+  color:rgb(242, 38, 249);
+}
+
+.s-stats-blocked {
+  color: #eb2c2c;
 }
 
 .soul-bar {
@@ -208,7 +267,7 @@ function chanceFormat(value){
   transition: top 0.3s ease;
 }
 
-/* Текущий тир */
+
 .souls-panel p:nth-of-type(2) {
   font-weight: bold;
   color: #e9d5ff;
@@ -219,22 +278,6 @@ function chanceFormat(value){
   margin-top: 0.5rem;
 }
 
-/* Tier и награды */
-.tier-rewards ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.tier-rewards strong {
-  color: #d8b4fe;
-  font-size: 1.05rem;
-  text-shadow: 0 0 3px #a855f7;
-}
-
-.tier-rewards li {
-  margin: 0.5rem 0;
-}
 
 .sub-rewards {
   list-style-type: disc;
@@ -255,7 +298,6 @@ function chanceFormat(value){
   color: #c084fc;
 }
 
-/* Анимации */
 @keyframes soul-pulse {
   0%, 100% {
     box-shadow: 0 0 8px #c084fc, 0 0 16px #9333ea;
@@ -287,7 +329,7 @@ function chanceFormat(value){
   font-size: 0.85rem;
   text-align: left;
   z-index: 10;
-  box-shadow: 0 0 10px rgba(174, 0, 255, 0.8);;
+  box-shadow: 0 0 10px rgba(174, 0, 255, 0.8);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -315,4 +357,63 @@ function chanceFormat(value){
 .info-button:hover {
   transform: scale(1.2);
 }
+
+
+
+
+
+.tier-rewards {
+  padding: 1em;
+  background: #1a1a1f;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #0006;
+  max-width: 480px;
+  margin: auto;
+  color: #f0f0f0;
+  font-family: Orbitron, sans-serif;
+}
+
+.tier-rewards h2 {
+  font-size: 1.2em;
+  margin-bottom: 1em;
+  cursor: pointer;
+  color: #e600ff;
+  text-align: center;
+}
+
+.tier-block {
+  margin-bottom: 1.2em;
+  padding: 0.5em;
+  background: #2a2a33;
+  border-left: 4px solid #f284ff;
+  border-radius: 8px;
+}
+
+.tier-title {
+  font-weight: bold;
+  font-size: 1em;
+  margin-bottom: 0.3em;
+  color: #88f;
+}
+
+.reward-list {
+  padding-left: 1em;
+  list-style: none;
+}
+
+.reward-list li {
+  margin: 0.3em 0;
+  padding: 0.2em 0.4em;
+  border-left: 2px solid #444;
+}
+
+.buff-reward {
+  color: #ff69b4;
+  font-weight: bold;
+}
+
+.perk-reward {
+  color: #00ffd0;
+}
+
 </style>

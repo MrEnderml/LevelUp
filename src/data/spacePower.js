@@ -142,7 +142,7 @@ export const spacePower = [
     {
         id: 28,
         sp: 70,
-        d: "MIN Chance Enhance - +5%"
+        d: "5% to get an extra Enhance per Space Tier"
     },
     {
         id: 29,

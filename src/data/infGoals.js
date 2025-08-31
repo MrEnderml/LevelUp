@@ -586,11 +586,11 @@ export const goals = ref([
       id: 32,
       icon: getSvgIconHTML('singularity'),
       requirement: [
-        'Reach 200k Singularity Pts',
-        'Reach 400k Singularity Pts',
-        'Reach 600k Singularity Pts',
-        'Reach 800k Singularity Pts',
-        'Reach 1m Singularity Pts',
+        'Reach 625k Singularity Pts',
+        'Reach 1.25m Singularity Pts',
+        'Reach 2.5m Singularity Pts',
+        'Reach 5m Singularity Pts',
+        'Reach 10m Singularity Pts',
         'Reach [T-E] Singularity Pts '
       ],
       reward: 40,
@@ -606,10 +606,10 @@ export const goals = ref([
       icon: `<span style="font-size: 1.2em; color:rgb(255, 102, 102);
       text-shadow: 0 0 4pxrgb(255, 21, 0);" class="infinity-icon">&#8734;</span>`,
       requirement: [
-        'Reach 3000 IP',
         'Reach 5000 IP',
-        'Reach 7000 IP',
-        'Reach 9000 IP',
+        'Reach 10000 IP',
+        'Reach 15000 IP',
+        'Reach 20000 IP',
         'Reach [T-E] IP'
       ],
       reward: 40,
@@ -628,7 +628,7 @@ export const goals = ref([
         'Reach 1e21(s) Total EXP',
         'Reach 1e27(o) Total EXP',
         'Reach 1e33(d) Total EXP',
-        'Reach [T-E] IP'
+        'Reach [T-E] Total EXP'
       ],
       reward: 50,
       level: 4,

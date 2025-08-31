@@ -31,19 +31,28 @@
         </div>
       </div>
       <div class="curse-panel">
-        <Tooltip :text="() => formatCurses()">
+        <Tooltip :text="() => formatCurses()" position="right">
           <h3 @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Curse' }">☠️ <sup style="font-size: 12px">ℹ️</sup>*Curses</h3>
         </Tooltip>
         <ul>
           <li v-for="(curse, idx) in filterCurses" :key="idx">
-            <strong>{{ curse.icon }} {{ curse.name }}</strong>
+            <span style='display: flex'>
+              <strong v-html="curse.icon"></strong>
+              <strong>{{ curse.name }}</strong>
+            </span>
             <ul>
-               <template v-for="(tier, tIndex) in curse.tier" :key="tIndex" >
-                <li v-if="tIndex < 3 || tier.status" :class="{ 'tier-four': tIndex === 3, 'tier-five': tIndex === 4 }"> 
-                  [T{{ tIndex + 1 }}] {{ tEffect(tier) }} 
-                  (Bonus: {{ (tier.bonus * (hero.rebirthTier >= 10 ? 1.5 : 1)).toFixed(2) }})
-                </li>
-              </template>
+               <template v-for="(tier, tIndex) in curse.tier" :key="tIndex">
+                  <li 
+                    v-if="tIndex < 3 || tier.status" 
+                    :class="[
+                      { 'tier-four': tIndex === 3, 'tier-five': tIndex === 4 },
+                      { 'tier-green': tIndex === 0, 'tier-yellow': tIndex === 1, 'tier-red': tIndex === 2 }
+                    ]"
+                  > 
+                    [T{{ tIndex + 1 }}] {{ tEffect(tier, curse.id) }} 
+                    (Bonus: {{ tBonusEffect(tier) }})
+                  </li>
+                </template>
             </ul>
           </li>
         </ul>
@@ -57,6 +66,7 @@ import { ref, computed } from 'vue';
 import { amulets } from '../../data/amulets.js';
 import { cursed as curses } from '../../data/cursed.js';
 import { useHero } from '../../composables/usehero.js';
+import { divineSkills } from '../../data/quasarCore.js';
 
 const {hero} = useHero();
 
@@ -75,41 +85,50 @@ const filterCursesTier = computed(() =>
     curses.filter
 )
 
-function tEffect(tier){
-  return tier.effect.replace(/(\d+(\.\d+)?)/g, (match) => {
-    let newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2);
-    if(tier.effect.startsWith('Penetrate'))
-      newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 100)).toFixed(2)
-    else if(tier.effect.startsWith('Heal'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 50)).toFixed(2)
-    else if(tier.effect.startsWith('Block'))
-      newVal = (Math.min(parseFloat(match) * hero.value.curseMult, 90)).toFixed(2)  
-    else if(tier.effect.endsWith('Attack Per Second'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.75, 1), 4)).toFixed(2) 
-    else if(tier.effect.endsWith('avoid attack'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.35, 1), 90)).toFixed(2)
-    else if(tier.effect.endsWith('avoid attack'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.35, 1), 90)).toFixed(2) 
-    else if(tier.effect.includes('to STUN for'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2)
-    else if(tier.effect.includes('to CRIT'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 1000)).toFixed(2)   
-    else if(tier.effect.startsWith('Each of your'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.2, 1), 90)).toFixed(2)   
-    else if(tier.effect.startsWith('Enemy gets'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.4, 1), 90)).toFixed(2) 
-    else if(tier.effect.endsWith('Max HP'))
-      newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2)  
-    else if(tier.effect.includes('to bleed by'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2) 
-    else if(tier.effect.startsWith('The Hero'))
-      newVal = (Math.min(parseFloat(match) * Math.max(hero.value.curseMult * 0.25, 1), 90)).toFixed(2)
-    else if(tier.effect.endsWith('Attack'))
-      newVal = (parseFloat(match) * hero.value.curseMult).toFixed(2)     
-    
-    return newVal;
+function tBonusEffect(tier) {
+  let base = tier.bonus;
+
+  let quasarShackles = (hero.value.selectedDivSkills.includes(0)? divineSkills.value[0].values[1]: 1);
+  let fluctuationFailures = (hero.value.selectedDivSkills.includes(10)? divineSkills.value[10].values[1]: 1);
+
+  base = base * (hero.rebirthTier >= 10 ? 1.5 : 1) * quasarShackles * fluctuationFailures;
+
+  return base.toFixed(2);
+}
+
+const curseRules  = {
+  0:  { mult: 1,       cap: 100 },      // Penetrate
+  1:  { mult: 0.75,    cap: 50 },       // Heal
+  2:  { mult: 0.5,     cap: 90 },       // Block
+  3:  { mult: 0.5,     cap: 4 },        // Attack Per Second
+  4:  { mult: 0.35,    cap: 90 },       // avoid attack
+  5:  { mult: 0.25,    cap: 50 },       // to STUN for
+  6:  { mult: 0.4,     cap: 1000 },     // to CRIT
+  7:  { mult: 0.35,    cap: 20 },       // Each of your
+  8:  { mult: 0.9,     cap: 90 },       // Enemy gets
+  9:  { mult: 1,       cap: 1000 },     // Max HP
+  10: { mult: 0.25,    cap: 90 },       // to bleed by
+  11: { mult: 0.25,    cap: 90 },       // The Hero
+  12: { mult: 0.4,     cap: 100 },      // Attack
+  13: { mult: 0.5,     cap: 5 },        // id 13
+  14: { mult: 1,       cap: Infinity }, // id 15
+  15: { mult: 0.4,     cap: 20 },       // id 16
+  16: { mult: 0.3,     cap: 50 },       // id 17
+  17: { mult: 0.2,     cap: 50 },       // id 18
+  18: { mult: 0.4,     cap: 20 },       // id 19
+};
+
+function tEffect(tier, curseId) {
+  const baseMult = hero.value.curseMult;
+  const rule = curseRules[curseId] || { mult: 1, cap: Infinity };
+
+  return tier.effect.replace(/(\d+(\.\d+)?)/g, match => {
+    let val = parseFloat(match) * Math.max(baseMult * rule.mult, 1);
+    val = Math.min(val, rule.cap);
+    return val.toFixed(2);
   });
 }
+
 
 function prefixHandle(t){
   return `Max Level MULT - ${1 + t * 0.02 * (hero.value.sp >= 99? 2: 1)}`
@@ -292,5 +311,24 @@ function formatCurses() {
   font-weight: bold;
   text-shadow: 0 0 6px #66ffcc;
 }
+
+.tier-green {
+  color: #4ade80;
+  font-weight: bold;
+  text-shadow: 0 0 6px #4ade80;
+}
+
+.tier-yellow {
+  color: #facc15;
+  font-weight: bold;
+  text-shadow: 0 0 6px #facc15;
+}
+
+.tier-red {
+  color: #f87171;
+  font-weight: bold;
+  text-shadow: 0 0 6px #f87171;
+}
+
 
 </style>

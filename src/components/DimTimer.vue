@@ -60,7 +60,7 @@ function curTier(){
   if(hero.value.dId.startsWith('d-')) return `[${d.infTier}]`;
 
   if (hero.value.dId === 'main') return `[${hero.value.mainInfTier}]`;
-  if (['unlimitted', 'abyss-d', 'survival-2'].includes(hero.value.dId))
+  if (['unlimitted', 'abyss-d', 'survival-2', 'bh'].includes(hero.value.dId))
     return `[${d.infTier}]`;
     
   return `[${d.infTier}]/[${d.maxInfTier}]`;
@@ -89,7 +89,11 @@ const  formatNumber = (num, f = false) => {
   
     const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
     const tier = Math.floor(Math.log10(num) / 3);
-  
+
+    if (tier >= units.length) {
+      return "999d";
+    }
+
     const suffix = units[tier];
     const scale = Math.pow(10, tier * 3);
     const scaled = num / scale;
