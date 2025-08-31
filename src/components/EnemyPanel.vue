@@ -9,7 +9,7 @@
     <span style="color: white">⚔️ {{ formatNumber(attack) }}  </span>
     <span style="color: white" v-if="def > 0"> 🛡️{{formatNumber(def)}}</span>
     <span style="color: #e711e7" v-if="enemy.weakStack >= 1"> 👁️[{{Math.floor(enemy.weakStack)}}]</span>
-    <span style="color: red" v-if="hero.dKills > 0"> 🔥[*{{formatNumber(Math.min(hero.value.dKills ** (1.3 + 0.1 * (dimensions.value[20].infTier - 20)), 1e6), true)}}]</span>
+    <span style="color: red" v-if="hero.dKills > 0"> 🔥[*{{formatNumber(Math.min(hero.dKills ** (1.3 + 0.05 * (dimensions[20].infTier - 20)), 1e6), true)}}]</span>
     <div class="hp-bar">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
             <span class="hp-text">{{ formatNumber(hp) }} / {{ formatNumber(maxHp) }}</span>

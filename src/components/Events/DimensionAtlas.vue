@@ -705,7 +705,7 @@ function darkDimensions(d){
 
 function dark_dimensions_handle(){
   return `Enter the Dark Side of the Dimensions. 
-  The Dark Dimensions have an unlimited Infinity Cap, but you must reach level 1400 to unlock the next tier. 
+  The Dark Dimensions have an unlimited Infinity Cap, but you must reach [Total Level] 1400 to unlock the next tier. 
   Each subsequent Infinity Tier is more challenging than the previous one. 
   Infinity Penalty Reduction does not apply across these dimensions. 
   The dimensions are linked: each next dimension inherits a portion of the power from the previous one.<br>`

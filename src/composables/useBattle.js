@@ -1965,7 +1965,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'survival-2'? 10: 1) * 
     (hero.value.dId == 'gravity'? 1.035 ** stage: 1) * 
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills+3)**1.25: 1) *
-    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.25 + 0.1 * (dimensions.value[20].infTier - 20)), 1e3) : 1) *
+    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.1 + 0.025 * (dimensions.value[20].infTier - 20)), 1e3) : 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10): 1) *
     (hero.value.dId == 'd-corruption'? Math.max(100 - hero.value.overcorruption ** (2 - 0.025 * dimensions.value[26].infTier), 10) * 1.05 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
@@ -2000,7 +2000,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'survival-2'? 100: 1) * 
     (hero.value.dId == 'gravity'? 1.045 ** stage: 1) * 
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills + 3) ** 1.2: 1) *
-    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.3 + 0.1 * (dimensions.value[20].infTier - 20)), 1e6): 1) *
+    (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.3 + 0.05 * (dimensions.value[20].infTier - 20)), 1e6): 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100): 1) *
     (hero.value.dId == 'd-corruption'? Math.max(10000 - hero.value.overcorruption ** (4 - 0.05 * dimensions.value[26].infTier), 100) * 1.5 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
@@ -4255,6 +4255,8 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.darkEnergy.totalBosses = (hero.value.dId == 'd-overstage'? 0: enemy.value.darkEnergy.totalBosses);
     hero.value.survivalLife = dimensions.value[30].infTier;
     hero.value.dTimer = 0;
+
+    createEnemy();
   }
 
   const performAscension = () => {
@@ -4721,7 +4723,7 @@ export function useBattle(hero, enemy, buffs) {
   
   const test = () => {
     return;
-    
+
     //dimensions.value[32].infTier = 20;
    // enemy.value.darkEnergy.totalBosses = 0;
     //hero.value.spsCount = 0;

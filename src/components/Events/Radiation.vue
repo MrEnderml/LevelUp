@@ -364,7 +364,7 @@ function startAutoUpgrade(perk, event) {
     intervalId = setInterval(() => {
       if (
           isHovering.value &&
-          (hero.value.dId.startsWith('d-') && hero.level.value < 1400 ||
+          (hero.value.dId.startsWith('d-') && hero.value.level < 1400 ||
           hero.value.dId === "unlimitted" ||
           hero.value.dId === "main" ||
           (hero.value.dId !== "main" && hero.value.level < 700))

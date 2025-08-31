@@ -299,7 +299,7 @@ export const dimensions = ref([
         idx: 24,
         infTier: 35,
         maxInfTier: 36,
-        c: `You will be able to enter this dimension once you have completed Infinity [T35] in the main one and Infinity to the max in previous. Closed until update v0.5`,
+        c: `You will be able to enter this dimension once you have completed Infinity [T35] in the main one and Infinity to the max in previous.`,
         d: `Enter the Dimension`,
         r: ``,
         sp: `Unlock the Dark Side of the Dimensions`,
