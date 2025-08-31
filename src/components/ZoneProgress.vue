@@ -488,6 +488,8 @@ function dsGain() {
 
 
 const performSingularity = () => {
+  if(enemy.value.isSpaceFight == 2) return;
+
   if(hero.value.eventDoubleClick){
     const confirmed = window.confirm(
       "Click OK to confirm to enter the Singularity."
@@ -586,6 +588,8 @@ const performSingularity = () => {
 }
 
 const performSoulD = () => {
+  if(enemy.value.isSpaceFight == 2) return;
+  
   if(hero.value.selectedDivSkills.includes(11) || hero.value.selectedDivSkills.includes(6)){
     return;
   }
@@ -604,7 +608,9 @@ const performSoulD = () => {
 }
 
 const performAscension = () => {
- if(hero.value.eventDoubleClick){
+  if(enemy.value.isSpaceFight == 2) return;
+
+  if(hero.value.eventDoubleClick){
     const confirmed = window.confirm(
       "Click OK to confirm The Ascension"
     )
@@ -616,7 +622,9 @@ const performAscension = () => {
 };
 
 const performRebirth = () => {
- if(hero.value.eventDoubleClick){
+  if(enemy.value.isSpaceFight == 2) return;
+
+  if(hero.value.eventDoubleClick){
     const confirmed = window.confirm(
       "Click OK to confirm The Rebirth"
     )
@@ -628,6 +636,8 @@ const performRebirth = () => {
 }
 
 const performAbyss = () => {
+  if(enemy.value.isSpaceFight == 2) return;
+
   if(hero.value.eventDoubleClick){
     const confirmed = window.confirm(
       "Click OK to confirm to enter the Abyss."
@@ -669,6 +679,8 @@ const performAbyss = () => {
 }
 
 const performInf = () => {
+  if(enemy.value.isSpaceFight == 2) return;
+
   if(hero.value.eventDoubleClick){
     const confirmed = window.confirm(
       "Click OK to confirm The Infinity Trial"

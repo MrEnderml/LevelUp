@@ -40,6 +40,8 @@ export function useAutoSave() {
     };
     localStorage.setItem('gameSave', JSON.stringify(data));
     localStorage.setItem('lastOnline', Date.now().toString());
+
+    console.log('--AutoSave--');
   };
 
   onMounted(() => {

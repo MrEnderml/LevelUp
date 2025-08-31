@@ -337,7 +337,8 @@ const hero = ref({
     dimensions: false,
     blackHole: false,
     dimReworks: false,
-  }
+  },
+  maxLevelInfo: 0,
 });
 
 export function useHero() {

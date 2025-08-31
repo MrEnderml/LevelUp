@@ -325,7 +325,7 @@ export const dimensions = ref([
         infTier: 0,
         maxInfTier: 50,
         c: `You will be able to enter this dimension once you have completed Infinity [T35] in main dimension`,
-        d: `Enter a dimension where traces of [D-Corruption] remain. Enemy power increases with the power of corruption, which grows with each Infinity level`,
+        d: `Enter a dimension where traces of [D-Corruption] remain. Enemy power increases with the power of corruption, which grows with each Infinity Tier`,
         r: `+0.2 Corruption weakness.`,
         debuff: 'In the next dimensions, enemies inherit part of Corruption Power, and their strength decreases per Infinity Tier',
         status: false,

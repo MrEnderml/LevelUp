@@ -434,37 +434,37 @@ function creaturesHandle(creature){
     
     case 'Dreadfang':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">1000+</span>, Stage <span style="color:gold">100+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:rgb(255, 200, 0)">+0.0075 Inf Penalty Reduction</span><br></span>`
 
     case 'Voidborn Might':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">1500+</span>, Stage <span style="color:gold">110+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#ff69b4">+0.01 DMG MULT</span><br></span>`
 
     case 'Overseer Prime':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">2000+</span>, Stage <span style="color:gold">120+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#00bfff">+0.01 Max Level MULT</span><br></span>`
 
     case 'Baselurker':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">2500+</span>, Stage <span style="color:gold">130+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#7fff00">+1 Min Level</span><br></span>`
 
     case 'Infinity Bane':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">3000+</span>, Stage <span style="color:gold">140+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#ff4500">+1 Dimension Shard (DS)</span><br></span>`
 
     case 'Crushdepth':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">3500+</span>, Stage <span style="color:gold">150+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#ba55d3">+1 Potential Reduction</span><br></span>`
 
     case 'Entropy Leech':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">4000+</span>, Stage <span style="color:gold">160+</span>
-          Dimension: [Ω VL-χtAR [31]
+          Dimension: [Ω VL-χtAR] [31]
           Reward: <span style="color:#1e90ff">+0.01 IP MULT</span><br></span>`
 
 
