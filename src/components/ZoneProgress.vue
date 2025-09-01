@@ -1002,7 +1002,7 @@ function travelToStage() {
   targetStage.value = Math.max(Math.min(targetStage.value, hero.value.maxStage), 1);
 
   hero.value.stage = targetStage.value < 100? (hero.value.dId == 'overstage'? 100 + 2 * (dimensions.value[19].infTier - 15): targetStage.value): targetStage.value; 
-  hero.value.travellPenalty = 4;
+  hero.value.travellPenalty = (hero.value.dId.startsWith('d-')? 8: 4);
   hero.value.isTravell = true;
 }
 
@@ -1069,7 +1069,7 @@ function doomHandle() {
   if(dimensions.value[28].infTier >= 20)
     text += `<br>You have a 50% chance not to receive a stack of <span style="color: red">*Doom*</span> when you kill.`;
   else if(dimensions.value[28].infTier >= 10)
-    text += `<br>You have a 75% chance not to receive a stack of <span style="color: red">*Doom*</span> when you kill.`;
+    text += `<br>You have a 25% chance not to receive a stack of <span style="color: red">*Doom*</span> when you kill.`;
   
   return text;
 }
@@ -1107,7 +1107,7 @@ function bleedingVeilHandle() {
 function corruptionHandle() {
   let text = `<span style="color: violet">While you are affected by corruption:</span><br>`;
 
-  text += `<span style="color: orange">Celestials Power: *</span> <span style="color: gold">${formatNumber(hero.value.dCorruptionEffect)}</span><br>`;
+  text += `<span style="color: orange">Celestials Power: *</span> <span style="color: gold">${formatNumber((hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) * hero.value.dCorruptionEffect)}</span><br>`;
 
   // Enemy DMG
   if (hero.value.dId == 'd-corruption') {
@@ -1117,7 +1117,7 @@ function corruptionHandle() {
     ) * 1.05 ** dimensions.value[26].infTier))}</span><br>`;
   } else if (hero.value.darkId.includes('d-corruption')) {
     text += `<span style="color: red">Enemy DMG: *</span> <span style="color: gold">${Math.floor(
-      Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10)
+      (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) * Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10)
     )}</span><br>`;
   }
 
@@ -1129,7 +1129,7 @@ function corruptionHandle() {
     ) * 1.5 ** dimensions.value[26].infTier))}</span><br>`;
   } else if (hero.value.darkId.includes('d-corruption')) {
     text += `<span style="color: lightgreen">Enemy HP: *</span> <span style="color: gold">${Math.floor(
-      Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100)
+      (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) * Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100)
     )}</span><br>`;
   }
 
@@ -1219,6 +1219,8 @@ function travellHandle() {
   
   Enemies are stronger by <span style="color: red">${hero.value.travellPenalty.toFixed(2)}</span>.
   `
+  if(hero.value.dId.startsWith('d-'))
+    text += `<br>While you are in the Dark Dimension, the effect of the travell is worse.`;
 
   return text;
 }

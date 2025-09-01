@@ -824,7 +824,7 @@ function unlimittedDescription(){
   MIN Level ${hero.value.unlimitMinLevel}
   </span><br>
   </span><br><span>Max Level: ${hero.value.unlimitLevel}</span>/<span>[${hero.value.unlimitLevelMax}]</span><br>
-  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${formatNumber((infBonus * 5 + 1) ** 2)}</span><br>
+  <span>Reach Level ${1500 + 500 * infBonus} to get a Bonus to Infinite EXP in this Dimension by ${formatNumber((infBonus * 5 + 1) ** 1.5)}</span><br>
   <span>Reach Level 2000 to unlock new Infinity Goal</span><br>
   `
 

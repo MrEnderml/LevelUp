@@ -42,7 +42,7 @@ export function useBattle(hero, enemy, buffs) {
     Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1) *
     (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) *
     (hero.value.mainInfTier >= 0 || hero.value.level >= 700? (infBase(1.06) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1)+Math.log(hero.value.infPoints + 2)))) * 
-    (hero.value.dId == 'unlimitted'? Math.max(5 * Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500) , 1) ** 2: 1): 1) * 
+    (hero.value.dId == 'unlimitted'? Math.max(5 * Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500) , 1) ** 1.5: 1): 1) * 
     (hero.value.dId == 'unlimitted'? Math.max((Math.E * dimensions.value[38].infTier) ** 0.6, 1): 1) *
     (hero.value.selectedDivSkills.includes(1)? divineSkills.value[1].values[1]: 1) * 
     (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1) /
@@ -378,8 +378,9 @@ export function useBattle(hero, enemy, buffs) {
         if(hero.value.dId == 'd-damage' || hero.value.darkId.includes('d-damage')){
           let chance = 100 - (dimensions.value[28].infTier >= 10? 25: 0) - (dimensions.value[28].infTier >= 20? 25: 0);
           let totalChance = Math.random() * 100 + chance >= 100;
+          let status = (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1);
 
-          enemy.value.d_damagePenalty = (totalChance? enemy.value.d_damagePenalty + 1: enemy.value.d_damagePenalty);
+          enemy.value.d_damagePenalty = (totalChance? enemy.value.d_damagePenalty + 1 * status: enemy.value.d_damagePenalty * status);
         }
         
         hero.value.damageStage = (dimensions.value[28].infTier > 0? hero.value.damageStage + 1 * hero.value.overkill: 0);
@@ -1620,7 +1621,8 @@ export function useBattle(hero, enemy, buffs) {
 
     let dMult = 4 - (hero.value.dId == 'd-corruption'? 0.075 * dimensions.value[26].infTier: 0) + 0.075 * dimensions.value[26].infTier;
     dMult = Math.max(dMult, 1);
-    hero.value.dCorruptionEffect = (hero.value.darkId.includes('d-corruption') || hero.value.dId == 'd-corruption'?Math.max(10000 - hero.value.overcorruption ** dMult, 100): 1);
+    hero.value.dCorruptionEffect = (hero.value.darkId.includes('d-corruption') || hero.value.dId == 'd-corruption'?Math.max(10000 - hero.value.overcorruption ** dMult, 100) * 
+    (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) : 1);
 
     let spaceMult = (hero.value.dId == 'd-noSpace'? (Math.E * (1 + dimensions.value[37].infTier)) ** 1.75: 1);
     let globalDebuff = 1 - 0.01 * dimensions.value[37].infTier;
@@ -1967,9 +1969,10 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills+3)**1.25: 1) *
     (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.1 + 0.025 * (dimensions.value[20].infTier - 20)), 1e3) : 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(100 - hero.value.overcorruption ** (2 + 0.05 * dimensions.value[26].infTier), 10): 1) *
+    (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) *
     (hero.value.dId == 'd-corruption'? Math.max(100 - hero.value.overcorruption ** (2 - 0.025 * dimensions.value[26].infTier), 10) * 1.05 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
-    (hero.value.travellPenalty) * 
+    (hero.value.travellPenalty ** 0.85) * 
     (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** (1 + 0.0175 * ((hero.value.kills)/75)): 1) * 
     (ascenPerks[49].level? 1 - 0.005 * Math.min(stage, 150) - 0.00025 * Math.max(stage - 150, 0): 1) *
     (enemy.value.spawnType == 'd-dim-boss'? (dimensions.value[31].infTier + 1) ** 1.1: 1);
@@ -2002,6 +2005,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills + 3) ** 1.2: 1) *
     (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.3 + 0.05 * (dimensions.value[20].infTier - 20)), 1e6): 1) *
     (hero.value.darkId.includes('d-corruption')? Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100): 1) *
+    (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) * 
     (hero.value.dId == 'd-corruption'? Math.max(10000 - hero.value.overcorruption ** (4 - 0.05 * dimensions.value[26].infTier), 100) * 1.5 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) *
@@ -2049,6 +2053,7 @@ export function useBattle(hero, enemy, buffs) {
     let base = (enemy.value.buffs.includes(5)? 1: 0.4);
 
     enemy.value.attacksPerSecond = enemy.value.base.aps + 
+    (hero.value.dId.startsWith('d-') && hero.value.isTravell? Math.max(2 - 0.25 * (8 - hero.value.travellPenalty)): 0) +
     (enemy.value.buffs.includes(5)? 0.01 * hero.value.stage: 0) +
     (hero.value.dId == 'd-noAps'? 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier)): 0);
 
@@ -2303,6 +2308,7 @@ export function useBattle(hero, enemy, buffs) {
     
     let sLevels = Math.floor((hero.value.rebirthPts >= 4.5e5? Math.log(hero.value.rebirthPts + 3) ** 1.906: 0)) + 25 * (hero.value.singularity) + 
     75 * hero.value.bhTier;
+    hero.value.singularityLevels = Math.floor(sLevels);
 
     if(hero.value.dId.startsWith('d-')){
       let mult = 10 + (hero.value.dId == 'd-corruption'? 2.5 * dimensions.value[26].infTier: 0);
@@ -3263,6 +3269,8 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.curseMult = Math.max((1 + 0.01 * hero.value.stage - 0.02 * dimensions.value[27].infTier) * totalEffects, 1);
     else 
       hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.05 * Math.max(hero.value.infTier - 30, 0) - 0.02 * dimensions.value[27].infTier) * totalEffects, 1));
+
+    hero.value.curseMult = (hero.value.dId.startsWith('d-') && hero.value.isTravell? hero.value.curseMult * 2: hero.value.curseMult);
 
 
     let curses = Math.min(Math.floor((hero.value.mainInfTier - 30) / 10), 7);
