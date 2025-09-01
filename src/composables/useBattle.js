@@ -2341,7 +2341,7 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.attacksPerSecond -= hero.value.activeBuffs.includes(5)? buffs.value[5].debuff: 0;
 
-    buffs.value[14].extraHit = (hero.value.attacksPerSecond > 4? Math.log(Math.max((hero.value.attacksPerSecond - 4) * 7.5, 1)) ** 3.25: 0);
+    buffs.value[14].extraHit = (hero.value.attacksPerSecond > 4? Math.log(Math.max((hero.value.attacksPerSecond - 4) * 8, 1)) ** 3.5: 0);
     
     enemy.value.bhApSDown = (hero.value.bhTier >= 3? Math.max(Math.min(hero.value.bhTier ** 1.75, 100), 1) : 1);
     hero.value.attacksPerSecond **= 1 - enemy.value.bhApSDown * 0.01;
