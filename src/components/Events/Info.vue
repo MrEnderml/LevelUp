@@ -101,6 +101,7 @@
       </div>
 
       <div class="stats-content">
+        <div style="color: red">The stat sections are currently not working correctly.</div>
         <ul v-if="currentSection">
           <li
             v-for="(item, index) in currentSection.content.filter(c => !c.req || c.req())"

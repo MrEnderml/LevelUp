@@ -1508,7 +1508,7 @@ export function useBattle(hero, enemy, buffs) {
 
     enemy.value.deBoss.regen = (tier >= 1? Math.min(1 + 0.5 * (dimensions.value[29].infTier - 10), 25) : 0);
     enemy.value.deBoss.def = (tier >= 2? 5 + 2.5 * (dimensions.value[29].infTier - 15): 0);
-    enemy.value.deBoss.darkEnemyTimer = (tier >= 3? 15 - 0.1 * Math.min(dimensions.value[29].infTier - 20, 50): 0);
+    enemy.value.deBoss.darkEnemyTimer = (tier >= 3? 15 - 0.1 * Math.min(dimensions.value[29].infTier - 20, 50): -1);
   }
 
   const createEnemy = () => {
@@ -1949,12 +1949,12 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.isAbyss? Math.max(1.04 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.01: 0), 1.02) ** stage: 1) *
     (enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1) * 
     (hero.value.isAbyss || hero.value.isSingularity? 1: enemy.value.enemyPower ** 0.25) * 
-    (!hero.value.infProgress? 1 + 0.1 * Math.max(hero.value.infTier - 5 * hero.value.infPenalty, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
+    (!hero.value.infProgress? 1 + 0.025 * Math.max(hero.value.infTier, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
     (hero.value.abyssTier >= 2? 1 / ((1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 1)): 1) * 
     (ascenPerks[27].level? Math.max(1 / (2 + Math.max(hero.value.corruption, 0.1)), 0.1): 1) *
     (hero.value.isAbyss && hero.value.rebirtMhTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
-    (1 - ascenPerks[33].level * 0.009) * 
-    (1 - ascenPerks[56].level * 0.009) * 
+    (1 - ascenPerks[33].level * 0.0089) * 
+    (1 - ascenPerks[56].level * 0.0089) * 
     Math.max((hero.value.mainInfTier >= 22 && hero.value.isSingularity? (1 / infBase(1.01) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) * Math.log(hero.value.infPoints + 3)))): 1), 0.1) *
     Math.max((hero.value.mainInfTier >= 8? (1 / infBase(1.02) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.2) * 
     Math.max((hero.value.mainInfTier >= 1 && hero.value.isAbyss? (1 / infBase(1.0225) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 0.1) * 
@@ -1983,7 +1983,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.isAbyss? 1 :enemy.value.rebirthEnemy["hp"]) * 
     (hero.value.isAbyss? Math.max(1.05 - 0.01 * hero.value.abyssTier + (hero.value.abyssTier >= 3? 0.015: 0), 1.03) ** stage: 1) *
     (hero.value.isAbyss || hero.value.isSingularity? 1: enemy.value.enemyPower) * 
-    (!hero.value.infProgress? 1 + 0.1 * Math.max(hero.value.infTier - 5 * hero.value.infPenalty, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
+    (!hero.value.infProgress? 1 + 0.1 * Math.max(hero.value.infTier, 0) * (hero.value.dId == 'corruption'? 3: 1): 1) *
     (hero.value.abyssTier >= 2? 1 / ((1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 1)): 1) *
     (hero.value.isAbyss && hero.value.rebirthTier >= 5? (1 / (1.025 ** hero.value.rebirthTier)): 1) *
     (ascenPerks[27].level? Math.max(1 / (2 + Math.max(hero.value.corruption, 0)), 0.1): 1) *
