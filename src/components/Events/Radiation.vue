@@ -394,11 +394,11 @@ function creaturesHandle(creature){
           Dimension: main
           Reward: <span style="color:rgb(88, 255, 160)">+1 Potential</span></span>`
     case 'Mirror of the Infinity': 
-          return `<span style="color:#9cedd2"> Requirement: Danger <span style="color:gold">100+</span>, Stage <span style="color:gold">60+</span>
+          return `<span style="color:#9cedd2"> Requirement: Danger <span style="color:gold">100+</span>, Stage <span style="color:gold">65+</span>
           Dimension: main
           Reward: <span style="color:rgb(243, 218, 31)">+1 IP</span></span>`
     case 'The Infinite One': 
-          return `<span style="color:#9cedd2"> Requirement: Danger <span style="color:gold">100+</span>, Stage <span style="color:gold">60+</span>
+          return `<span style="color:#9cedd2"> Requirement: Danger <span style="color:gold">100+</span>, Stage <span style="color:gold">70+</span>
           Dimension: main
           Reward: <span style="color:rgb(255, 230, 88)">+1 STAR(ST)</span></span>`
     

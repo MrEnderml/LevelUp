@@ -1848,7 +1848,7 @@ const statSections = [
         color: 'gold',
         req: () => true,
       },
-      { desc: `Infinity Penalty Reduction`, value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPenalty > 0 },
+      { desc: `Infinity Penalty Reduction`, value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPenalty > 0 || hero.value.mainInfTier >= 20 },
       {
         desc: 'Ascension [Singularity Seed]',
         value: () => formatNumber(ascenPerks[42].level? 0.02: 0, true),
@@ -1903,12 +1903,12 @@ const statSections = [
         color: '#00fdff',
         req: () => hero.value.mainInfTier >= 50,
       },
-      { desc: `Total`, value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPenalty > 0 },
+      { desc: `Total`, value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPenalty > 0 || hero.value.mainInfTier >= 20 },
       {
         desc: 'Total',
         value: () => formatNumber(hero.value.infPenalty, true),
         color: 'gold',
-        req: () => hero.value.infPenalty > 0,
+        req: () => hero.value.infPenalty > 0 || hero.value.mainInfTier >= 20,
       },
       { desc: `Singularity Levels`, value: '', color: '#a4ffe1',  uppercase: true, req: () => hero.value.singularityLevels > 0 },
       {
@@ -2068,102 +2068,136 @@ const statSections = [
     title: 'EXP',
     id: 'only exp',
     content: [
-      { desc: 'EXP', value: '', color: 'purple',  uppercase: true, },
+      { desc: 'EXP', value: '', color: 'purple',  uppercase: true, req: () => true },
       {
         desc: 'Stage EXP',
         value: () => formatNumber(Math.log(hero.value.stage + 5)**4, true),
         color: '',
+        req: () => true,
       },
       {
         desc: 'Tree [Wisdom]',
         value: () => formatNumber(1 + (perks.value[3].value * perks.value[3].level * 0.01), true),
         color: 'lightgreen',
+        req: () => true,
       },
       {
         desc: 'Ring',
         value: () => formatNumber(equipment[3].tiers[hero.value.equipmentTiers['ring']].bonus.expMult, true),
         color: '#66ffcc',
+        req: () => true,
       },
       {
         desc: 'Ring [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['ring'].bonus, true),
         color: '#66ffcc',
+        req: () => true,
       },
       {
         desc: 'Ascension [Blacksmithing Experience]',
         value: () => formatNumber((1 + 0.05 * (hero.value.equipmentTiers['sword'] + hero.value.equipmentTiers['armor'] + 
         hero.value.equipmentTiers['boots'] + hero.value.equipmentTiers['ring']) * ascenPerks[6].level), true),
         color: 'lightblue',
+        req: () => true,
       },
       {
         desc: 'BUFF: Traveller [T3]',
         value: () => ((hero.value.activeBuffs.includes(2) && buffs.value[2].tier >= 3? 3: 1)),
         color: 'orange',
+        req: () => true,
       },
       {
         desc: 'Souls [Loot]',
         value: () => formatNumber((enemy.value.soulBuff.active? enemy.value.soulBuff.drop: 1), true),
         color: '#ed14ed',
+        req: () => true,
       },
-      {
+     {
         desc: 'Souls',
-        value: () => formatNumber((1 + Math.min(hero.value.souls, 40 + (Math.max(hero.value.infTier, hero.value.mainInfTier) >= 6? 40: 0)) * (0.1 + (hero.value.soulTier >= 3? 0.05: 0))), true),
+        value: () => formatNumber(
+          (1 + Math.min(
+            hero.value.souls,
+            40 + (Math.max(hero.value.infTier, hero.value.mainInfTier) >= 6 ? 40 : 0)
+          ) * (0.1 + (hero.value.soulTier >= 3 ? 0.05 : 0))),
+          true
+        ),
         color: '#ed14ed',
+        req: () => true,
       },
       {
         desc: 'BUFF: Overkill [T4]',
-        value: () => formatNumber((hero.value.activeBuffs.includes(7) && buffs.value[7].tier >= 4? hero.value.overkill * 0.1 + (dimensions.value[19].infTier == dimensions.value.maxInfTier? 0.05: 0): 1), true),
+        value: () => formatNumber(
+          (
+            hero.value.activeBuffs.includes(7) &&
+            buffs.value[7].tier >= 4
+          )
+            ? (hero.value.overkill * 0.1 +
+              (dimensions.value[19].infTier >= dimensions.value.maxInfTier ? 0.05 : 0))
+            : 1,
+          true
+        ),
         color: 'orange',
+        req: () => true,
       },
       {
         desc: 'Curse [Bonus]',
         value: () => formatNumber(1 + hero.value.cursedBonusExp, true),
         color: 'red',
+        req: () => true,
       },
       {
         desc: 'Boss [Loot]',
         value: () => formatNumber(enemy.value.boss.isBoss? enemy.value.boss.drop: 1, true),
         color: 'red',
+        req: () => true,
       },
       {
         desc: 'Rebirth',
         value: () => (hero.value.rebirthPts >= 5? 2: 1),
         color: 'lightgreen',
+        req: () => true,
       },
       {
         desc: 'Space',
         value: () => formatNumber(hero.value.sp >= 11? Math.min(1.025 * hero.value.sp, 5): 1, true),
         color: 'orange',
+        req: () => true,
       },
       {
         desc: 'Ascension Soul [Loot]',
         value: () => formatNumber((enemy.value.ascensionSoul.active? enemy.value.ascensionSoul.stats: 1), true),
         color: 'lightblue',
+        req: () => true,
       },
       {
         desc: 'Rebirth [Loot]',
         value: () => (enemy.value.rebirthEnemy["drop"]),
         color: 'lightgreen',
+        req: () => true,
       },
       {
         desc: 'Formation [T4]',
         value: () => (hero.value.activeFormation == 3? 2: 1),
         color: '#82eb26',
+        req: () => true,
       },
        {
         desc: 'Ascension [Loot]',
         value: () => formatNumber(1 + ascenPerks[34].level * 0.01, true),
         color: 'lightblue',
+        req: () => hero.value.mainInfTier >= 1,
       },
       {
         desc: 'Dimension [S5-Ω3t] [5]',
         value: () => formatNumber(Math.max(1 + (hero.value.unlimitLevel - 700) / 100, 1), true),
         color: '#ed14ed',
+        req: () => hero.value.unlimitLevel > 700,
       },
       {
         desc: 'Dimension [S5-Ω3t] [5] [Infinity Bonus]',
         value: () => (hero.value.dId == 'unlimitted'? 2.25 ** Math.max(Math.floor(Math.max(hero.value.unlimitLevel - 1000, 0) / 500), 0): 1),
         color: '#ed14ed',
+        req: () => hero.value.unlimitLevel > 700,
       },
       {
         desc: `Infinity`,
@@ -2171,14 +2205,51 @@ const statSections = [
           (hero.value.mainInfTier >= 1 || hero.value.level >= 700)
             ? ((1.06 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / (Math.sqrt(hero.value.infPoints + 1) + Math.log(hero.value.infPoints + 2))) *
             (hero.value.rebirthPts >= 3.5e5 && hero.value.eLevel > 700? Math.sqrt(Math.log(hero.value.rebirthPts + 3))/2: 1) * 
-            (hero.value.dId == 'unlimitted'? 1.75 ** Math.max(Math.floor((hero.value.unlimitLevel - 1000) / 500), 0): 1))
+            (hero.value.dId == 'unlimitted'? Math.max((Math.E * dimensions.value[38].infTier) ** 0.6, 1): 1))
             : 0, true),
         color: 'gold',
+        req: () => hero.value.mainInfTier > 0,
       },
       {
         desc: 'Curse [T5]',
         value: () => (hero.value.curset5? 2: 1),
         color: ' #a4ffe1',
+        req: () => hero.value.singularity >= 8,
+      },
+      {
+        desc: 'Quasar Core [Stellar Equilibrium]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(1)? divineSkills.value[1].values[1]: 1), true),
+        color: '#04fdff',
+        req: () => hero.value.mainInfTier >= 50,
+      },
+      {
+        desc: 'Quasar Core [Quasar Radiance]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1), true),
+        color: '#04fdff',
+        req: () => hero.value.mainInfTier >= 50,
+      },
+      {
+        desc: 'Enemy Buff [Traveller]',
+        value: () => formatNumber((enemy.value.buffs.includes(3)? 3: 1), true),
+        color: 'red',
+        req: () => hero.value.darkId.includes('d-noBuffs'),
+      },
+      {
+        desc: 'Curse [Perdition of Ferocity]',
+        value: () => formatNumber((enemy.value.buffs.includes(3)? 3: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 70,
+      },
+      {
+        desc: 'Quasar Core [Destruction of the continuum] [^]',
+        value: () => formatNumber(
+          hero.value.selectedDivSkills.includes(13) 
+            ? divineSkills.value[13].values[0] 
+            : 1, 
+          true
+        ),
+        color: '#04fdff',
+        req: () => hero.value.mainInfTier >= 50,
       },
       {
         desc: 'Total',
@@ -2188,12 +2259,12 @@ const statSections = [
       { desc: `Infinity [T${hero.value.infTier}]`, value: '', color: 'gold',  uppercase: true, },
       {
         desc: `Penalty [^]`,
-        value: () => Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1).toFixed(2),
+        value: () => Math.max(Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1), 0).toFixed(2),
         color: 'gold',
       },
       {
         desc: 'Total',
-        value: () => formatNumber(hero.value.totalExp ** Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1)),
+        value: () => formatNumber(hero.value.totalExp ** Math.max(Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1), 0)),
         color: 'gold',
       },
     ],

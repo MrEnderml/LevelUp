@@ -60,7 +60,7 @@
           <span v-if="!hero.infProgress && hero.infEvents > 1" class="infinity-glow">∞</span>
         </Tooltip>
         <Tooltip :text="travellHandle" boxShadow="0 0 10px blue">
-          <span v-if="hero.travellPenalty > 1" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('traveller', '1.25em')"></span>
+          <span v-if="hero.isTravell" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('traveller', '1.25em')"></span>
         </Tooltip>
         <Tooltip :text="spaceTimerHandle" boxShadow="0 0 10px gold">
           <span v-if="enemy.isSpaceFight == 2" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('spaceTimer', '1.25em')"></span>

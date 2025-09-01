@@ -54,7 +54,8 @@ export function useBattle(hero, enemy, buffs) {
    
 
     hero.value.totalExp = exp;
-    let expPenalty = Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1);
+    let expPenalty = Math.max(Math.min(1 - 0.02 * hero.value.infTier + hero.value.infPenalty, 1), 0);
+
     exp = (!hero.value.infProgress? exp ** expPenalty: exp);
     enemy.value.averageLoot.exp = exp;
 
@@ -2340,7 +2341,7 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.attacksPerSecond -= hero.value.activeBuffs.includes(5)? buffs.value[5].debuff: 0;
 
-    buffs.value[14].extraHit = (hero.value.attacksPerSecond > 4? Math.log(Math.max((hero.value.attacksPerSecond - 4) * 10, 1)) ** 3.75: 0);
+    buffs.value[14].extraHit = (hero.value.attacksPerSecond > 4? Math.log(Math.max((hero.value.attacksPerSecond - 4) * 7.5, 1)) ** 3.25: 0);
     
     enemy.value.bhApSDown = (hero.value.bhTier >= 3? Math.max(Math.min(hero.value.bhTier ** 1.75, 100), 1) : 1);
     hero.value.attacksPerSecond **= 1 - enemy.value.bhApSDown * 0.01;
@@ -2919,7 +2920,7 @@ export function useBattle(hero, enemy, buffs) {
       buffs.value[15].defIgnore = (Math.random() * 100 + 25 >= 100? true: false);
     }
     if(hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 3){
-      let chance = (Math.random() * 100 + 10 >= 100);
+      let chance = (Math.random() * 100 + 5 >= 100);
       buffs.value[10].buffT3 = (chance? Math.min(buffs.value[10].buffT3 + 1, 3): buffs.value[10].buffT3);
       if(chance) buffs.value[10].buffT3HP = hero.value.hp;
     }
@@ -4265,6 +4266,8 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.darkEnergy.totalBosses = (hero.value.dId == 'd-overstage'? 0: enemy.value.darkEnergy.totalBosses);
     hero.value.survivalLife = dimensions.value[30].infTier;
     hero.value.dTimer = 0;
+    hero.value.travellPenalty = 1;
+    hero.value.isTravell = false;
 
     createEnemy();
   }
@@ -4459,7 +4462,10 @@ export function useBattle(hero, enemy, buffs) {
     let mult = 1;
 
     if(dimensions.value[29].infTier >= 10){
-      let totalInfs = dimensions.value.filter(d => d.id.startsWith('d-')) .reduce((sum, d) => sum + d.infTier, 0);
+      let totalInfs = dimensions.value.filter(d => d.id.startsWith('d-')) .reduce((sum, d) => sum + d.infTier, 0) - 
+      dimensions.value[29].infTier;
+      totalInfs = Math.max(totalInfs, 0);
+      
       mult = 1 + totalInfs ** (dimensions.value[29].infTier * 0.01);
     }
 
@@ -4640,6 +4646,11 @@ export function useBattle(hero, enemy, buffs) {
       }
       hero.value.newUpdateChanges.dimReworks = true;
     }
+
+    hero.value.ascensionShards = Math.min(1e30, hero.value.ascensionShards);
+    ascenPerks[31].level = Math.min(ascenPerks[31].level, 300);
+    ascenPerks[34].level = Math.min(ascenPerks[34].level, 500);
+    ascenPerks[35].level = Math.min(ascenPerks[35].level, 25);
   }
 
   function eqUpCost(type) {
@@ -4731,147 +4742,6 @@ export function useBattle(hero, enemy, buffs) {
   const test = () => {
     return;
 
-    //dimensions.value[32].infTier = 20;
-   // enemy.value.darkEnergy.totalBosses = 0;
-    //hero.value.spsCount = 0;
-    //hero.value.singularityKills = 1e4;
-    //hero.value.singularity = 8;
-    //dimensions.value[33].infTier = 25;
-    //hero.value.stardust = 1e27;
-    //hero.value.infTier = 25;
-    //hero.value.mainInfTier = 60;
-    //hero.value.spsCount = 0;
-    //hero.value.spsCountMax = 12;
-    //hero.value.ascensionShards = 1e24;
-    //hero.value.abyssDStages = 240;
-    //hero.value.mainInfTier = 49;
-    //hero.value.infTier = 18;
-    //dimensions.value[28].infTier = 20
-    //hero.value.abyssDStages = 220;
-    //enemy.value.darkEnergy.totalBosses = 7;
-    
-    //hero.value.infTier = 5;
-    //hero.value.mainInfTier = 45;
-    //hero.value.singularity = 1;
-    //dimensions.value[37].infTier = 6;
-   //hero.value.infTier = 6;
-    //hero.value.infTier = 10;
-    //hero.value.mainInfTier = 7;
-    //hero.value.mainInfTier = 60;
-    //hero.value.bhTier = 0;
-  //dimensions.value[9].infTier = 7;
-    //dimensions.value[34].infTier = 25;
-    //dimensions.value[29].infTier = 25;
-    //enemy.value.darkEnergy.totalBosses = 15;
-    //buffs.value[1].tier = 1;
-    //dimensions.value[40].infTier = 45;
-    //hero.value.survivalLife = 5;
-    //enemy.value.darkEnemyReq = [true, true, true, true, true, true, true, true, false, false];
-    //dimensions.value[31].infTier = 7;
-    //enemy.value.rage = 100;
-    //dimensions.value[9].infTier = 7;
-   //hero.value.infPoints = 7000;
-    //hero.value.infPointsGoals = 3000;
-    //dimensions.value[17].infTier = 30;
-    //dimensions.value[1].maxInfTier = 15;
-    //dimensions.value[22].infTier = 35;
-    //dimensions.value[14].infTier = 20;
-    //dimensions.value[20].infTier = 22;
-    //dimensions.value[11].infTier = 15;
-    //dimensions.value[9].infTier = 7;
-    //dimensions.value[23].maxInfTier = 20;
-    //hero.value.ds = 30;
-    //hero.value.singularity = 0;
-    //hero.value.mainInfTier = 29;
-    //hero.value.infTier = 19; 
-    //dimensions.value[15].infTier = 20;
-    //hero.value.infPoints = 3500;
-    //hero.value.kills = 1750;
-   //hero.value.ascensionShards = 1e13;
-    //hero.value.singularity = 8;
-    //hero.value.dTimeReward = 1213;
-    //radPerks[10].level = 900;
-    //hero.value.dId = 'main';
-    //hero.value.infTier = 2;
-    //hero.value.singularity = 8;
-    //hero.value.kills = 7000;
-    //hero.value.rebirthPts = 1e7;
-    //hero.value.singularityKills = 4000;
-    //hero.value.stage = 169;
-    //hero.value.spCount = 0;
-    //hero.value.mainInfTier = 11;
-    //hero.value.infTier = 20;
-    //enemy.value.dangerEnemyLoot[1] = 500;
-    //hero.value.singularity = 5; 
-    //ascenPerks[31].level = 20;
-    //hero.value.mutagen = 1e5;
-    //hero.value.kills = 9990;
-    //hero.value.stage = 41;
-    //hero.value.souls = 240;
-    //hero.value.soulsMax = 240;
-    //hero.value.soulsCap = 40;
-    //hero.value.abyssTier = 3;
-    //hero.value.rebirthTier = 90;
-    //hero.value.ascensionShards = 1e12;
-    //hero.value.mainInfTier = 10;
-    //hero.value.awakened['sword'] = 0;
-   //hero.value.ascensionShards = 0;
-    //hero.value.eLevel = 700;
-    //hero.value.afkTimer = 7200;
-    //hero.value.afkMaxTimer = 14400;
-    //dimensions.value[19].infTier = 20;
-    //dimensions.value[13].maxInfTier = 25;
-    //hero.value.infTier = 22;
-    //dimensions.value[9].infTier = 7;
-    //hero.value.survivalStage = 150; 
-    //hero.value.infTier = 27;
-    //ascenPerks[55].level = 0;
-    //ascenPerks[56].level = 0;
-    //hero.value.abyssDStages = 170;
-    //hero.value.mainInfTier = 35;
-    //hero.value.kills = 9500;
-   //s hero.value.singularity = 4;
-   //hero.value.eqUps['spRing'] = 50;
-     //hero.value.stage = 12;
-     //hero.value.singularityKills = 10000;
-     //hero.value.rebirthPts = 4e4;
-     //hero.value.singularity = 7;
-    //hero.value.stardust = 1e6;
-    //hero.value.mainInfTier = 17
-    //dimensions.value[15].infTier = 25;
-    //hero.value.corruption = 0.1;
-    //hero.value.abyssDStages = 170;
-    //hero.value.infPoints = 20000;
-    //radPerks[7].perkStatus = false;
-    //hero.value.infTier = 5;
-    //dimensions.value[2].infTier = 5;
-    
-    //hero.value.singularity = 0;   
-    //hero.value.eLevel = 700;
-   
-    //hero.value.stage = 20;
-    //hero.value.spCount = 24;     
-    //hero.value.infTier = 6;
-   // dimensions.value[2].infTier = 6;   
-   //hero.value.eLevel = 700;
-    //dimensions.value[2].infTier = 0;
-    //hero.value.eLevel = 700;
-    //hero.value.stage = 20;
-    //dimensions.value[27].infTier = 15;
-    //hero.value.eLevel = 700;s
-    //hero.value.infTier = 5;
-    //dimensions.value[4].infTier = 5;
-    //hero.value.stage = 50;
-    //radPerks[10].level = 0;
-    //hero.value.ascensionShards = 1e25;
-    
-    //hero.value.souls = 41;
-    //dimensions.value[31].infTier = 1;
-    //hero.value.attack *= 1e12;
-    //hero.value.overkill = 1000;
-    //hero.value.attacksPerSecond = 4;
-    //hero.value.ascensionShards = 1e20;
-    //enemy.value.darkEnemyLoot[0] = 0;
   }
 
   createEnemy();

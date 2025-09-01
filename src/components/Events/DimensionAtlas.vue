@@ -935,10 +935,14 @@ function dark_energy_reward(d){
   let text = ``;
 
   let percent = d.infTier;
+   let totalInfs = d_data.value.filter(d => d.id.startsWith('d-')) .reduce((sum, d) => sum + d.infTier, 0) - 
+      d_data.value[29].infTier;
+      totalInfs = Math.max(totalInfs, 0);
 
   if(d.infTier < 10)
     text += `Reach <span style="color: gold">Infinity [T10]</span> to unlock new influence of Dark Energy<br>`;
-  else text += `Dark Energy is gathering the power of infinities from all dark dimensions and empowers itself with <span style="color: gold">${percent}%</span> of the total infinities. This effect increases with each Infinity Tier<br>`;
+  else text += `Dark Energy is gathering the power of infinities from all dark dimensions and empowers itself with <span style="color: gold">${percent}%</span> of the total 
+  <span style="color: gold">infinities [${totalInfs}]</span>. This effect increases with each Infinity Tier<br>`;
 
   text += `<span style="color: #9cedd2">Reward: Max Level [^${(enemy.value.darkEnergy.deTotal).toFixed(4)}]</span><br>`
 
