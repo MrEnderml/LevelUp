@@ -65,7 +65,7 @@ export function useBattle(hero, enemy, buffs) {
     addLog(`You killed ${enemy.value.name} and gained ${formatNumber(exp)} (+${formatNumber((exp / hero.value.nextLevelExp) * 100, true)}%) exp`, "EXP");
     
     if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage)
-      hero.value.exp += exp * 25;
+      hero.value.exp += exp * 5;
     else 
       hero.value.exp += exp;
 
@@ -2005,9 +2005,9 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.dId == 'gravity'? 1.045 ** stage: 1) * 
     (hero.value.dId == 'overkill'? Math.log(hero.value.kills + 3) ** 1.2: 1) *
     (hero.value.dId == 'damage'? Math.min(hero.value.dKills ** (1.3 + 0.05 * (dimensions.value[20].infTier - 20)), 1e6): 1) *
-    (hero.value.darkId.includes('d-corruption')? Math.max(10000 - hero.value.overcorruption ** (4 + 0.075 * dimensions.value[26].infTier), 100): 1) *
+    (hero.value.darkId.includes('d-corruption')? Math.max(10000 - hero.value.overcorruption ** (4 + 0.05 * dimensions.value[26].infTier), 100): 1) *
     (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1) * 
-    (hero.value.dId == 'd-corruption'? Math.max(10000 - hero.value.overcorruption ** (4 - 0.05 * dimensions.value[26].infTier), 100) * 1.5 ** dimensions.value[26].infTier: 1) *
+    (hero.value.dId == 'd-corruption'? Math.max(10000 - hero.value.overcorruption ** (4 - 0.075 * dimensions.value[26].infTier), 100) * 1.55 ** dimensions.value[26].infTier: 1) *
     (1 - enemy.value.weakStack * 0.01) * 
     (hero.value.travellPenalty) *
     (hero.value.isSingularity && hero.value.singularity >= 8? Math.log(hero.value.kills + 3) ** Math.min(1 + 0.01 * ((hero.value.kills)/10), 1.4 + 0.3 * Math.floor(hero.value.kills/1000)): 1) * 
@@ -2092,9 +2092,9 @@ export function useBattle(hero, enemy, buffs) {
     (1 + 0.01 * enemy.value.darkEnemyLoot[1])
 
     //d-damage
-    hero.value.d_damage_penalty.dmg = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.02 * dimensions.value[28].infTier), 1e6 * 1.05 ** dimensions.value[28].infTier): 1);
+    hero.value.d_damage_penalty.dmg = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.025 * dimensions.value[28].infTier), 1e6 * 1.05 ** dimensions.value[28].infTier): 1);
     hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
-    hero.value.d_damage_penalty.dmg = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.0175 * dimensions.value[28].infTier, 0.5), 1e6): hero.value.d_damage_penalty.dmg);
+    hero.value.d_damage_penalty.dmg = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.015 * dimensions.value[28].infTier, 0.5), 1e6): hero.value.d_damage_penalty.dmg);
     hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
     //first stirke
     
@@ -3265,11 +3265,11 @@ export function useBattle(hero, enemy, buffs) {
     let totalEffects = 1 * quasarShackles * fluctuationFailures;
     ///////////////////////
     if(hero.value.dId == 'd-hard')
-      hero.value.curseMult = ((1 + (0.01 + 0.003 * dimensions.value[27].infTier) * hero.value.stage) * totalEffects) ** (1 + 0.0125 * dimensions.value[27].infTier);
+      hero.value.curseMult = ((1 + (0.01 + 0.004 * dimensions.value[27].infTier) * hero.value.stage) * totalEffects) ** (1 + 0.015 * dimensions.value[27].infTier);
     else if(hero.value.darkId.includes('d-hard') && hero.value.dId != 'd-hard')
-      hero.value.curseMult = Math.max((1 + 0.01 * hero.value.stage - 0.02 * dimensions.value[27].infTier) * totalEffects, 1);
+      hero.value.curseMult = Math.max((1 + 0.0115 * hero.value.stage - 0.02 * dimensions.value[27].infTier) * totalEffects, 1);
     else 
-      hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.05 * Math.max(hero.value.infTier - 30, 0) - 0.02 * dimensions.value[27].infTier) * totalEffects, 1));
+      hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.075 * Math.max(hero.value.infTier - 30, 0) - 0.0175 * dimensions.value[27].infTier) * totalEffects, 1));
 
     hero.value.curseMult = (hero.value.dId.startsWith('d-') && hero.value.isTravell? hero.value.curseMult * 2: hero.value.curseMult);
 
@@ -3568,6 +3568,8 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.isInfSpace = (hero.value.spCount >= 48 && hero.value.bhTier >= 3? true: false);
     hero.value.isInfSpace = (hero.value.dId == 'main' || hero.value.dId == 'd-noSpace'? hero.value.isInfSpace: false);
+
+    spEnemy[48].status = (hero.value.isInfSpace? true: false);
 
     spaceCreaturesHandle();
   }
@@ -4422,7 +4424,7 @@ export function useBattle(hero, enemy, buffs) {
   
         const defeatedAndRepeat = hero.value.repeatOnDefeat && enemy.value.isSpaceFight === -1;
         const wonAndNextEnemy  = hero.value.nextEnemyOnWin && enemy.value.isSpaceFight === 0;
-  
+
         if (defeatedAndRepeat || wonAndNextEnemy){
           if(spEnemy[hero.value.spCount].status)
             enemy.value.isSpaceFight = 1;
@@ -4740,6 +4742,7 @@ export function useBattle(hero, enemy, buffs) {
   
   
   const test = () => {
+    hero.value.bhTier = 2;
     return;
 
   }

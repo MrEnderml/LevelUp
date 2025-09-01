@@ -272,7 +272,7 @@ const buffs = ref([
         `Your base APS cannot be lower than 1`,
         "+0.1 APS for each Space Boss killed [MAX - 0.5]",
         "+0.01 APS for each Stage passed [MAX - 1]",
-        "Overcapped APS converts into chance of extra hit",
+        "Overcapped APS converts into chance of extra hits",
         "Max Tier"
       ],
       tier: 1,
@@ -289,7 +289,7 @@ const buffs = ref([
       description: [
         "Each hit increases the chance by 20% to deal double damage. After 5 hits, the chance resets",
         "Each attack has a 25% chance to ignore enemy DEF. 1.5× DMG against enemies without Defense.",
-        "Each hit has a 10% chance to create a Divine Shield that makes you vulnerable to attacks for 1 second",
+        "Each hit has a 5% chance to create a Divine Shield that makes you vulnerable to attacks for 1 second",
         "Deals double damage if your DMG (not including CRIT) is 10 times less than the enemy's health",
         "Max Tier"
       ],
