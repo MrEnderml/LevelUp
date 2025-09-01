@@ -2,7 +2,7 @@
   <div class="app-container">
     <EventPanel v-model="currentEvent" :events="events" :hero="hero" />
     <div class="main-panel">
-      <Tools/>
+
       <BattleLogic v-if="currentEvent === 'Combat'" :heroAttackBarProgress="heroAttackBarProgress" :enemyAttackBarProgress="enemyAttackBarProgress" />
 
       <Tree v-if="currentEvent === 'Tree'" />
@@ -267,7 +267,7 @@ const events = [
 ]
 const currentEvent = ref('Combat');
 
-////useAutoSave();
+useAutoSave();
 
 const {
   heroAttackBarProgress,

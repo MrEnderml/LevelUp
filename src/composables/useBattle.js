@@ -4742,7 +4742,6 @@ export function useBattle(hero, enemy, buffs) {
   
   
   const test = () => {
-    hero.value.bhTier = 2;
     return;
 
   }
