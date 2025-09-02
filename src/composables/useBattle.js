@@ -381,7 +381,7 @@ export function useBattle(hero, enemy, buffs) {
           let totalChance = Math.random() * 100 + chance >= 100;
           let status = (hero.value.dId.startsWith('d-') && hero.value.isTravell? 2: 1);
 
-          enemy.value.d_damagePenalty = (totalChance? enemy.value.d_damagePenalty + 1 * status: enemy.value.d_damagePenalty * status);
+          enemy.value.d_damagePenalty = (totalChance? enemy.value.d_damagePenalty + 1 * status: enemy.value.d_damagePenalty);
         }
         
         hero.value.damageStage = (dimensions.value[28].infTier > 0? hero.value.damageStage + 1 * hero.value.overkill: 0);
@@ -2092,9 +2092,9 @@ export function useBattle(hero, enemy, buffs) {
     (1 + 0.01 * enemy.value.darkEnemyLoot[1])
 
     //d-damage
-    hero.value.d_damage_penalty.dmg = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.025 * dimensions.value[28].infTier), 1e6 * 1.05 ** dimensions.value[28].infTier): 1);
+    hero.value.d_damage_penalty.dmg = (hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.025 * dimensions.value[28].infTier) * (hero.value.dId.startsWith('d-') && hero.value.isTravell? 1.25: 1), 1e6 * 1.05 ** dimensions.value[28].infTier): 1);
     hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
-    hero.value.d_damage_penalty.dmg = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.015 * dimensions.value[28].infTier, 0.5), 1e6): hero.value.d_damage_penalty.dmg);
+    hero.value.d_damage_penalty.dmg = (hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.015 * dimensions.value[28].infTier, 0.5) * (hero.value.dId.startsWith('d-') && hero.value.isTravell? 1.125: 1), 1e6): hero.value.d_damage_penalty.dmg);
     hero.value.attack /= Math.max(hero.value.d_damage_penalty.dmg, 1);
     //first stirke
     

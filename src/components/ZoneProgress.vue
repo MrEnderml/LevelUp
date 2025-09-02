@@ -1220,7 +1220,7 @@ function travellHandle() {
   Enemies are stronger by <span style="color: red">${hero.value.travellPenalty.toFixed(2)}</span>.
   `
   if(hero.value.dId.startsWith('d-'))
-    text += `<br>While you are in the Dark Dimension, the effect of the travell is worse.`;
+    text += `<br>While you are in the Dark Dimension, the effect of the travell is worse and extends to other effects`;
 
   return text;
 }

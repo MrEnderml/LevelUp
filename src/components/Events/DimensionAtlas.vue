@@ -893,24 +893,28 @@ function d_danger_reward_handle(d) {
 function d_unlimitted_handle(d) {
   let current = Math.floor(3000 + (12 * d.infTier) ** 1.25);
   let next = Math.floor(3000 + (12 * (d.infTier + 1)) ** 1.25);
-  let expMult = Math.max((Math.E * d.infTier) ** 0.6, 1).toFixed(2);
+  let expMult = Math.max((Math.E * d.infTier) ** 0.6, 1);
 
-  
-
-  let text = `Reward: Weakens <span style='color: rgb(255, 88, 88)'>[D-Ultimatum]</span> <span style='color: gold'>[T${d.infTier}]</span>
-    <span style='color: rgb(204, 102, 255)'>${current}</span>  -> <span style='color: gold'>[T${d.infTier + 1}]</span>
+  let text = `
+    Reward: Weakens <span style='color: rgb(255, 88, 88)'>[D-Ultimatum]</span> 
+    <span style='color: gold'>[T${d.infTier}]</span>
+    <span style='color: rgb(204, 102, 255)'>${current}</span> 
+    -> <span style='color: gold'>[T${d.infTier + 1}]</span>
     <span style='color: rgb(204, 102, 255)'>${next}</span><br>
     
-    EXP MULT for dimension [5] [S5-Ω3t]: <span style='color: rgb(204, 102, 255)'>${expMult}</span>
+    EXP MULT for dimension [5] [S5-Ω3t]: 
+    <span style='color: rgb(204, 102, 255)'>${expMult.toFixed(2)}</span>
   `;
-  if(d.infTier < 10)
-    return text += `Reach <span style="color: gold">Infinity [T10]</span> to unlock new feature`;
-  else text += `Min Level in dimension [5] [S5-Ω3t] scales better with Infinity Tier`;
 
-  let wrap = (text) => `<br><span style="color: #9cedd2">${text}</span><br>`;
+  if (d.infTier < 10) {
+    text += `Reach <span style="color: gold">Infinity [T10]</span> to unlock new feature`;
+  } else {
+    text += `Min Level in dimension [5] [S5-Ω3t] scales better with Infinity Tier`;
+  }
 
-  return wrap(text);
+  return `<br><span style="color: #9cedd2">${text}</span><br>`;
 }
+
 
 function d_noSpace_des_hanlde(d) {
   const base = d.d; 
