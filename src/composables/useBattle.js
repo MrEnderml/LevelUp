@@ -2056,7 +2056,7 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.attacksPerSecond = enemy.value.base.aps + 
     (hero.value.dId.startsWith('d-') && hero.value.isTravell? Math.max(2 - 0.25 * (8 - hero.value.travellPenalty)): 0) +
     (enemy.value.buffs.includes(5)? 0.01 * hero.value.stage: 0) +
-    (hero.value.dId == 'd-noAps'? 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier)): 0);
+    (hero.value.dId == 'd-noAps'? 0.0125 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier) ** 1.5): 0);
 
     enemy.value.extraHit = (enemy.value.attacksPerSecond > 4? Math.log(Math.max((enemy.value.attacksPerSecond - 3.9) * 10, 1)) ** 3.75: 0);
 
@@ -2336,7 +2336,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 3? 0.1 * Math.floor(buffs.value[8].time/250): 0) + 
     (flashBuff()) +
     (0.1 * buffs.value[6].charges.power) -
-    (hero.value.dId == 'd-noAps'? 0.01 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier)): 0) + 
+    (hero.value.dId == 'd-noAps'? 0.0125 * hero.value.stage * Math.sqrt(Math.log(3 + dimensions.value[39].infTier) ** 1.5): 0) + 
     (dimensions.value[39].infTier * 0.1);
 
     hero.value.attacksPerSecond -= hero.value.activeBuffs.includes(5)? buffs.value[5].debuff: 0;
@@ -4540,12 +4540,12 @@ export function useBattle(hero, enemy, buffs) {
     divineSkills.value[1].values[1] = 1 + 0.35 * tier;
     //0.1
     divineSkills.value[2].values[0] = 0.01 + 0.001 * tier * Math.sqrt(Math.log(Math.max(hero.value.infPoints, 3)));
-    divineSkills.value[2].values[1] = 0.5 + 0.005 * tier;
+    divineSkills.value[2].values[1] = 0.25 + 0.0025 * tier;
 
     divineSkills.value[3].values[0] = (hero.value.totalAPS >= hero.value.maxAPS? Math.log(3 + Math.max(hero.value.totalAPS - 4, 0)) * Math.log(Math.max(Math.sqrt(tier), 3)): 1);
     
     divineSkills.value[4].values[0] = 16 * tier;
-    divineSkills.value[4].values[1] = 50 - 0.8 * tier;
+    divineSkills.value[4].values[1] = 50 - 0.5 * tier;
 
     divineSkills.value[6].values[0] = 0.75 + 0.01 * tier;
 
@@ -4553,7 +4553,7 @@ export function useBattle(hero, enemy, buffs) {
     divineSkills.value[7].values[1] = 0.1 + 0.008 * tier;
     //0.1
     divineSkills.value[8].values[0] = 0.01 + 0.004 * tier;
-    divineSkills.value[8].values[1] = 0.1 + 0.005 * tier;
+    divineSkills.value[8].values[1] = 0.01 + 0.002 * tier;
 
     divineSkills.value[9].values[0] = 0.02 * tier;
 
@@ -4568,7 +4568,7 @@ export function useBattle(hero, enemy, buffs) {
     divineSkills.value[13].values[0] = 0.01 + 0.005 * tier
     divineSkills.value[13].values[1] = 1 + 0.001 * tier;
 
-    divineSkills.value[14].values[0] = 0.9 - 0.003 * tier;
+    divineSkills.value[14].values[0] = 0.95 - 0.0025 * tier;
   } 
 
   const rebirthAutoHandle = () => {
