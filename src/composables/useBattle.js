@@ -173,6 +173,7 @@ export function useBattle(hero, enemy, buffs) {
       spaceHandle();
       infPtsHandle();
       blackHoleHanlde();
+      refreshKillsPerZone();
 
       autoForgeAll();
       statCalculate();
@@ -229,6 +230,8 @@ export function useBattle(hero, enemy, buffs) {
         buffs.value[10].buffT3 = 0;
         buffs.value[10].buffT3HP = 0;
         hero.value.spaceTimer = -1;
+
+        hero.value.spaceAutoCooldown = 1;
       }
 
       if(hero.value.isSpaceAuto && enemy.value.isSpaceFight != 2)
@@ -260,7 +263,8 @@ export function useBattle(hero, enemy, buffs) {
           fastSlashBuff();  
         
         chargeGet();
-
+        
+        let doodgeStatus = acrobaticCurse();
         selfDestructionCurse();
         firstStrikeBuff();
         comboStuckBuff();
@@ -282,18 +286,29 @@ export function useBattle(hero, enemy, buffs) {
 
         let enemyDef = enemy.value.def * (buffs.value[15].defIgnore? 0: 1);
 
-        let totalDmg = Math.max((hero.value.attack * acrobaticCurse()) - enemyDef, 0);
-        totalDmg = (cursed[14].crit? 0: totalDmg);
-        totalDmg = (enemy.value.deBoss.ignoreDMG > 0 && enemy.value.spawnType == 'deBoss'? (Math.random() * 100 + enemy.value.deBoss.ignoreDMG >= 100? 0: totalDmg): totalDmg);
+        let totalDmg = Math.max(hero.value.attack - enemyDef, 0);
+        let cursedCrit = (cursed[14].crit? 0: 1);
+        hero.value.averageAttack.curseCrit = !cursedCrit;
+        
+        //totalDmg = (enemy.value.deBoss.ignoreDMG > 0 && enemy.value.spawnType == 'deBoss'? (Math.random() * 100 + enemy.value.deBoss.ignoreDMG >= 100? 0: totalDmg): totalDmg);
 
         if(enemy.value.buffs.includes(0) && totalDmg > 0 && enemyDef >= totalDmg){
-          if (Math.random() < 0.5) enemy.value.hp = Math.min(enemy.value.hp + enemy.value.maxHp * 0.1, enemy.value.maxHp);
+          let rnd = Math.max(0.5 - 0.05 * dimensions.value[32].infTier, 0);
+          let power = 0.1 + 0.01 * dimensions.value[32].infTier;
+          if (Math.random() < rnd) enemy.value.hp = Math.min(enemy.value.hp + enemy.value.maxHp * power, enemy.value.maxHp);
         }
 
         if(enemy.value.buffs.includes(1)) totalDmg *= Math.max(1 - 0.01 * Math.floor(enemy.value.rage / 2), 0);
 
+        
+        recordAttack(totalDmg);
+
+        totalDmg *= cursedCrit;
+        totalDmg *= doodgeStatus;
+
         enemy.value.hp = Math.max(0, enemy.value.hp - Math.max(Math.max(totalDmg, 0), 0));
         heroAttackBarProgress.value = heroAttackBarProgress.value - 1;
+        
         buffs.value[1].usedSkill = false;
         cursed[14].crit = false;
 
@@ -330,7 +345,9 @@ export function useBattle(hero, enemy, buffs) {
             hero.value.spActiveBuffs = temp;
 
             hero.value.isSpaceFightCooldown = true;
+            hero.value.spaceAutoCooldown = 1;
             buffs.value[8].time = buffs.value[8].spaceTime;
+
         }
 
         //bh
@@ -530,6 +547,7 @@ export function useBattle(hero, enemy, buffs) {
 
             enemy.value.weakStack = 0;
             hero.value.isSpaceFightCooldown = true;
+            hero.value.spaceAutoCooldown = 1;
             buffs.value[8].time = buffs.value[8].spaceTime; 
           }
 
@@ -675,6 +693,21 @@ export function useBattle(hero, enemy, buffs) {
     buffs.value[12].critDmg = 0;
     if(perks.value[1].status) perks.value[1].buff = 0;
     cursed[5].time = 0;
+  }
+
+  function recordAttack(totalDmg) {
+    hero.value.averageAttack.currentAttack = totalDmg;
+  
+    const alpha = 0.2;
+    hero.value.averageAttack.avg =
+      (hero.value.averageAttack.avg || totalDmg) * (1 - alpha) +
+      totalDmg * alpha;
+  
+   
+    const spread = 0.15 * totalDmg;
+  
+    hero.value.averageAttack.min = Math.floor(totalDmg - spread);
+    hero.value.averageAttack.max = Math.ceil(totalDmg + spread);
   }
 
   function calculateEnemyDamage() {
@@ -1109,47 +1142,36 @@ export function useBattle(hero, enemy, buffs) {
   }
   //4
   const acrobaticCurse = () => {
-    let avoidBuff = 0;
-
-    if(enemy.value.buffs.includes(4)){
-      avoidBuff = 20 + (enemy.value.avoidChance? 7: 0);
+    hero.value.averageAttack.dodgeStatus = false;
+    enemy.value.avoidChance = false;
+  
+    let avoidBuff = enemy.value.buffs.includes(4) ? 20 + (enemy.value.avoidChance ? 7 : 0) : 0;
+  
+    let curseBonus = 0;
+    if (hero.value.activeCurse.includes(4)) {
+      const tier = hero.value.activeCurseTier[4] || 0;
+      const bonusPerTier = [4, 8, 12, 16, 25];
+      curseBonus = Math.min(
+        bonusPerTier[tier] * Math.max(hero.value.curseMult * 0.35, 1),
+        90
+      );
     }
-
-    if (hero.value.activeCurse.includes(4)){
-      let avoid = 1;
-      let chance = Math.random() * 100 + avoidBuff;
-      if (hero.value.activeCurseTier[4] == 0) {
-        avoid = (chance + Math.min(4 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
-      }
-      if (hero.value.activeCurseTier[4] == 1) {
-        avoid = (chance + Math.min(8 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
-      }
-      if (hero.value.activeCurseTier[4] == 2) {
-        avoid = (chance + Math.min(12 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
-      }
-      if (hero.value.activeCurseTier[4] == 3) {
-        avoid = (chance + Math.min(16 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
-      }
-      if (hero.value.activeCurseTier[4] == 4) {
-        avoid = (chance + Math.min(25 * Math.max(hero.value.curseMult * 0.35, 1), 90) >= 100? 0: 1);
-      }
-
-      enemy.value.avoidChance = (!avoid? true: false);
-
-      if(!avoid) perditionOfReflexes();
-
-      return buffs.value[11].hit? 1: avoid;
-    } else if (enemy.value.buffs.includes(4)){
-      let avoid = (Math.random()*100 + avoidBuff >= 100 || Math.random()*100 + avoidBuff >= 100? 0: 1);
-      enemy.value.avoidChance = (!avoid? true: false);
-
-      if(!avoid) perditionOfReflexes();
-
-      return avoid;
+  
+    let totalAvoidChance = Math.min(avoidBuff + curseBonus, 90);
+  
+    let roll = Math.random() * 100;
+    let avoid = (roll + totalAvoidChance >= 100) ? 0 : 1;
+  
+    enemy.value.avoidChance = !avoid;
+    hero.value.averageAttack.dodgeStatus = buffs.value[11].hit ? false : !avoid;
+  
+    if (!avoid) {
+      perditionOfReflexes();
     }
-
-    return 1;
-  }
+  
+    return buffs.value[11].hit ? 1 : avoid;
+  };
+  
   //5
   const stunCurse = () => {
     if (hero.value.activeCurse.includes(5) && cursed[5].time <= 0){
@@ -1481,11 +1503,11 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const enemyBuffJaggernout = () => {
-    enemy.value.base.attack *= 0.75;
-    enemy.value.base.maxHp *= 1.5;
+    enemy.value.base.attack *= (0.75 + 0.25 * dimensions.value[32].infTier);
+    enemy.value.base.maxHp *= (1.5 + 1 * dimensions.value[32].infTier);
 
-    enemy.value.base.def += enemy.value.maxHp * 0.05;
-    enemy.value.base.def *= 1.5;
+    enemy.value.base.def += enemy.value.base.maxHp * (0.05 + 0.005 * dimensions.value[32].infTier);
+    enemy.value.base.def *= (1.5 + 0.5 * dimensions.value[32].infTier);
   }
 
   const enemyBuffBerserk = () => {
@@ -2041,7 +2063,8 @@ export function useBattle(hero, enemy, buffs) {
 
     enemy.value.maxHp = enemy.value.base.maxHp;
 
-    enemy.value.def = enemy.value.base.def * (enemy.value.buffs.includes(0)? (2 - enemy.value.hp / enemy.value.maxHp): 1);
+    enemy.value.def = enemy.value.base.def * (enemy.value.buffs.includes(0)? (2 - enemy.value.hp / enemy.value.maxHp) * 
+    0.25 * dimensions.value[32].infTier : 1);
 
     if(enemy.value.deBoss.def > 0 && enemy.value.spawnType == 'deBoss'){
       enemy.value.def = (enemy.value.deBoss.def * 0.01) * enemy.value.maxHp;
@@ -2135,6 +2158,8 @@ export function useBattle(hero, enemy, buffs) {
 
     //quasar core
     hero.value.attack *= divineSkills.value[3].values[0];
+
+    hero.value.averageAttack.old = hero.value.attack;
 
 
 
@@ -2417,6 +2442,7 @@ export function useBattle(hero, enemy, buffs) {
 
     let notId = !(hero.value.dId == 'd-noEq' || hero.value.darkId.includes('d-noEq'));
     let weaponEqCap = Math.min(cap, hero.value.eqTierReq['armor']);
+    let ringCap = (hero.value.dId == 'ascension' || hero.value.dId == 'ascension-2'? 0: Math.min(cap, hero.value.eqTierReq['ring']));
     let capSword = Math.min(cap, hero.value.eqTierReq['sword']);
     
     if (Math.floor(hero.value.spCount / 6) >= 4 && notId) capSword = 50;
@@ -2435,7 +2461,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.equipmentTiers['sword'] = Math.min(hero.value.eqDrop['sword'] + hero.value.eqMin['sword'], capSword);
     hero.value.equipmentTiers['armor'] = Math.min(hero.value.eqDrop['armor'] + hero.value.eqMin['armor'], weaponEqCap);
     hero.value.equipmentTiers['boots'] = Math.min(hero.value.eqDrop['boots'] + hero.value.eqMin['boots'], weaponEqCap);
-    hero.value.equipmentTiers['ring'] = Math.min(hero.value.eqDrop['ring'] + hero.value.eqMin['ring'], weaponEqCap);
+    hero.value.equipmentTiers['ring'] = Math.min(hero.value.eqDrop['ring'] + hero.value.eqMin['ring'], ringCap);
 
     if(hero.value.dId == 'noEq' || hero.value.isSingularity && hero.value.singularity >= 6){
       hero.value.equipmentTiers['sword'] = 0;
@@ -2821,8 +2847,17 @@ export function useBattle(hero, enemy, buffs) {
   }
   
   const sniperBuff = () => {
-    if(buffs.value[1].usedSkill)
+    hero.value.averageAttack.critStatus = false;
+    if(buffs.value[1].usedSkill){
+      if(hero.value.activeBuffs.includes(11) && buffs.value[11].tier >= 4){
+        buffs.value[11].hit = true;
+      }
+      let critdmg = hero.value.critAttack * 0.01 * (1 - perditionOfResilience())
+      hero.value.attack *= critdmg;
+      hero.value.averageAttack.critStatus = true;
       return;
+    }
+      
 
     if(!hero.value.activeBuffs.includes(11)){
       let chance = Math.random() * 100 + hero.value.crit;
@@ -2835,7 +2870,7 @@ export function useBattle(hero, enemy, buffs) {
     
 
       let critdmg = hero.value.critAttack * 0.01 * (1 - perditionOfResilience())
-
+      hero.value.averageAttack.critStatus = (chance >= 100);
       hero.value.attack *= (chance >= 100? critdmg: 1);
       return;
     }
@@ -2861,7 +2896,7 @@ export function useBattle(hero, enemy, buffs) {
 
     let critdmg = hero.value.critAttack * 0.01 * (1 - perditionOfResilience());
     hero.value.attack *= (chance? critdmg: 1);
-    
+    hero.value.averageAttack.critStatus = (chance);
   }
 
   const berserkBuff = () => {
@@ -3058,7 +3093,7 @@ export function useBattle(hero, enemy, buffs) {
         if(hero.value.dId == 'd-next')
           hero.value.stage = Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1));
         if(hero.value.darkId.includes('d-next'))
-          hero.value.stage = Math.min(hero.value.stage, 30 + 10 * dimensions.value[34].infTier);
+          hero.value.stage = Math.min(hero.value.stage, 30 + 5 * dimensions.value[34].infTier);
         if(hero.value.soulD && hero.value.dId != 'soulD')
           hero.value.stage = 15;
         if(hero.value.stage > 100 && hero.value.isAbyss && hero.value.dId != 'abyss-d')
@@ -3123,11 +3158,11 @@ export function useBattle(hero, enemy, buffs) {
 
     }
     start = Math.min(start, 10000 * (2 ** Math.max(Math.floor((hero.value.stage - 100)/50), 0)));
-    hero.value.killsPerZone = Math.max(start * (hero.value.mainInfTier >= 7? (1 / infBase(1.03) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), 5);
+    hero.value.killsPerZone = Math.max(start * (hero.value.mainInfTier >= 7? Math.max(1 / infBase(1.03) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)), 0.01): 1), 5);
   }
 
   const expCount = () => {
-    return Math.log(hero.value.stage + 5)**4.5;
+    return Math.log(hero.value.stage + 5)**4.25;
   }
 
   const soulHandle = () => {
@@ -3248,8 +3283,9 @@ export function useBattle(hero, enemy, buffs) {
     (amulets[2].status && hero.value.maxStage >= 40? 1: 0) + (amulets[3].status && hero.value.maxStage >= 50? 1: 0) + 
     (hero.value.rebirthPts >= 15000? 1: 0) + (hero.value.isAbyss && hero.value.rebirthTier >= 15? 1: 0) + (hero.value.singularity >= 6? 1: 0);
     hero.value.curse = 1 + (amulets[0].status? 1: 0) + (amulets[1].status? 1: 0) + (amulets[2].status? 1: 0) + (amulets[3].status? 1: 0) + 
-    (hero.value.rebirthTier >= 10? 1: 0) + Math.floor((hero.value.mainInfTier - 25) / 10);
-    hero.value.minCurse = Math.floor((hero.value.mainInfTier - 25) / 10);
+    (hero.value.rebirthTier >= 10? 1: 0) + Math.max(Math.floor((hero.value.mainInfTier - 25) / 10) , 0);
+
+    hero.value.minCurse = Math.max(Math.floor((hero.value.mainInfTier - 25) / 10), 0);
 
     cursesUnlockCheck();
 
@@ -3571,6 +3607,8 @@ export function useBattle(hero, enemy, buffs) {
 
     spEnemy[48].status = (hero.value.isInfSpace? true: false);
 
+    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
+
     spaceCreaturesHandle();
   }
 
@@ -3597,16 +3635,18 @@ export function useBattle(hero, enemy, buffs) {
   const starDustDrop = () => {
     hero.value.stardustInfo = 0;
     
-    if(hero.value.spCount < 2)
-      return 0;
+    
 
     let stardust = 0;
-    let st = 39 - (hero.value.spCount >= 8? 1: 0) - (hero.value.spCount >= 14? 2: 0) - (hero.value.spCount >= 20? 2: 0) - 
+    hero.value.stardustStage = 39 - (hero.value.spCount >= 8? 1: 0) - (hero.value.spCount >= 14? 2: 0) - (hero.value.spCount >= 20? 2: 0) - 
     (hero.value.spCount >= 32? 3: 0) - (hero.value.spCount >= 39? 3: 0) - (hero.value.spCount >= 44? 4: 0) - 
     (spaceShop.value[12].status? Math.floor(hero.value.spsCountMax/2) : 0);
 
-    if(hero.value.stage - st > 0){
-      stardust = (((1.0525 ** (hero.value.stage - st)) * (1 + ascenPerks[34].level * 0.01) * 
+    if(hero.value.spCount < 2)
+      return 0;
+
+    if(hero.value.stage - hero.value.stardustStage >= 0){
+      stardust = (((1.0525 ** (hero.value.stage - hero.value.stardustStage)) * (1 + ascenPerks[34].level * 0.01) * 
       (hero.value.infTier >= 5 || hero.value.infEvents >= 5? 2: 1) * (hero.value.spCount >= 15 && hero.value.abyssDStages >= 60? (1 + 0.05 * (hero.value.abyssDStages - 59)): 1) * 
       (hero.value.curset5? 2: 1) * (hero.value.spCount >= 45 && hero.value.activeFormation == 3? 2: 1) *
       (enemy.value.soulBuff.stardust) *
@@ -3761,6 +3801,12 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const spaceAuto = (interval) => {
+    if(!hero.value.spaceUnlocked)
+      return;
+
+    if(hero.value.infTier < 4 || hero.value.singularity < 5)
+      return;
+
     if(hero.value.spaceAutoCooldown > 0){
       hero.value.spaceAutoCooldown -= (interval / 1000);
       return;
@@ -4421,7 +4467,9 @@ export function useBattle(hero, enemy, buffs) {
 
       if (hero.value.spaceFightCooldown <= 0) {
         hero.value.isSpaceFightCooldown = false;
-  
+        
+        if(!hero.value.spaceUnlocked) return;
+
         const defeatedAndRepeat = hero.value.repeatOnDefeat && enemy.value.isSpaceFight === -1;
         const wonAndNextEnemy  = hero.value.nextEnemyOnWin && enemy.value.isSpaceFight === 0;
 

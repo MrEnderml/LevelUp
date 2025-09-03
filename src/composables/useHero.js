@@ -6,6 +6,17 @@ const hero = ref({
   hp: 100,
   maxHp: 100,
   attack: 10,
+  averageAttack: {
+    min: 0,
+    max: 10,
+    avg: 5,
+    currentAttack: 0,
+    old: 0,
+    status: 1,
+    critStatus: false,
+    dodgeStatus: false,
+    curseCrit: false,
+  },
   def: 0,
   crit: 0,
   critAttack: 1.5,
@@ -340,6 +351,10 @@ const hero = ref({
   },
   maxLevelInfo: 0,
   singularityLevels: 0,
+  gridFilterStatus: "all",
+  combatFilterStatus: "All",
+  spaceUnlocked: false,
+  stardustStage: 40
 });
 
 export function useHero() {

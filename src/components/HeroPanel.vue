@@ -21,7 +21,15 @@
             </button>
           </div>
       </div>
-      <span style="color: white" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Damage' }"><sup style="font-size: 6px">ℹ️</sup>⚔️ {{ formatNumber(attack) }} </span>
+      <Tooltip :text="averageAttackHandle">
+        <span
+          :style="{ color: getAttackColor() }"
+          @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Damage' }"
+        >
+          <sup style="font-size: 6px">ℹ️</sup>
+          ⚔️ {{ formatNumber(getDisplayedAttack()) }}
+        </span>
+      </Tooltip>
       <span style="color: white" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'DEF' }"> <sup style="font-size: 6px">ℹ️</sup>🛡️{{ formatNumber(def) }}</span>
       <div class="hp-bar" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'HP' }">
         <div class="hp-progress" :style="{ width: `${(hp / maxHp) * 100}%` }">
@@ -386,6 +394,51 @@ function conquerHandle() {
 
   return text;
 }
+
+function averageAttackHandle() {
+  return `
+⚔️ Attack Stats
+───────────────
+🎯 Avg:     [${formatNumber(hero.value.averageAttack.avg)}]
+🎯 Current: [${formatNumber(hero.value.averageAttack.currentAttack)}]
+
+🔴 <span style="color: red">Red   - [CRIT] Critical Hit</span>
+🟢 <span style="color: green">Green - [MISS] Attack Dodged/
+    Attack Failed</span>
+`;
+}
+
+function getDisplayedAttack() {
+  let attackValue = 0;
+
+  switch (hero.value.averageAttack.status) {
+    case 0:
+      attackValue = hero.value.averageAttack.avg;
+      break;
+    case 1: 
+      attackValue = hero.value.averageAttack.currentAttack;
+      break;
+    default:
+      attackValue = hero.value.averageAttack.avg;
+  }
+
+  return attackValue;
+}
+
+function getAttackColor() {
+  if (hero.value.averageAttack.curseCrit) {
+    return "limegreen"; 
+  }
+  if (hero.value.averageAttack.dodgeStatus) {
+    return "limegreen"; 
+  }
+  if (hero.value.averageAttack.critStatus) {
+    return "red"; 
+  }
+  return "white"; 
+}
+
+
 
 
 

@@ -125,10 +125,10 @@ function buffDisplay(id) {
   switch (id) {
     case 'juggernaut':
       return `<span style="color: orange">Juggernaut</span><br>
-        1. ×1.5 DEF, ×1.5 HP, x0.75 DMG<br>
-        2. Gain +10% DEF for each 10% of missing HP<br>
-        3. +5% DEF from Max HP<br>
-        4. 50% chance to heal 10% HP on full block.`;
+        1. ×${formatNumber(1.5 + 0.5 * dimensions.value[32].infTier, true)} DEF, ×${formatNumber(1.5 + 1 * dimensions.value[32].infTier, true)} HP, x${formatNumber(0.75 + 0.25 * dimensions.value[32].infTier, true)} DMG<br>
+        2. Gain +${formatNumber((10 + 2.5 * dimensions.value[32].infTier), true)}% DEF for each 10% of missing HP<br>
+        3. +${formatNumber((5 + 0.5 * dimensions.value[32].infTier), true)}% DEF from Max HP<br>
+        4. ${formatNumber(Math.min(50 + 5 * dimensions.value[32].infTier, 100), true)}% chance to heal ${formatNumber(Math.min(10 + 1 * dimensions.value[32].infTier, 50), true)}% HP on full block.`;
 
     case 'berserk':
       return `<span style="color: crimson">Berserk</span><br>

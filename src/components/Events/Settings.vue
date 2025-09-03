@@ -59,6 +59,26 @@
           </div>
         </div>
 
+        <div class="setting-item">
+          <span>Attack Display</span>
+          <div class="chip-group">
+            <div 
+              class="chip" 
+              :class="{ active: hero.averageAttack.status === 0 }" 
+              @click="hero.averageAttack.status = 0"
+            >
+              🎯 Avg
+            </div>
+            <div 
+              class="chip" 
+              :class="{ active: hero.averageAttack.status === 1 }" 
+              @click="hero.averageAttack.status = 1"
+            >
+              ⚔️ Current
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -451,6 +471,14 @@ h2 {
   font-weight: 600;
 }
 
+.chip-group {
+  display: flex;
+  gap: 8px;
+}
+
+.chip-group .chip {
+  min-width: 60px;
+}
 
 
 </style>

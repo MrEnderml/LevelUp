@@ -352,7 +352,7 @@ const bonuses = computed(() => [
   { id: 11, stat: 'Corruption weakness', value: `+${formatNumber(linearDiff(1.008))}`, status: 5 },
   { id: 13, stat: 'Souls weakness', value: `*${formatNumber(Math.max(inverseScale(1.025), 0.1))}`, status: 6 },
   { id: 14, stat: 'Level scales better', value: `*${formatNumber(Math.max(inverseScale(1.03), 0.1))}`, status: 7 },
-  { id: 15, stat: 'Stage scales better', value: `*${formatNumber(Math.max(inverseScale(1.03), 0.1))}`, status: 7 },
+  { id: 15, stat: 'Stage scales better', value: `*${formatNumber(Math.max(inverseScale(1.03), 0.01))}`, status: 7 },
   { id: 16, stat: 'Enemy weakness', value: `*${formatNumber(Math.max(inverseScale(1.02), 0.1))}`, status: 8 },
   { id: 17, stat: 'Max Level Mult', value: `+${formatNumber(scale(1.07, log()))}`, status: 10 },
   { id: 18, stat: 'Min Level', value: `+${minLevel()}`, status: 13 },

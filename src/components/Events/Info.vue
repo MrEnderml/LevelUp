@@ -2041,19 +2041,19 @@ const statSections = [
         color: '#00fdff',
         req: () => hero.value.bhTier >= 4,
       },
-      { desc: 'IP Penalty', value: '', color: 'red',  uppercase: true, req: () => hero.value.mainInfTier >= 50 },
-      {
-        desc: 'Quasar Core [Event Horizon]',
-        value: () => formatNumber((hero.value.selectedDivSkills.includes(2)? divineSkills.value[2].values[1]: 1), true),
-        color: 'red',
-        req: () => hero.value.mainInfTier >= 50,
-      },
       { desc: 'IP MULT TOTAL', value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPointsMult > 1 },
        {
         desc: 'Total',
         value: () => formatNumber(hero.value.infPointsMult, true),
         color: 'gold',
         req: () => hero.value.infPointsMult > 1,
+      },
+      { desc: 'IP Penalty', value: '', color: 'red',  uppercase: true, req: () => hero.value.mainInfTier >= 50 },
+      {
+        desc: 'Quasar Core [Event Horizon]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(2)? divineSkills.value[2].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50,
       },
       { desc: 'IP TOTAL', value: '', color: 'gold',  uppercase: true, req: () => hero.value.infPoints > 0 },
       {

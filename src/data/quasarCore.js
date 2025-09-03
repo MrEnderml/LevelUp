@@ -21,7 +21,7 @@ export const divineSkills = ref([
       name: "Event Horizon", 
       icon: getSvgIconHTML('crossedSwords', '1.5em'), 
       desc: "Infinity penalty reduction depends on IP, but you suffer an IP penalty. [] - []", 
-      values: [0.01, 0.5],
+      values: [0.01, 0.25],
     },
     { 
       id: 3, 
@@ -63,7 +63,7 @@ export const divineSkills = ref([
       name: "Singularity Destruction", 
       icon: getSvgIconHTML('lvlReduction', '1.5em'), 
       desc: "Gain Infinity penalty reduction, but your base stats are weaker. [] - []",
-      values: [0.01, 0.25], 
+      values: [0.01, 0.1], 
     },
     { 
       id: 9, 
@@ -105,6 +105,6 @@ export const divineSkills = ref([
       name: "Anti-Radiation", 
       icon: getSvgIconHTML('antiRadiation', '1.5em'), 
       desc: "You applied max danger. Radiation Perks are blocked. Danger Power: ^[]",
-      values: [0.9], 
+      values: [0.95], 
     }
   ]);

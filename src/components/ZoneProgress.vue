@@ -1087,7 +1087,7 @@ function darkEnemyHandle() {
 
 function nextDimHandle() {
   let stage = Math.max(30 - dimensions.value[34].infTier, 1);
-  let maxStage = 30 + 10 * dimensions.value[34].infTier;
+  let maxStage = 30 + 5 * dimensions.value[34].infTier;
   if(hero.value.dId == 'd-next')
     return `This world has been shattered by gravity. Your maximum possible stage is <span style="color: red">${stage}</span>.`;
   if(hero.value.darkId.includes('d-next'))

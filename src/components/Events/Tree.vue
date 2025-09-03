@@ -3,7 +3,7 @@
     <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TREE [T{{hero.treeTier+1}}]</h2>
     <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ Math.floor(hero.perkPoints) }}</p>
 
-    <div class="auto-buttons" v-if="hero.infEvents >= 1 || hero.infTier >= 1 || hero.singularity >= 3">
+    <div class="auto-buttons" v-if="hero.infEvents >= 2 || hero.infTier >= 1 || hero.singularity >= 3">
       <button
         @click="toggleAuto"
         :class="['btn', 'btn-auto', { active: hero.treeAuto }]"

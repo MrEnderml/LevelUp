@@ -6,8 +6,8 @@
       <button
         v-for="type in logTypes"
         :key="type"
-        :class="{ active: currentFilter === type }"
-        @click="currentFilter = type"
+        :class="{ active: hero.combatFilterStatus === type }"
+        @click="hero.combatFilterStatus = type"
       >
         {{ type }}
       </button>
@@ -29,16 +29,18 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { addLog, getLogs } from '../composables/logService.js';
+import { useHero } from '../composables/useHero.js';
+
+const { hero } = useHero();
 
 const logs = ref(getLogs());
 const logContainer = ref(null);
 const logTypes = ['All', 'EXP', 'Weapon', 'Ascend && Rebirth', 'Curses', 'Radiation', 'Stardust', 'Creatures'];
-const currentFilter = ref('All');
 
 const filteredLogs = computed(() => {
-  return currentFilter.value === 'All'
+  return hero.value.combatFilterStatus === 'All'
     ? logs.value
-    : logs.value.filter(log => log.type === currentFilter.value);
+    : logs.value.filter(log => log.type === hero.value.combatFilterStatus);
 });
 
 watch(logs, async () => {

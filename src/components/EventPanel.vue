@@ -435,7 +435,7 @@ function eventReqD (e){
   letter-spacing: 0.15em;
 
  
-  background: linear-gradient(90deg, #c084fc, #a855f7, #7e22ce);
+  background: linear-gradient(90deg, #d76cfd, #bc82ff, #d768ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
@@ -487,7 +487,7 @@ function eventReqD (e){
 .corruption-text-lvl {
   font-weight: bold;
   font-size: 14px;
-  background: linear-gradient(90deg, #bb00ff, #7700ff, #bb00ff);
+  background: linear-gradient(90deg, #d76cfd, #bc82ff, #d768ff);
   background-size: 200% auto;
   color: transparent;
   background-clip: text;

@@ -41,7 +41,7 @@
         placeholder="🔍 Search..."
       />
 
-      <select v-if="hero.dimDisplayMode === 'grid'" v-model="filterStatus" class="dimension-filter small">
+      <select v-if="hero.dimDisplayMode === 'grid'" v-model="hero.gridFilterStatus" class="dimension-filter small">
           <option value="all">🌐 All</option>
           <option value="completed">✅ Completed</option>
           <option value="inprogress">⚡ In Progress</option>
@@ -195,10 +195,11 @@ const { buffs } = useBuff();
 const { enemy } = useEnemy();
 
 const searchQuery = ref('');
-const filterStatus = ref("all"); // all | completed | inprogress | blocked
 
 const isEternityUnlocked = computed(() => {
-  return hero.value.mainInfTier >= 35;
+  const prev1 = d_data.value.find(dim => dim.id === 'corruption');
+  const prev2 = d_data.value.find(dim => dim.id === 'hard');
+  return hero.value.mainInfTier >= 35 && prev1.infTier >= 35 && prev2.infTier >= 25;
 });
 
 function toggleOtherDimensions() {
@@ -243,7 +244,7 @@ const filteredDimensions = computed(() =>
 
     const status = getInfStatus(dim);
     const matchesStatus =
-      filterStatus.value === "all" || filterStatus.value === status;
+      hero.value.gridFilterStatus === "all" || hero.value.gridFilterStatus === status;
 
     return matchesSearch && matchesStatus;
   })
