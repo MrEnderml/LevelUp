@@ -4274,7 +4274,7 @@ export function useBattle(hero, enemy, buffs) {
     for(let idx in radPerks){
       radPerks[idx].level = 0;
     }
-    hero.value.mutagen **= (hero.value.dId.startsWith('d-')? 0.25: 0.75);
+    hero.value.mutagen **= (hero.value.dId.startsWith('d-')? 0.25: 0.65);
     hero.value.mutagen = (hero.value.mainInfTier >= 35? Math.max(hero.value.mutagen, 1e4): hero.value.mutagen);
 
     if(hero.value.singularity < 4){

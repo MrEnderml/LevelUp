@@ -1348,7 +1348,7 @@ function performD(d, prev) {
 
   hero.value.maxStage = 1;
   hero.value.souls = 0;
-  hero.value.mutagen = (hero.value.mainInfTier >= 35 && hero.value.dId != 'bh'? 1e4: hero.value.mutagen);
+  hero.value.mutagen = (hero.value.mainInfTier >= 35 && hero.value.dId != 'bh'? 1e4: 0);
   hero.value.mutations = 0;
 
   const notAllowedIds = ['main', 'unlimitted'];
