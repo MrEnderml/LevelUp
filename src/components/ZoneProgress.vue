@@ -858,6 +858,8 @@ const performInf = () => {
   killHistory.length = 0;
   enemy.value.soulBuff.soulsStardustReq = 0;
   enemy.value.soulBuff.soulsMutagenReq = 0;
+
+  hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
   
 }
 

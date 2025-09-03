@@ -1384,7 +1384,8 @@ function performD(d, prev) {
       hero.value.isLocked = false;
       hero.value.isStage = true;
     }
-  
+    
+  hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
   hero.value.hp = hero.value.maxHp;
 }
 

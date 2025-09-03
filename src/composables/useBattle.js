@@ -529,6 +529,7 @@ export function useBattle(hero, enemy, buffs) {
           hero.value.resetKilledTime = 15;
           cursed[10].time = 0;
           buffs.value[1].used = false;
+          buffs.value[10].rise = 1;
           enemy.value.weakStack = Math.min(enemy.value.weakStack + 1 * dimensions.value[2].infTier, 90);
           if(enemy.value.isSpaceFight == 2){
             enemy.value.isSpaceFight = -1;
@@ -1825,11 +1826,11 @@ export function useBattle(hero, enemy, buffs) {
       }
       if(enemy.value.danger >= 3000 && hero.value.stage >= 140 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[4]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[4] >= 100? 'd-dim-5': enemy.value.spawnType);
-        enemy.value.name = (enemy.value.spawnType == 'd-dim-5'? 'Infinity Bane': enemy.value.name);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-5'? 'Crushdepth': enemy.value.name);
       }
       if(enemy.value.danger >= 3500 && hero.value.stage >= 150 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[5]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[5] >= 100? 'd-dim-6': enemy.value.spawnType);
-        enemy.value.name = (enemy.value.spawnType == 'd-dim-6'? 'Crushdepth': enemy.value.name);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-6'? 'Infinity Bane': enemy.value.name);
       }
       if(enemy.value.danger >= 4000 && hero.value.stage >= 160 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[6]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[6] >= 100? 'd-dim-7': enemy.value.spawnType);
@@ -1905,7 +1906,7 @@ export function useBattle(hero, enemy, buffs) {
         addLog("You destroyed Baselurker and gained 1 Min Level", "Creatures");
       }
       if(enemy.value.spawnType == 'd-dim-5'){
-        enenemy.value.darkEnemyLoot[4] = Math.min(enemy.value.darkEnemyLoot[4] + 1, enemy.value.darkEnemyCap[4]);
+        enemy.value.darkEnemyLoot[4] = Math.min(enemy.value.darkEnemyLoot[4] + 1, enemy.value.darkEnemyCap[4]);
         addLog("You destroyed Infinity Bane and gained 1 Potential", "Creatures");
       }
       if(enemy.value.spawnType == 'd-dim-6'){
@@ -2350,6 +2351,8 @@ export function useBattle(hero, enemy, buffs) {
       hero.value.maxLevel = Math.min(hero.value.maxLevel, 300);
     else if(hero.value.infTier < 3)
       hero.value.maxLevel = Math.min(hero.value.maxLevel, 100 + 10*hero.value.rebirthTier);
+    else 
+      hero.value.maxLevel = Math.min(hero.value.maxLevel, 700 + sLevels);
   
 
     let base = 0.5 + (hero.value.activeBuffs.includes(14) && buffs.value[14].tier >= 1? 0.5: 0);
@@ -3475,7 +3478,7 @@ export function useBattle(hero, enemy, buffs) {
     if (spaceShop.value[6].status) {
       power /= (Math.E * hero.value.spsCountMax) ** 1.4;
     }
-  
+
     return Math.max(power, 1);
   };
 
@@ -4281,7 +4284,7 @@ export function useBattle(hero, enemy, buffs) {
       radPerks[idx].level = 0;
     }
     hero.value.mutagen **= (hero.value.dId.startsWith('d-')? 0.25: 0.65);
-    hero.value.mutagen = (hero.value.mainInfTier >= 35? Math.max(hero.value.mutagen, 1e4): hero.value.mutagen);
+    hero.value.mutagen = (hero.value.mainInfTier >= 35 && hero.value.mutagen < 10000? Math.max(hero.value.mutagen, 1e4): hero.value.mutagen);
 
     if(hero.value.singularity < 4){
       for(let perk of ascenPerks){
@@ -4322,6 +4325,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.dTimer = 0;
     hero.value.travellPenalty = 1;
     hero.value.isTravell = false;
+    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
 
     createEnemy();
   }
@@ -4475,6 +4479,7 @@ export function useBattle(hero, enemy, buffs) {
         hero.value.isSpaceFightCooldown = false;
         
         if(!hero.value.spaceUnlocked) return;
+        if(enemy.value.spawnType != 'none') return;
 
         const defeatedAndRepeat = hero.value.repeatOnDefeat && enemy.value.isSpaceFight === -1;
         const wonAndNextEnemy  = hero.value.nextEnemyOnWin && enemy.value.isSpaceFight === 0;
@@ -4701,12 +4706,15 @@ export function useBattle(hero, enemy, buffs) {
           dimensions.value[idx].infTier = 0;
       }
       hero.value.newUpdateChanges.dimReworks = true;
+
     }
 
     hero.value.ascensionShards = Math.min(1e30, hero.value.ascensionShards);
     ascenPerks[31].level = Math.min(ascenPerks[31].level, 300);
     ascenPerks[34].level = Math.min(ascenPerks[34].level, 500);
     ascenPerks[35].level = Math.min(ascenPerks[35].level, 25);
+
+    //hero.value.eLevel = Math.min(hero.value.eLevel, hero.value.maxLevel);
   }
 
   function eqUpCost(type) {
@@ -4785,7 +4793,7 @@ export function useBattle(hero, enemy, buffs) {
   const forgeReq = (type) => {
     switch(type){
       case 'sword':  return hero.value.spCount >= 1;
-      case 'armor':   return hero.value.spCount >= 7;
+      case 'armor':  return hero.value.spCount >= 7;
       case 'boots':  return hero.value.spCount >= 11;
       case 'ring':   return hero.value.spCount >= 21;
       case 'spRing': return hero.value.spCount >= 12;

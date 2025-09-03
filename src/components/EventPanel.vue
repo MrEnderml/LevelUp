@@ -166,7 +166,7 @@ function formatNumber(num, f = false, lvl = false) {
 ];
   const tier = Math.floor(Math.log10(num) / 3);
 
-  if(tier >= units)
+  if(tier >= units.length)
     return "∞";
 
   const suffix = units[tier];

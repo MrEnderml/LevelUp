@@ -455,12 +455,12 @@ function creaturesHandle(creature){
     case 'Infinity Bane':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">3000+</span>, Stage <span style="color:gold">140+</span>
           Dimension: [Ω VL-χtAR] [31]
-          Reward: <span style="color:#ff4500">+1 Dimension Shard (DS)</span><br></span>`
+          Reward: <span style="color:#ff4500">+1 Potential</span><br></span>`
 
     case 'Crushdepth':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">3500+</span>, Stage <span style="color:gold">150+</span>
           Dimension: [Ω VL-χtAR] [31]
-          Reward: <span style="color:#ba55d3">+1 Potential Reduction</span><br></span>`
+          Reward: <span style="color:#ba55d3">+1 Dimension Shard (DS)</span><br></span>`
 
     case 'Entropy Leech':
           return `<span style="color:#9cedd2">Requirement: Danger <span style="color:gold">4000+</span>, Stage <span style="color:gold">160+</span>
