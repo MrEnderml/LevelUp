@@ -183,7 +183,7 @@ const sortedRewards = computed(() => {
 const progressPercent = computed(() => ((hero.value.spCount%6) / 6) * 100)
 
 function attackEnemy() {
-  if(hero.value.dId == 'bh')
+  if(hero.value.dId == 'bh' || hero.value.isSingularity)
     return;
   
   enemy.value.isSpaceFight = 1;

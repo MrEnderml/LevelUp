@@ -3135,6 +3135,12 @@ export function useBattle(hero, enemy, buffs) {
   }
 
   const refreshKillsPerZone = () => {
+    if(hero.value.isSingularity){
+      hero.value.killsPerZone = Math.min(1250 * (hero.value.singularity + 1), 10000);
+      return;
+    }
+      
+
     var x = (hero.value.stage > 9? 1.34: 1.15) - (perks.value[10].value * perks.value[10].level) - (ascenPerks[15].level == 1? 0.01: 0) - (hero.value.soulTier >= 2? 0.01: 0) - 
     (hero.value.rebirthPts >= 125? 0.01: 0) -  (hero.value.rebirthPts >= 22500? 0.01: 0) - (hero.value.spCount >= 16? 0.01: 0) - 
     (hero.value.spCount >= 15 && hero.value.abyssDStages >= 70? 0.01 * (1.01 * Math.log(hero.value.abyssDStages - 67)): 0) - 
