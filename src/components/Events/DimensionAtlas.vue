@@ -1177,7 +1177,7 @@ function performD(d, prev) {
   hero.value.dKills = 0;
   hero.value.eLevel = 1;
   hero.value.exp = 0;
-  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (d_data.value[19].infTier - 20) - heor.value.minStage: 0) + 
+  hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (d_data.value[19].infTier - 20) - hero.value.minStage: 0) + 
   hero.value.minStage;
   
   hero.value.maxLevel = 30;
