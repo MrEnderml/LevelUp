@@ -3616,7 +3616,7 @@ export function useBattle(hero, enemy, buffs) {
 
     spEnemy[48].status = (hero.value.isInfSpace? true: false);
 
-    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
+    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 || hero.value.rebirthPts < 1e5? false: true);
 
     spaceCreaturesHandle();
   }
@@ -4325,7 +4325,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.dTimer = 0;
     hero.value.travellPenalty = 1;
     hero.value.isTravell = false;
-    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 && hero.value.rebirthPts < 1e5? false: true);
+    hero.value.spaceUnlocked = (hero.value.abyssTier < 3 || hero.value.rebirthPts < 1e5? false: true);
 
     createEnemy();
   }
