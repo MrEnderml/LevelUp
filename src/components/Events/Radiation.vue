@@ -366,6 +366,7 @@ function startAutoUpgrade(perk, event) {
           isHovering.value &&
           (hero.value.dId.startsWith('d-') && hero.value.level < 1400 ||
           hero.value.dId === "unlimitted" ||
+          hero.value.dId === "d-danger" ||
           hero.value.dId === "main" ||
           (hero.value.dId !== "main" && hero.value.level < 700))
       ) {
