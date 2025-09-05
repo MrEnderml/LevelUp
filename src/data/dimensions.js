@@ -8,7 +8,9 @@ export const dimensions = ref([
         infTier: 0,
         maxInfTier: 50,
         c: ``,
-        d: `This is your main dimension. You are powerful enough to move between other dimensions.`,
+        d: `This is your main dimension. You are powerful enough to move between other dimensions. <br><br>
+        While you are passing the Infinity trial in dimensions, the abyss is considered complete, you leave some of your levels and some of your mutagen.<br><br>
+        Get a reward for each Infinity trial you complete in the dimension. Get a special reward when you complete all the Infinity trials in the dimension.`,
         r: '',
         sp: '',
         status: true,

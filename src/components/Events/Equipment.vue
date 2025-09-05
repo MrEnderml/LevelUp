@@ -42,8 +42,8 @@
             </Tooltip>
           </p>
           <p class="item-name" v-if="item.type == 'spRing'">{{ item.name }}[T{{ item.tier }}] <span v-if="hero.eqUps[item.type] > 0">(+{{hero.eqUps[item.type]}})</span></p>
-          <span class="stat">+{{ item.bonusDisplay + Math.floor(hero.eqUpsMult[item.type].cap) }} Max Level</span>
-          <span class="stat">+{{ (item.ownProperty + hero.eqUpsMult[item.type].bonus).toFixed(2) }} {{ item.stat }}</span>
+          <span class="stat">BM:+{{ item.bonusDisplay + Math.floor(hero.eqUpsMult[item.type].cap) }} Max Level</span>
+          <span class="stat">AM:+{{ (item.ownProperty + hero.eqUpsMult[item.type].bonus).toFixed(2) }} {{ item.stat }}</span>
           <span class="stat" v-if="hero.spCount/6 >= 3 && item.type == 'sword'">S: +{{(hero.eqUpsMult['sword'].crit).toFixed(2)}} CRIT</span>
           <span class="stat" v-if="hero.spCount/6 >= 3 && item.type == 'sword'">P: +{{(hero.eqUpsMult['sword'].critDmg).toFixed(2)}} CRIT DMG</span>
           <span class="stat" v-if="hero.spCount/6 >= 6 && item.type == 'armor'">S: +{{(hero.eqUpsMult['armor'].def).toFixed(2)}} DEF</span>
@@ -59,9 +59,9 @@
     </div>
 
     <div class="starforge-panel" v-if="hero.spCount >= 1">
-      <h3>⭐ Star Forge <span>[T{{hero.forgeTier}}]</span></h3>
-
+    
       <Tooltip :text="() => getForgeTooltipText()">
+        <h3>⭐ <sup style="font-size: 8px">ℹ️</sup>Star Forge <span>[T{{hero.forgeTier}}]</span></h3>
         <div class="forge-progress-bar" style="width: 250px; height: 10px; border-radius: 8px; background: #333; cursor: help;">
           <div
             class="forge-progress-fill"
@@ -124,20 +124,30 @@ function getForgeTooltipText() {
   const tier = (hero.value.forgeTier || 0) + 1;
   const req = hero.value.forgeTierReq || 50;
   const target = tier * req;
-  const forgeBonusPercent = (selectedType.value == 'spRing'? '0.00': ((tier - 1) * 1).toFixed(2));
+  const forgeBonusPercent = (selectedType.value == 'spRing' ? 0 : (tier - 1) * 1);
+  let awakenedBonus = 0;
 
-  let text = `Enhances: ${total}/${target}\nEnhancement Power [Forge Tier]: ${forgeBonusPercent}%`;
+  let text = `Enhances: ${total}/${target}
+  Enhancement Power [Forge Tier]: <span style="color: gold">${forgeBonusPercent.toFixed(2)}%</span>`;
 
   if (selectedType.value) {
-    const awakenedTier = hero.value.awakened[selectedType.value] + 1 || 0;
+    const awakenedTier = (hero.value.awakened[selectedType.value] || 0) + 1;
     const minVal = 0.0035;
     const maxVal = 0.1;
     const current = minVal * awakenedTier;
 
-    const awakenedBonus = Math.max(0, Math.min(100, ((current - minVal) / (maxVal - minVal)) * 100)).toFixed(2);
+    awakenedBonus = Math.max(0, Math.min(100, ((current - minVal) / (maxVal - minVal)) * 100));
 
-    text += `\nEnhancement Power [Awaken]: ${awakenedBonus}%`;
+    text += `\nEnhancement Power [Awaken]: <span style="color: gold">${awakenedBonus.toFixed(2)}%</span>`;
   }
+
+  const totalBonus = awakenedBonus + forgeBonusPercent;
+
+  text += `
+Total Enhancement Bonus: <span style="color: gold">[${totalBonus.toFixed(2)}%]</span><br>
+- Base Modifier (BM): Each Enhance increases this modifier’s power by <span style="color: gold">[${10 + 10 * (totalBonus * 0.01).toFixed(2)}%]</span>.<br>
+- Additional Modifier (AM):Each Enhance increases this modifier’s power by <span style="color: gold">[${5 + 5 * (totalBonus * 0.01).toFixed(2)}%]</span><br>
+- Suffix and Prefix (S&P): Each Enhance increases these modifier’s power by <span style="color: gold">[${10 + 10 * (totalBonus * 0.01).toFixed(2)}%]</span>`;
 
   return text;
 }

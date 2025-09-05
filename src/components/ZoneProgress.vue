@@ -146,7 +146,7 @@
           </div>
         </button>
       </div>
-      <div class="singularity-wrapper staticIconPos" :class="{ hidden: !(hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity) }">
+      <div class="singularity-wrapper staticIconPos" :class="{ hidden: !(hero.dId == 'main' && !hero.isAbyss && hero.infTier >= 7 + hero.singularity || hero.singularityKills < 10000) }">
       <button class="btnSingularity" @click="performSingularity" >
           <SvgIcon name="singularity" size="1.4em" />
           <div class="singularity-tooltip singularity-shadow">

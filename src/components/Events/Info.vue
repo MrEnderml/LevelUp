@@ -3565,7 +3565,8 @@ const statSections = [
     id: 'rush',
     content: [
       { desc: 'Stage Rush', value: '', color: 'blue',  uppercase: true, },
-      { desc: 'Stage Rush - Increases your stage while your stage is below x% of max Stage', value: '', color: 'blue',  uppercase: false, },
+      { desc: 'Stage Rush - Increases your stage while your stage is below x% of max Stage ', value: '', color: 'blue',  uppercase: false, },
+      { desc: '[Max: 75%]', value: '', color: 'blue',  uppercase: false, },
       {
         desc: 'Infinity [T2]',
         value: () => (hero.value.infEvents >= 2 || hero.value.infTier >= 2? 0.25: 0),
@@ -3594,6 +3595,7 @@ const statSections = [
       },
       { desc: 'Level Rush', value: '', color: 'blue',  uppercase: true, },
       { desc: 'Level Rush - Increases your level while your level is below x% of max level', value: '', color: 'blue',  uppercase: false, },
+      { desc: '[Max: 75%]', value: '', color: 'blue',  uppercase: false, },
       {
         desc: 'Radiation Tree Perk',
         value: () => formatNumber((perks.value[3].status? 0.1 + 0.01 * (dimensions.value[40].infTier - 40): 0), true),

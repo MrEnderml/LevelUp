@@ -134,6 +134,18 @@
 
         <div
           :class="[
+            hero.survivalStage ** 1.175 > hero.eLevel
+              ? 'survivalLifeActive'
+              : 'survivalLife',
+          ]"
+        >
+        <Tooltip :text="survivalHighLevelHandle" boxShadow="0 0 10px lightgreen">
+          <span class="svgCenter" v-html="getSvgIconHTML('survivalLife2', '1.5em')"></span>
+        </Tooltip>
+        </div>
+
+        <div
+          :class="[
             hero.activeBuffs.includes(16) && buffs[16].tier >= 3
               ? 'irradiationActive'
               : 'irradiation',
@@ -329,6 +341,10 @@ function survivalLevelHandle() {
   Total attempts: ${hero.value.survivalLife}`
 }
 
+function survivalHighLevelHandle() {
+  return `You will gain double stats while your level is lower than [<span style="color: gold">${Math.floor(hero.value.survivalStage ** 1.175)}</span>]`;
+}
+
 function irradiationHandle() {
   return `<span style="color:#d4ff00; font-weight:bold;">☢ Irradiation</span>
     Gain <span style="color:#d4ff00">+1 Radiation stack</span> on <span style="color:#ff5555">Hit</span>.<br>
@@ -437,6 +453,7 @@ function getAttackColor() {
   }
   return "white"; 
 }
+
 
 
 

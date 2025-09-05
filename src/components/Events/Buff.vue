@@ -286,8 +286,7 @@ function applyLayout(index) {
   const validBuffs = layout.buffs.filter(id => availableIds.includes(id));
   const validSpBuffs = layout.spBuffs.filter(id => availableIds.includes(id));
 
-  const maxNormal = hero.value.maxBuffs;
-  const maxSp = maxNormal - (hero.value.rebirthTier >= 15 && hero.value.isAbyss ? 1 : 0) + (hero.value.spCount >= 43 ? 1 : 0);
+  const { maxNormal, maxSp } = getBuffLimits();
 
   hero.value.activeBuffs = validBuffs.slice(0, maxNormal);
   hero.value.spActiveBuffs = validSpBuffs.slice(0, maxSp);
@@ -308,8 +307,7 @@ watchEffect(() => {
 
   const unlocked = buffs.value.filter(b => b.active).map(b => b.id);
 
-  const maxNormal = hero.value.maxBuffs;
-  const maxSp = maxNormal - (hero.value.rebirthTier >= 15 && hero.value.isAbyss ? 1 : 0) + (hero.value.spCount >= 43 ? 1 : 0);
+  const { maxNormal, maxSp } = getBuffLimits();
 
   const missingNormal = layout.buffs.filter(id =>
     unlocked.includes(id) && !hero.value.activeBuffs.includes(id)
@@ -324,7 +322,23 @@ watchEffect(() => {
 
   if (hero.value.spActiveBuffs.length < maxSp)
     hero.value.spActiveBuffs.push(...missingSp.slice(0, maxSp - hero.value.spActiveBuffs.length));
+
+
+  if (hero.value.activeBuffs.length > maxNormal) {
+    hero.value.activeBuffs = hero.value.activeBuffs.slice(0, maxNormal);
+  }
+  if (hero.value.spActiveBuffs.length > maxSp) {
+    hero.value.spActiveBuffs = hero.value.spActiveBuffs.slice(0, maxSp);
+  }
+
 });
+
+function getBuffLimits() {
+  const maxNormal = hero.value.maxBuffs + (hero.value.rebirthTier >= 15 && hero.value.isAbyss ? 1 : 0);
+  const maxSp = maxNormal + (hero.value.spCount >= 43 ? 1 : 0);
+  return { maxNormal, maxSp };
+}
+
 
 
 

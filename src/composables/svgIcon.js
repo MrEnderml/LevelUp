@@ -554,6 +554,27 @@ export const icons = {
         </g>
       `
     },
+    survivalLife2: {
+      viewBox: '0 0 64 64',
+      body: `
+        <rect width="64" height="64" fill="#001500" rx="16"/>
+        <g stroke="#00ff00" stroke-width="2" fill="none">
+    
+          <path d="M32 18 
+                   Q40 28 32 46 
+                   Q24 28 32 18 Z" 
+                fill="#003300" stroke="#66ff66"/>
+
+          <line x1="32" y1="20" x2="32" y2="44" stroke="#88ff88" stroke-width="2"/>
+          <line x1="20" y1="32" x2="44" y2="32" stroke="#88ff88" stroke-width="2"/>
+    
+          <circle cx="32" cy="32" r="12" stroke="#33ff33" stroke-dasharray="2,2"/>
+    
+          <circle cx="32" cy="32" r="24" stroke="#00ff00" stroke-dasharray="6,4"/>
+        </g>
+      `
+    },
+    
     irradiation: {
       viewBox: '0 0 64 64',
       body: `

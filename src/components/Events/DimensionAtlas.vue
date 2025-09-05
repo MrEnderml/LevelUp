@@ -926,7 +926,7 @@ function d_noSpace_des_hanlde(d) {
 
 function d_noSpace_reward_handle(d) {
   const base = d.r; 
-  const weaker = 1 - 0.01 * d.infTier;     
+  const weaker = (1 - 0.01 * d.infTier).toFixed(2);     
   const stardust = Math.max((Math.E * d.infTier) ** 0.45, 1).toFixed(2);  
 
   let warp = (text) => `<span style="color:#9cedd2">Reward: ${text}</span><br>`;

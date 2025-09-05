@@ -86,9 +86,9 @@ export function useBattle(hero, enemy, buffs) {
     let radStatus = (perks.value[3].status? 0.1 + 0.01 * (dimensions.value[40].infTier - 40): 0);
     let power = (hero.value.soulsMax >= 40? 0.1: 0) + radStatus + (hero.value.rebirthPts >= 70000? 0.1: 0) + (0.02 * hero.value.singularity) + 
     0.05 * hero.value.bhTier;
-    hero.value.levelRush = power;
+    hero.value.levelRush = Math.min(power, 0.75);
 
-    if(hero.value.maxLevel * power > hero.value.eLevel && hero.value.dId != 'unlimitted'){
+    if(hero.value.maxLevel * hero.value.levelRush > hero.value.eLevel && hero.value.dId != 'unlimitted'){
       hero.value.eLevel += (hero.value.maxLevel * power > hero.value.eLevel? 1: 0);
       hero.value.perkPoints += (hero.value.infEvents >= 1 || hero.value.infTier >= 1? 2: 1);
       hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
@@ -1826,11 +1826,11 @@ export function useBattle(hero, enemy, buffs) {
       }
       if(enemy.value.danger >= 3000 && hero.value.stage >= 140 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[4]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[4] >= 100? 'd-dim-5': enemy.value.spawnType);
-        enemy.value.name = (enemy.value.spawnType == 'd-dim-5'? 'Crushdepth': enemy.value.name);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-5'? 'Infinity Bane': enemy.value.name);
       }
       if(enemy.value.danger >= 3500 && hero.value.stage >= 150 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[5]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[5] >= 100? 'd-dim-6': enemy.value.spawnType);
-        enemy.value.name = (enemy.value.spawnType == 'd-dim-6'? 'Infinity Bane': enemy.value.name);
+        enemy.value.name = (enemy.value.spawnType == 'd-dim-6'? 'Crushdepth': enemy.value.name);
       }
       if(enemy.value.danger >= 4000 && hero.value.stage >= 160 && enemy.value.spawnType == 'none' && enemy.value.darkEnemyReq[6]){
         enemy.value.spawnType = (Math.random()*100 + enemy.value.darkEnemyChance[6] >= 100? 'd-dim-7': enemy.value.spawnType);
@@ -3066,6 +3066,8 @@ export function useBattle(hero, enemy, buffs) {
     //stage rush
     hero.value.lacrimose = (hero.value.rebirthPts >= 20000? 0.15: 0) + (hero.value.infEvents >= 2 || hero.value.infTier >= 2? 0.25: 0) + (0.02 * hero.value.singularity) + 
     0.05 * hero.value.bhTier;
+    hero.value.lacrimose = Math.min(hero.value.lacrimose, 0.75);
+
     if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage && !hero.value.isTravell && !hero.value.soulD && hero.value.dId != 'next'){
       hero.value.stage++;
       hero.value.zone = 1;
@@ -3422,19 +3424,19 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.dId == 'd-danger'){
       
       //inf penalty
-      enemy.value.darkEnemyChance[0] = darkCreaturesHandle(0, 0.6, 0.025)
+      enemy.value.darkEnemyChance[0] = darkCreaturesHandle(0, 0.55, 0.025)
       //dmg
-      enemy.value.darkEnemyChance[1] = darkCreaturesHandle(1, 0.95, 0.035)
+      enemy.value.darkEnemyChance[1] = darkCreaturesHandle(1, 0.875, 0.035)
       //max level mult
-      enemy.value.darkEnemyChance[2] = darkCreaturesHandle(2, 0.85, 0.015)
+      enemy.value.darkEnemyChance[2] = darkCreaturesHandle(2, 0.8, 0.015)
       //min level
-      enemy.value.darkEnemyChance[3] = darkCreaturesHandle(3, 0.55, 0.02)
-      //ds
-      enemy.value.darkEnemyChance[4] = darkCreaturesHandle(4, 0.15, 0.025)
+      enemy.value.darkEnemyChance[3] = darkCreaturesHandle(3, 0.515, 0.02)
       //potential
-      enemy.value.darkEnemyChance[5] = darkCreaturesHandle(5, 0.8, 0.025)
+      enemy.value.darkEnemyChance[4] = darkCreaturesHandle(4, 0.75, 0.025)
+      //ds
+      enemy.value.darkEnemyChance[5] = darkCreaturesHandle(5, 0.125, 0.025)
       //stardust drop
-      enemy.value.darkEnemyChance[6] = darkCreaturesHandle(6, 0.95, 0.02)
+      enemy.value.darkEnemyChance[6] = darkCreaturesHandle(6, 0.85, 0.02)
     }
 
     if(hero.value.dId == 'soulD'){
@@ -4625,7 +4627,7 @@ export function useBattle(hero, enemy, buffs) {
     divineSkills.value[12].values[1] = 1.25 - 0.005 * tier;
 
     divineSkills.value[13].values[0] = 0.01 + 0.005 * tier
-    divineSkills.value[13].values[1] = 1 + 0.001 * tier;
+    divineSkills.value[13].values[1] = 0.001 * tier;
 
     divineSkills.value[14].values[0] = 0.95 - 0.0025 * tier;
   } 
@@ -4715,6 +4717,8 @@ export function useBattle(hero, enemy, buffs) {
     ascenPerks[35].level = Math.min(ascenPerks[35].level, 25);
 
     //hero.value.eLevel = Math.min(hero.value.eLevel, hero.value.maxLevel);
+
+    hero.value.abyssDStages = Math.min(hero.value.abyssDStages, 300);
   }
 
   function eqUpCost(type) {
