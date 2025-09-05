@@ -7,7 +7,7 @@ export const spaceShop = ref([
       title: 'Stardust Amplifier',
       d: 'Increase Stardust gain by 10% for each Infinity Warden defeated.',
       req: 1,
-      cost: 1e9,
+      cost: 1e10,
       status: false,
     },
     {
@@ -25,7 +25,7 @@ export const spaceShop = ref([
       title: 'Enhancement Regulator',
       d: 'Cost of Enhancement Space Ring scales more efficiently for each Infinity Warden defeated.',
       req: 6,
-      cost: 1e14,
+      cost: 1e13,
       status: false,
     },
     {
@@ -52,7 +52,7 @@ export const spaceShop = ref([
       title: 'Enhance Mastery',
       d: 'Gain +2% extra enhancement chance for each Infinity Warden defeated.',
       req: 13,
-      cost: 1e17,
+      cost: 1e16,
       status: false,
     },
     {
@@ -61,7 +61,7 @@ export const spaceShop = ref([
       title: 'Danger Dampener',
       d: 'Reduce the effect of Danger Power for each Infinity Warden defeated.',
       req: 15,
-      cost: 1e18,
+      cost: 1e17,
       status: false,
     },
     {
@@ -70,7 +70,7 @@ export const spaceShop = ref([
       title: 'Awakening Catalyst',
       d: 'Awakening requirements improve for each 5 Infinity Wardens defeated.',
       req: 17,
-      cost: 1e19,
+      cost: 1e18,
       status: false,
     },
     {
@@ -79,7 +79,7 @@ export const spaceShop = ref([
       title: 'Equipment Booster',
       d: '+1 Minimum Equipment Tier for every 10 Infinity Wardens defeated.',
       req: 19,
-      cost: 1e20,
+      cost: 1e19,
       status: false,
     },
     {
@@ -88,7 +88,7 @@ export const spaceShop = ref([
       title: 'Level Infuser',
       d: '+1 Minimum Level for each 2 Infinity Warden defeated.',
       req: 22,
-      cost: 1e22,
+      cost: 1e20,
       status: false,
     },
     {
@@ -97,7 +97,7 @@ export const spaceShop = ref([
       title: 'Eclipse Band',
       d: 'Adds suffix and prefix to the Comet Ring.',
       req: 30,
-      cost: 1e25,
+      cost: 1e21,
       status: false,
     },
     {
