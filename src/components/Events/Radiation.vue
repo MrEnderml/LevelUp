@@ -81,7 +81,7 @@
 
       <div v-if="perks[10].level >= 20" class="row">
         <span class="label">Ascension Souls (Shards MULT)</span>
-        <span class="value">*{{ formatNumber(enemy.dangerEnemyChance[4], true) }}</span>
+        <span class="value">*{{ formatNumber(enemy.dangerEnemyChance[4] ** 0.35, true) }}</span>
       </div>
 
       <p style="color: gold" class="section-title" v-if="hero.infTier >= 4">Infinity Creatures</p>

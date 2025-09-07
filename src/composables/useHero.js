@@ -354,7 +354,10 @@ const hero = ref({
   gridFilterStatus: "all",
   combatFilterStatus: "All",
   spaceUnlocked: false,
-  stardustStage: 40
+  stardustStage: 40,
+  stageReq: 1.35,
+  baseDangerPower: 1.017,
+  currentMutagen: 0,
 });
 
 export function useHero() {

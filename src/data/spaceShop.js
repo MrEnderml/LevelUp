@@ -112,7 +112,7 @@ export const spaceShop = ref([
     {
       id: 12,
       idx: 2,
-      title: 'Oblivion Edge',
+      title: 'Astral Path',
       d: '-1 Stage for Stardust appearing for each 2 Infinity Warden defeated',
       req: 5,
       cost: 1e12,

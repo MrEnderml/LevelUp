@@ -69,7 +69,8 @@ const enemy = ref({
   totalSpaceStats: {
     hp: 1,
     def: 1,
-    dmg: 1
+    dmg: 1,
+    aps: 0,
   },
   totalSpaceInfPenalty: 1,
   d_damagePenalty: 1,

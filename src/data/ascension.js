@@ -357,7 +357,7 @@ export const perks = [
       id: 35,
       tier: 6,
       name: 'Loot Increase',
-      description: '+1% EXP, Equipment Chance, BUFF EXP, Ascension Shards, Rebirth Pts, Curse Bonus, Mutagens, Stardust',
+      description: '+1% EXP, Equipment Chance, BUFF EXP, Ascension Shards, Rebirth Pts, Mutagens, Stardust',
       level: 0,
       max: 10000,
       baseCost: 1.25,

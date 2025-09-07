@@ -416,7 +416,7 @@ function abyssRwrd(tier) {
     str += `<span><span style="color: #f942f9">Beat Stage 50</span>: Curse Bonus boost is based on Max Stage in Abyss D</span>`;  
   }
   if (hero.value.abyssDStages >= 50){
-    str += `<span>[*${((1.0125 ** Math.min(hero.value.abyssDStages - 49, 100))).toFixed(2)}]</span><br/>`;
+    str += `<span>[*${((1 + 0.005 * Math.min(hero.value.abyssDStages - 49, 100))).toFixed(2)}]</span><br/>`;
     str += `<span><span style="color: #f942f9">Beat Stage 60</span>: Stardust drop is better based on Max Stage in Abyss D</span>`; 
   }
   if (hero.value.abyssDStages >= 60){
@@ -588,7 +588,8 @@ const performSingularity = () => {
 }
 
 const performSoulD = () => {
-  if(enemy.value.isSpaceFight == 2) return;
+  if (enemy.value.isSpaceFight == 2) return;
+  if (hero.value.souls >= hero.value.soulsCap) return;
   
   if(hero.value.selectedDivSkills.includes(11) || hero.value.selectedDivSkills.includes(6)){
     return;
@@ -605,6 +606,7 @@ const performSoulD = () => {
     hero.value.zone = 1;
     enemy.value.soulBuff.active = false;
   }
+  hero.value.mutations = 0;
 }
 
 const performAscension = () => {

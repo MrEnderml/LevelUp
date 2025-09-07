@@ -496,6 +496,7 @@ const dimensionGraph = {
 
 const selectDimension = (dimension) => {
   if(hero.value.isSingularity) return;
+  
   const id = dimension.id;
   const newD = d_data.value.find(ds => ds.id === id);
   const currentD = d_data.value.find(ds => ds.id === hero.value.dId);
@@ -538,7 +539,6 @@ const selectDimension = (dimension) => {
     selectDarkD(newD);
   else 
     hero.value.darkId = [];
-  //console.log(hero.value.darkId);
 
 
   if(hero.value.dId == newD.id && hero.value.dId !== 'time')
@@ -560,9 +560,9 @@ const selectDimension = (dimension) => {
 
   if(newD.id == 'main') hero.value.infEvents = hero.value.mainInfTier;
 
-  hero.value.infTier = newD.id === 'main'
+  hero.value.infTier = (newD.id === 'main'
     ? (hero.value.mainInfTier ?? 0)
-    : newD.infTier;
+    : newD.infTier);
 
   hero.value.dId = (newD.id == 'eternity'? hero.value.dId: newD.id);
   
