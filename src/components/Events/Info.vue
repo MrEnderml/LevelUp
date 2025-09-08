@@ -3180,7 +3180,7 @@ const statSections = [
         req: () => hero.value.mainInfTier >= 50
       },
        {
-        desc: 'Ascension [TIER-D]',
+        desc: 'Ascension [TIER-D] [^]',
         value: () => formatNumber(1 - 0.01 * Math.floor(Math.log10(Math.max(hero.value.mutagen, 10))), true),
         color: 'lightblue',
         req: () => dimensions.value[34].infTier >= 9

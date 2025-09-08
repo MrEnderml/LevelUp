@@ -15,6 +15,7 @@ const hero = ref({
     status: 1,
     critStatus: false,
     dodgeStatus: false,
+    deBossStatus: false,
     curseCrit: false,
   },
   def: 0,

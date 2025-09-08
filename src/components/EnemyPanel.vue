@@ -27,7 +27,10 @@
         <span v-if="dimensions[29].infTier >= 15 && enemy.spawnType == 'deBoss'" v-html="getSvgIconHTML('deDef', '1.5em')"></span>
       </Tooltip>
       <Tooltip :text="() => deBossDisplay('time')">
-        <span v-if="dimensions[29].infTier >= 20 && enemy.spawnType == 'deBoss'" v-html="getSvgIconHTML('deIgnoreDef', '1.5em')"></span>
+        <span v-if="dimensions[29].infTier >= 20 && enemy.spawnType == 'deBoss'" v-html="getSvgIconHTML('deTimer', '1.5em')"></span>
+      </Tooltip>
+      <Tooltip :text="() => deBossDisplay('ignore')">
+        <span v-if="dimensions[29].infTier >= 25 && enemy.spawnType == 'deBoss'" v-html="getSvgIconHTML('deIgnoreDef', '1.5em')"></span>
       </Tooltip>
     </div>
 
@@ -200,7 +203,7 @@ function deBossDisplay(id) {
     case 'time':
       return `Dark energy spreads its power, making it impossible to remain here. Time left: ${Math.floor(enemy.value.deBoss.darkEnemyTimer)}s`;
     case 'ignore': 
-      return `Dark Energy distorts space, making the Hero's damage ignored with a chance of ${enemy.value.deBoss.ignoreDMG}%`;
+      return `Dark Energy distorts space, making the Hero's damage ignored ${enemy.value.deBoss.ignoreDMG} times`;
     default:
       return '';
   }

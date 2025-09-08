@@ -1644,6 +1644,23 @@ export const icons = {
         </svg>
       `
     },
+    deTimer: {
+      viewBox: "0 0 64 64",
+      body: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+          <rect width="64" height="64" fill="black"/>
+          
+          <circle cx="32" cy="32" r="24" stroke="#a020f0" stroke-width="3" fill="none"/>
+          
+          <line x1="26" y1="8" x2="38" y2="8" stroke="#a020f0" stroke-width="3"/>
+          <line x1="32" y1="8" x2="32" y2="14" stroke="#a020f0" stroke-width="3"/>
+          
+          <line x1="32" y1="32" x2="32" y2="16" stroke="#a020f0" stroke-width="3"/>
+          <line x1="32" y1="32" x2="44" y2="32" stroke="#a020f0" stroke-width="3"/>
+        </svg>
+      `
+    },
+    
     spaceTimer: {
       viewBox: "0 0 64 64",
       body: `

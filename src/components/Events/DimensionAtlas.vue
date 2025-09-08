@@ -510,29 +510,8 @@ const selectDimension = (dimension) => {
     return;
 
   if(newD.id == 'eternity'){
-    newD.status = (newD.status? false: true);
-    d_data.value.forEach(d => {
-      if (d.idx < 24 || d.idx >= 26) {
-        d.status = !d.status;
-      }
-    });
-
-    dimensions.value = dimensions.value.map(dim => {
-      if (['eternity', 'bh'].includes(dim.id)) return dim;
-      return {
-        ...dim,
-        status: d_data.value.find(d => d.id === dim.id)?.status ?? false
-      };
-    });
-
-    links.value = links.value.map(link => {
-      if (['eternity', 'bh'].includes(link.id)) return link;
-
-      return {
-        ...link,
-        status: d_data.value.find(d => d.id === link.to)?.status ?? false
-      };
-    });
+    toggleOtherDimensions();
+    return;
   }
 
   if(newD.id.startsWith('d-'))

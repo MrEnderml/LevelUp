@@ -32,9 +32,6 @@
         <Tooltip :text="dHardHandle" boxShadow="0 0 10px purple">
           <span v-if="hero.dId == 'd-hard' || hero.darkId.includes('d-hard')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('cursePower', '1.25em')"></span>
         </Tooltip>
-        <Tooltip :text="corruptionHandle" boxShadow="0 0 10px purple">
-          <span v-if="hero.dId == 'd-corruption' || hero.darkId.includes('d-corruption')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('corruptionDim', '1.25em')"></span>
-        </Tooltip>
         <Tooltip :text="bleedingVeilHandle" boxShadow="0 0 10px red">
           <span v-if="hero.dId == 'd-survival-2'" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('bleedingVeil', '1.25em')"></span>
         </Tooltip>
@@ -52,6 +49,9 @@
         </Tooltip>
         <Tooltip :text="stageHardCap" boxShadow="0 0 10px rgb(0, 247, 255)">
           <span v-if="hero.stage >= 300" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('singularity', '1.25em')"></span>
+        </Tooltip>
+        <Tooltip :text="corruptionHandle" boxShadow="0 0 10px purple">
+          <span v-if="hero.dId == 'd-corruption' || hero.darkId.includes('d-corruption')" style="vertical-align: -webkit-baseline-middle;" v-html="getSvgIconHTML('corruptionDim', '1.25em')"></span>
         </Tooltip>
         <Tooltip :text="deathRecovery" boxShadow="0 0 10px blue">
           <span v-if="hero.stage > 100">☠️</span>
@@ -1224,7 +1224,10 @@ function travellHandle() {
   Enemies are stronger by <span style="color: red">${hero.value.travellPenalty.toFixed(2)}</span>.
   `
   if(hero.value.dId.startsWith('d-'))
-    text += `<br>While you are in the Dark Dimension, the effect of the travell is worse and extends to other effects`;
+    text += `<br>While you are in the Dark Dimension, the effect of the travell is worse and extends to other effects:
+    - The effect of Corruption is doubled
+    - The effect of Curse is doubled
+    - You gain 2 Doom stacks instead of 1`;
 
   return text;
 }

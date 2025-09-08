@@ -448,15 +448,15 @@ function getAttackColor() {
   if (hero.value.averageAttack.dodgeStatus) {
     return "limegreen"; 
   }
+  
   if (hero.value.averageAttack.critStatus) {
     return "red"; 
   }
+  if( hero.value.averageAttack.deBossStatus) {
+    return "limegreen"; 
+  }
   return "white"; 
 }
-
-
-
-
 
 
 </script>

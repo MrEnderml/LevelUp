@@ -31,6 +31,12 @@
         </div>
       </div>
       <div class="curse-panel">
+        <p class="curse-wrapper">
+          Max Curses: [{{hero.curse}}] | Min Curses [{{hero.minCurse}}]
+          <Tooltip :text="cursePowerHandle" boxShadow="0 0 10px #fda4af" position="bottom" maxWidth="120px">
+            <sup style="font-size: 6px">ℹ️</sup>Curse Power: [{{formatNumber(hero.curseMult, true)}}]
+          </Tooltip>
+        </p>
         <Tooltip :text="() => formatCurses()" position="right">
           <h3 @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Curse' }">☠️ <sup style="font-size: 12px">ℹ️</sup>*Curses</h3>
         </Tooltip>
@@ -158,6 +164,27 @@ function formatCurses() {
     return `Reach Stage 15`;
   return s;
 }
+
+function cursePowerHandle() {
+  return `Every curse has its threshold. Once you overcome this threshold, the curse becomes stronger depends on Curse Power. <spna style='color: red'>Curse power does not affect its bonus.</span>`
+}
+
+ const  formatNumber = (num, f = false) => {
+    if(f && num < 100) return num.toFixed(2);
+    if (num < 1000) return Math.floor(num).toString();
+  
+    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
+    const tier = Math.floor(Math.log10(num) / 3);
+
+    if(tier >= units)
+      return "999d";
+  
+    const suffix = units[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = num / scale;
+  
+    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+  }
 </script>
 
 <style scoped>
@@ -330,5 +357,10 @@ function formatCurses() {
   text-shadow: 0 0 6px #f87171;
 }
 
+.curse-wrapper {
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #ff1b37;
+}
 
 </style>

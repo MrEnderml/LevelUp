@@ -287,7 +287,8 @@ export function useBattle(hero, enemy, buffs) {
         let cursedCrit = (cursed[14].crit? 0: 1);
         hero.value.averageAttack.curseCrit = !cursedCrit;
         
-        //totalDmg = (enemy.value.deBoss.ignoreDMG > 0 && enemy.value.spawnType == 'deBoss'? (Math.random() * 100 + enemy.value.deBoss.ignoreDMG >= 100? 0: totalDmg): totalDmg);
+        let deBossInvisible = (enemy.value.deBoss.ignoreDMG > 0 && enemy.value.spawnType == 'deBoss'? 0: 1);
+        hero.value.averageAttack.deBossStatus = (deBossInvisible == 0? true: false);
 
         if(enemy.value.buffs.includes(0) && totalDmg > 0 && enemyDef >= totalDmg){
           let rnd = Math.max(0.5 - 0.05 * dimensions.value[32].infTier, 0);
@@ -302,6 +303,8 @@ export function useBattle(hero, enemy, buffs) {
 
         totalDmg *= cursedCrit;
         totalDmg *= doodgeStatus;
+        totalDmg *= deBossInvisible;
+        enemy.value.deBoss.ignoreDMG = Math.max(enemy.value.deBoss.ignoreDMG - 1, 0);
 
         enemy.value.hp = Math.max(0, enemy.value.hp - Math.max(Math.max(totalDmg, 0), 0));
         heroAttackBarProgress.value = heroAttackBarProgress.value - 1;
@@ -1532,6 +1535,7 @@ export function useBattle(hero, enemy, buffs) {
     enemy.value.deBoss.regen = (tier >= 1? Math.min(1 + 0.5 * (dimensions.value[29].infTier - 10), 25) : 0);
     enemy.value.deBoss.def = (tier >= 2? 5 + 2.5 * (dimensions.value[29].infTier - 15): 0);
     enemy.value.deBoss.darkEnemyTimer = (tier >= 3? 15 - 0.1 * Math.min(dimensions.value[29].infTier - 20, 50): -1);
+    enemy.value.deBoss.ignoreDMG = (tier >= 4? Math.max(dimensions.value[29].infTier - 25, 0) + enemy.value.darkEnergy.totalBosses: 0);
   }
 
   const createEnemy = () => {
@@ -3323,7 +3327,7 @@ export function useBattle(hero, enemy, buffs) {
     else if(hero.value.darkId.includes('d-hard') && hero.value.dId != 'd-hard')
       hero.value.curseMult = Math.max((1 + 0.0115 * hero.value.stage - 0.02 * dimensions.value[27].infTier) * totalEffects, 1);
     else 
-      hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.075 * Math.max(hero.value.infTier - 30, 0) - 0.0175 * dimensions.value[27].infTier) * totalEffects, 1));
+      hero.value.curseMult = (hero.value.isSingularity || hero.value.infProgress? 1: Math.max((1 + 0.15 * Math.max(hero.value.infTier - 30, 0)) * totalEffects, 1));
 
     hero.value.curseMult = (hero.value.dId.startsWith('d-') && hero.value.isTravell? hero.value.curseMult * 2: hero.value.curseMult);
 
@@ -3823,7 +3827,7 @@ export function useBattle(hero, enemy, buffs) {
     if(!hero.value.spaceUnlocked)
       return;
 
-    if(hero.value.infTier < 4 || hero.value.singularity < 5)
+    if(hero.value.infTier < 4 && hero.value.singularity < 5)
       return;
 
     if(hero.value.spaceAutoCooldown > 0){
@@ -3853,7 +3857,7 @@ export function useBattle(hero, enemy, buffs) {
     for (let it = 1; it <= BATTLE_ITERATIONS; it++) {
       let enemyDps = enemyAtk * enemyAS * it * ROUND_MOD * status;
       let heroDps = heroAtk * hero.value.attacksPerSecond * it;
-      let hpCondition = (hero.value.dId === 'survival' || hero.value.maxHp > enemyDps);
+      let hpCondition = (hero.value.dId === 'survival' || hero.value.maxHp * (hero.value.spCount < 48? 2: 1) > enemyDps);
       let totalSpaceHp = totalStats.hp * HP_MULTIPLIER * status;
 
       if(it == 6){
@@ -4540,7 +4544,7 @@ export function useBattle(hero, enemy, buffs) {
       mult = 1 + totalInfs ** (dimensions.value[29].infTier * 0.01);
     }
 
-    let perkMult = Math.max(2 - 0.025 * dimensions.value[29].infTier, 1.1);
+    let perkMult = Math.max(2 - 0.04 * dimensions.value[29].infTier, 1.1);
 
     enemy.value.darkEnergy.maxBosses = 5 + dimensions.value[29].infTier;
     enemy.value.darkEnergy.mult = 1.08 ** dimensions.value[29].infTier * (ascenPerks[58].level? perkMult: 1);
