@@ -3076,7 +3076,7 @@ export function useBattle(hero, enemy, buffs) {
     0.05 * hero.value.bhTier;
     hero.value.lacrimose = Math.min(hero.value.lacrimose, 0.75);
 
-    if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage && !hero.value.isTravell && !hero.value.soulD && hero.value.dId != 'next'){
+    if(hero.value.stage <= hero.value.maxStage * hero.value.lacrimose && hero.value.isStage && !hero.value.isTravell && !hero.value.soulD && hero.value.dId != 'next' && hero.value.dId != 'd-next'){
       hero.value.stage++;
       hero.value.zone = 1;
       hero.value.kills = 0;
@@ -4219,6 +4219,10 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
     hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (dimensions.value[19].infTier - 20) - hero.value.minStage: 0) + 
     hero.value.minStage;
+
+    hero.value.stage = (hero.value.dId == 'next'? Math.min(hero.value.stage, 30): hero.value.stage);
+    hero.value.stage = (hero.value.dId == 'd-next'? Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1)): hero.value.stage);
+
     hero.value.zone = 1;
     hero.value.kills = 0;
     hero.value.killsPerZone = 5;

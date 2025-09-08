@@ -1158,6 +1158,9 @@ function performD(d, prev) {
   hero.value.exp = 0;
   hero.value.stage = 1 + (hero.value.dId == 'overstage'? 100 + 5 * (d_data.value[19].infTier - 20) - hero.value.minStage: 0) + 
   hero.value.minStage;
+
+  hero.value.stage = (hero.value.dId == 'next'? Math.min(hero.value.stage, 30): hero.value.stage);
+  hero.value.stage = (hero.value.dId == 'd-next'? Math.min(hero.value.stage, Math.max(30 - d_data.value[34].infTier, 1)): hero.value.stage);
   
   hero.value.maxLevel = 30;
   hero.value.zone = 1;
