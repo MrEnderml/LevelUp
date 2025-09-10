@@ -1976,7 +1976,7 @@ const statSections = [
       { desc: 'TOTAL IP', value: '', color: 'gold',  uppercase: true, req: () => true },
       {
         desc: 'Total',
-        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + 200 + Object.values(hero.value.secrets).filter(v => v).length * 20 + hero.value.eqUpsMult['spRing'].infPoints),
+        value: () => (hero.value.infPointsGoals + enemy.value.dangerEnemyLoot[1] + 400 + Object.values(hero.value.secrets).filter(v => v).length * 20 + hero.value.eqUpsMult['spRing'].infPoints),
         color: 'gold',
         req: () => true,
       },

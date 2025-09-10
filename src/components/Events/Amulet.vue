@@ -34,7 +34,7 @@
         <p class="curse-wrapper">
           Max Curses: [{{hero.curse}}] | Min Curses [{{hero.minCurse}}]
           <Tooltip :text="cursePowerHandle" boxShadow="0 0 10px #fda4af" position="bottom" maxWidth="120px">
-            <sup style="font-size: 6px">ℹ️</sup>Curse Power: [{{formatNumber(hero.curseMult, true)}}]
+            <span v-if="hero.mainInfTier >= 30"><sup style="font-size: 6px">ℹ️</sup>Curse Power: [{{formatNumber(hero.curseMult, true)}}]</span>
           </Tooltip>
         </p>
         <Tooltip :text="() => formatCurses()" position="right">

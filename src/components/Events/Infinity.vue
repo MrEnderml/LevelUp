@@ -237,7 +237,7 @@ function getCurseTier(forFilter = false) {
 
   if (tier >= 100) return 100;
 
-  const nextTier = Math.ceil(tier / 5) * 5;
+  const nextTier = Math.floor((tier + 5) / 5) * 5;
 
   return Math.max(nextTier, 25);
 }

@@ -28,7 +28,7 @@
         </div>
 
         <div class="perk-buttons">
-          <button class="btnInf" v-if="(hero.infTier >= 1 || hero.infEvents >= 1) && !perk.status && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
+          <button class="btnInf" v-if="(hero.infTier >= 1 || hero.infEvents >= 2) && !perk.status && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
           <button class="radPerks tooltip-wrapper" @click="radiationPerks(perk)" v-if="perk.id < 7 && radPerks[7].level && !perk.infStatus">☢
               <div class="tooltip">
                 Click to activate/deactivate radiation perk. 
@@ -183,7 +183,7 @@ const resetPerks = () => {
 
   const basePoints = toInt(hero.value.freeTreePoints) +
     toInt(hero.value.eLevel) *
-    ((hero.value.infTier >= 1 || hero.value.infEvents >= 1) ? 2 : 1);
+    ((hero.value.infTier >= 1 || hero.value.infEvents >= 2) ? 2 : 1);
 
   hero.value.perkPoints = Math.max(0, basePoints);
 };

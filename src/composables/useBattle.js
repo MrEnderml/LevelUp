@@ -87,14 +87,14 @@ export function useBattle(hero, enemy, buffs) {
 
     if(hero.value.maxLevel * hero.value.levelRush > hero.value.eLevel && hero.value.dId != 'unlimitted'){
       hero.value.eLevel += (hero.value.maxLevel * power > hero.value.eLevel? 1: 0);
-      hero.value.perkPoints += (hero.value.infEvents >= 1 || hero.value.infTier >= 1? 2: 1);
+      hero.value.perkPoints += (hero.value.infEvents >= 2 || hero.value.infTier >= 1? 2: 1);
       hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
     }
 
     if (hero.value.exp >= hero.value.nextLevelExp && hero.value.eLevel < hero.value.maxLevel) {
       hero.value.exp -= hero.value.nextLevelExp;
       hero.value.eLevel++;
-      hero.value.perkPoints += (hero.value.infEvents >= 1 || hero.value.infTier >= 1? 2: 1);
+      hero.value.perkPoints += (hero.value.infEvents >= 2 || hero.value.infTier >= 1? 2: 1);
       hero.value.nextLevelExp = nextLevel(hero.value.eLevel);
     }
     
@@ -2228,7 +2228,7 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.unlimitMinLevel = Math.max(Math.floor((hero.value.unlimitLevel - 700) / Math.max(100 - 2.5 * Math.max(dimensions.value[38].infTier - 10, 0), 50)), 0);
 
-    hero.value.minLevel = eqCpmplect() + (ascenPerks[26].level? Math.floor(hero.value.stage/5)-1: 0) + 
+    hero.value.minLevel = eqCpmplect() + (ascenPerks[26].level? Math.floor(hero.value.stage/5)-1: 0) + 650 +
     ((hero.value.rebirthPts >= 50? 5: 0) + (hero.value.rebirthPts > 3500? 5: 0) + (hero.value.rebirthPts > 30000? 5: 0)) + perks.value[12].level + 
     (hero.value.rebirthTier >= 40? Math.floor(1.05 ** Math.min(hero.value.rebirthTier, 80)): 0) + 
     (equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel + hero.value.eqUpsMult['spRing'].bonus) + 
@@ -3899,7 +3899,7 @@ export function useBattle(hero, enemy, buffs) {
       let totalCost = toInt(perk.baseCost * MULT);
       let points = toInt(hero.value.perkPoints);
       let maxPoints = toInt(hero.value.freeTreePoints) + toInt(hero.value.eLevel) *
-      ((hero.value.infTier >= 1 || hero.value.infEvents >= 1) ? 2 : 1);
+      ((hero.value.infTier >= 1 || hero.value.infEvents >= 2) ? 2 : 1);
       let maxInfCounts = totalCost > 0? maxPoints / totalCost: 0;
   
       if (points <= 0) break;
@@ -4365,7 +4365,7 @@ export function useBattle(hero, enemy, buffs) {
     if(hero.value.isRebirth || auto.value.rebirth.enabled){
       hero.value.rebirthPts += hero.value.totalRebirthPts;
 
-      if(hero.value.infTier >= 2 || hero.value.infEvents > 2 && (hero.value.level - 90) / 10 > hero.value.rebirthTier){
+      if(hero.value.infTier >= 2 || hero.value.infEvents >= 3 && (hero.value.level - 90) / 10 > hero.value.rebirthTier){
         hero.value.rebirthTier += Math.max(Math.floor((hero.value.level - (90 + 10 * hero.value.rebirthTier)) / 10), 0);
       } else if(hero.value.level >= 100 + 10 * hero.value.rebirthTier && hero.value.rebirthTier < 20) {
         hero.value.rebirthTier++;
