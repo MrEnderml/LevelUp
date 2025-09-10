@@ -2228,7 +2228,7 @@ export function useBattle(hero, enemy, buffs) {
 
     hero.value.unlimitMinLevel = Math.max(Math.floor((hero.value.unlimitLevel - 700) / Math.max(100 - 2.5 * Math.max(dimensions.value[38].infTier - 10, 0), 50)), 0);
 
-    hero.value.minLevel = eqCpmplect() + (ascenPerks[26].level? Math.floor(hero.value.stage/5)-1: 0) + 650 +
+    hero.value.minLevel = eqCpmplect() + (ascenPerks[26].level? Math.floor(hero.value.stage/5)-1: 0) +
     ((hero.value.rebirthPts >= 50? 5: 0) + (hero.value.rebirthPts > 3500? 5: 0) + (hero.value.rebirthPts > 30000? 5: 0)) + perks.value[12].level + 
     (hero.value.rebirthTier >= 40? Math.floor(1.05 ** Math.min(hero.value.rebirthTier, 80)): 0) + 
     (equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel + hero.value.eqUpsMult['spRing'].bonus) + 
