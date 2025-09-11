@@ -235,11 +235,7 @@ function awakened(type){
 }
 
 function awakenedTierReq(type){
-  let tier = 20 + 10 * hero.value.awakened[type] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-  (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0) - 
-  (spaceShop.value[7].status? 1 * Math.floor(hero.value.spsCount / 5): 0);
-  
-  return hero.value.singularity >= 7 && Math.min(hero.value.equipmentTiers[type], 50) >= tier;
+  return hero.value.singularity >= 7 && Math.min(hero.value.equipmentTiers[type], 50) >= hero.value.awakenedReq[type];
 }
 
 function autoEnchance(){

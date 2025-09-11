@@ -3,8 +3,13 @@
     
     <div class="soul-target">
       <h3>🎯 Target</h3>
-      <p>[{{hero.souls}}<span v-if="radPerks[9].level == 0">/{{hero.soulsCap}}</span>] {{ soulNames[hero.souls%50] }} 
-      <span :title="'Soul Chance'">*[{{chanceFormat(enemy.soulBuff.chance)}}%]</span></p>
+      
+      <p>[{{hero.souls}}<span v-if="radPerks[9].level == 0">/{{hero.soulsCap}}</span>] {{ soulNames[hero.souls%50] }}
+      <Tooltip :text="'Soul appearance chance'"> 
+        <span><sup style="font-size: 6px">ℹ️</sup>[{{chanceFormat(enemy.soulBuff.chance)}}%]</span>
+      </Tooltip>
+      </p>
+
       <div style="text-align: left"><br>
         <div class="s-stats-wrapper">
           <span class="s-stats-name">DMG</span>

@@ -61,32 +61,35 @@
 
     <div class="divine-tree">
       <Tooltip :text="quasarCoreHandle()" boxShadow="0 0 10px #00ffea">
-      <h2 class="d-desc">
-      <span
-        v-html="getSvgIconHTML('quasarCore', '1.3em')"
-        style="line-height: 0; vertical-align: middle; display: inline-block;"
-      ></span> 
-        Quasar Core [{{ hero.selectedDivSkills.length }}/{{ maxSelected }}]
-      </h2>
+        <h2 class="d-desc">
+          <span
+            v-html="getSvgIconHTML('quasarCore', '1.3em')"
+            style="line-height: 0; vertical-align: middle; display: inline-block;"
+          ></span>
+          <sup style="font-size: 6px">ℹ️</sup>Quasar Core [{{ hero.selectedDivSkills.length }}/{{ maxSelected }}]
+        </h2>
       </Tooltip>
-      <div class="d-goals-grid">
-        <div
-          v-for="skill in divineSkills"
-          :key="skill.id"
-          :class="[
-            'd-goal',
-            { selected: hero.selectedDivSkills.includes(skill.id) }
-          ]"
-          @click="toggleSkill(skill.id)"
-        >
-          <Tooltip :text="quasarCoreItemsHandle(skill)" boxShadow="0 0 10px #00ffea">
-            <span v-html="skill.icon"></span>
-          </Tooltip>
+
+     
+      <div v-for="tier in sortedTiers" :key="tier" class="tier-section">
+        <h3 class="tier-title">Tier {{ tier }}</h3>
+        <div class="d-goals-grid">
+          <div
+            v-for="skill in skillsByTier[tier]"
+            :key="skill.id"
+            :class="['d-goal', { selected: hero.selectedDivSkills.includes(skill.id) }]"
+            @click="toggleSkill(skill.id)"
+          >
+            <Tooltip :text="quasarCoreItemsHandle(skill)" boxShadow="0 0 10px #00ffea">
+              <span v-html="skill.icon"></span>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>
 
   </div>
+
 
   <div v-if="activeTab === 'milestone'" class="milestone-panel">
     <div class="tabs">
@@ -310,6 +313,21 @@ function toggleSkill(skillId) {
   }
 }
 
+const skillsByTier = computed(() => {
+  const map = {};
+  divineSkills.value.forEach(skill => {
+    if (!map[skill.tier]) map[skill.tier] = [];
+    map[skill.tier].push(skill);
+  });
+  return map;
+});
+
+const sortedTiers = computed(() => {
+  return Object.keys(skillsByTier.value)
+    .map(Number)
+    .sort((a, b) => b - a); 
+});
+
 
 const inf = computed(() => hero.value.infPoints);
 const sqrt = () => Math.sqrt(inf.value + 1);
@@ -373,7 +391,7 @@ function quasarCoreHandle() {
   let next = 50 + 5 * count;
   return `Absorb the <span style='color: #00ffea'>Quasar Power</span> into yourself. Each <span style='color: gold'>Infinity Tier</span> increases the effects of the <span style='color: #00ffea'>Quasar Power</span>.
   Gain the next <span style='color: #00ffea'>Quasar Core</span> at <span style='color: gold'>Infinity [T${next}]</span>.
-  
+
   <span style='color: red'>You can change Quasar Core when you are idle in Infinity</span>`;
 }
 

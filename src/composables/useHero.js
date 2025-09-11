@@ -118,6 +118,12 @@ const hero = ref({
     boots: 0,
     ring: 0
   },
+  awakenedReq: {
+    sword: 20,
+    armor: 20,
+    boots: 20,
+    ring: 20
+  },
   dropChance: {
     sword: 0,
     armor: 0,

@@ -1,20 +1,29 @@
 <template>
   <div class="perk-tree">
-    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 12px">ℹ️</sup>TREE [T{{hero.treeTier+1}}]</h2>
-    <p class="perk-points"  :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Points(P): {{ Math.floor(hero.perkPoints) }}</p>
+    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 8px">ℹ️</sup>Perk Tree [T{{hero.treeTier+1}}]</h2>
+    
+    <p class="perk-points">
+      <Tooltip :text="treePointsHandle" boxShadow="0 0 10px lightgreen">
+        <sup style="font-size: 6px">ℹ️</sup><span :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Tree Points(TP): {{ Math.max(Math.floor(hero.perkPoints), 0) }}</span>
+      </Tooltip>
+    </p>
 
-    <div class="auto-buttons" v-if="hero.infEvents >= 2 || hero.infTier >= 1 || hero.singularity >= 3">
-      <button
-        @click="toggleAuto"
-        :class="['btn', 'btn-auto', { active: hero.treeAuto }]"
-      >
-        AUTO
+    <div class="btn-wrapper">
+      <div class="auto-buttons" v-if="hero.infEvents >= 2 || hero.infTier >= 1 || hero.singularity >= 3">
+        <button
+          @click="toggleAuto"
+          :class="['btn', 'btn-auto', { active: hero.treeAuto }]"
+        >
+          AUTO
+        </button>
+      </div>
+
+      <button class="reset-button" @click="resetPerks">
+        🔄 Reset perks
       </button>
     </div>
 
-    <button class="reset-button" @click="resetPerks">
-    🔄Reset perks
-    </button>
+    
     <div class="perks-container">
       <div
         v-for="perk in visiblePerks"
@@ -42,10 +51,12 @@
           </button>
         </div>
         
-        <span class="perk-desc">{{ descriptionPerks(perk) }}</span>
-        <span class="perk-desc" v-if="!perk.status"><span v-if="perk.level > 0">{{calculate(perk)}}</span></span>
-        <span class="perk-desc" v-if="perk.status && perk.id == 1"><span>Total: [{{(hero.radAttack).toFixed(2)}}]</span></span>
-        <span class="perk-desc" v-if="perk.status && perk.id == 6"><span>Total: {{(hero.radAPS).toFixed(2)}}</span></span>
+        <div class="perk-desc">
+          <p>{{ descriptionPerks(perk) }}</p>
+          <p v-if="!perk.status && perk.level > 0">{{ calculate(perk) }}</p>
+          <p v-if="perk.status && perk.id == 1">Total: [{{ hero.radAttack.toFixed(2) }}]</p>
+          <p v-if="perk.status && perk.id == 6">Total: {{ hero.radAPS.toFixed(2) }}</p>
+        </div>
 
         <div class="perk-footer">
           <button 
@@ -139,7 +150,7 @@ const infPerk = (perk) => {
 
 const infCost = (perk) => {
   let cost = totalInfCost(perk);
-  return `${cost}P`
+  return `${cost}TP`
 }
 
 const totalInfCost = (perk) => {
@@ -265,18 +276,20 @@ function getMult() {
 
   return mult;
 }
+
+function treePointsHandle() {
+  let text = `Tree Points(TP) are granted by leveled up. `
+  if(hero.value.mainInfTier >= 1)
+    text += `<span style="color: gold">Infinity [T1]</span> grants double points gain`
+
+  return text;
+}
 </script>
 
 <style scoped>
 .perk-tree {
-  max-height: 670px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: fixed;
-  left: 220px;
-  top: 0px;
   padding: 1.5rem;
-  background: #242424;
+  background: #242925;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   max-width: 1400px;
@@ -309,6 +322,8 @@ function getMult() {
 }
 
 .perks-container {
+  max-height: 60vh;
+  overflow-y: auto;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -352,6 +367,7 @@ function getMult() {
 }
 
 .perk-desc {
+  font-weight: 500;
   font-size: 0.9rem;
   color: #1c1c1c;
   margin-bottom: 1rem;
@@ -393,24 +409,6 @@ function getMult() {
 .upgrade-button:disabled {
   background: #ccc;
   cursor: not-allowed;
-}
-
-.reset-button {
-  position: absolute;
-  left: 80%;
-  top: 4%;
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-.reset-button:hover {
-  background-color: #d32f2f;
 }
 
 .perk-buttons {
@@ -523,13 +521,6 @@ function getMult() {
   transform: scale(1.2);
 }
 
-.auto-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  margin-right: 4rem;
-}
 
 .btn {
   padding: 0.5rem 1rem;
@@ -576,5 +567,47 @@ function getMult() {
   border-color: #ff5555;
   box-shadow: 0 0 6px #ff5555aa;
 }
+
+
+
+.btn-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem; 
+  margin: 1rem 7rem 1rem 0;
+}
+
+.reset-button {
+  padding: 0.5rem 1rem;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+.reset-button:hover {
+  background-color: #d32f2f;
+}
+
+.auto-buttons button {
+  padding: 0.5rem 1rem;
+  background-color:rgb(29, 153, 255);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+.auto-buttons button:hover {
+  background-color:rgb(47, 116, 185);
+}
+.auto-buttons .active {
+  background-color: #4caf50;
+}
+
 
 </style>

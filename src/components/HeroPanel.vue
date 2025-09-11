@@ -3,7 +3,7 @@
     <div class="hero">
       <div class="hero-header">
         <Tooltip :text="() => stats()">
-          <h3 style="color: white">🧝 *Hero</h3>
+          <h3 style="color: white">🧝 <sup style="font-size: 6px">ℹ️</sup>Hero</h3>
         </Tooltip>
         <div class="formations">
             <button
@@ -483,7 +483,7 @@ function getAttackColor() {
 
 .hp-progress {
   height: 100%;
-  background-color: #4caf50; /* или #f44336 для врага */
+  background-color: #4caf50; 
   border-radius: 5px;
   transition: width 0.3s ease;
 }

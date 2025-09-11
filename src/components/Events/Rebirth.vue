@@ -11,17 +11,17 @@
       </p>
       <p style="font-weight: bold">
         <Tooltip :text="enemyEvo" boxShadow="0 0 10px lightgreen" position="right">
-          <span>*Enemy EVO</span>
+          <span><sup style="font-size: 6px">ℹ️</sup>Enemy EVO</span>
         </Tooltip>
         <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
         <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
         <Tooltip :text="rebirthLootHandle" boxShadow="0 0 10px lightgreen" position="right">
-          <span>*LOOT - [{{formatNumber(enemy.rebirthEnemy["drop"])}}] </span>
+          <span><sup style="font-size: 6px">ℹ️</sup>LOOT - [{{formatNumber(enemy.rebirthEnemy["drop"])}}] </span>
         </Tooltip>
       </p>
 
       <Tooltip :text="ascendEffectHandle" boxShadow="0 0 10px #062e9f" position="right">
-        <span v-if="hero.abyssTier >= 2" style="color: #062e9f; font-weight: bold">*ASCENSION AFFECT</span>
+        <span v-if="hero.abyssTier >= 2" style="color: #062e9f; font-weight: bold"><sup style="font-size: 6px">ℹ️</sup>ASCENSION AFFECT</span>
       </Tooltip>
 
       <p class="rebirthTiers">

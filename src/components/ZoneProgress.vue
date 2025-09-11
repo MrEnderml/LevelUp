@@ -133,7 +133,7 @@
           </div>
         </button>
       </div>
-      <div class="soul-wrapper staticIconPos" :class="{ hidden: !((hero.infEvents >= 6 || hero.infTier >= 6) && !hero.isSingularity && hero.dId != 'soulD' && hero.dId != 'bh') }">
+      <div class="soul-wrapper staticIconPos" :class="{ hidden: !isSoulVisible }">
         <button class="btnSoul" @click="performSoulD" >
           <img :src="redSkull" width="24px" height="24px" v-if="hero.soulD" />
           <span v-if="!hero.soulD">💀</span>
@@ -143,6 +143,7 @@
               <p>Click to <span v-if="!hero.soulD">Enter</span><span  v-if="hero.soulD">Leave</span> The Dimension</p>
               <p v-if="hero.selectedDivSkills.includes(11)">D-Soul is blocked due to <span style='color: #00ffea'>Soul Eclipse</span></p>
               <p v-if="hero.selectedDivSkills.includes(6)">D-Soul is blocked due to <span style='color: #00ffea'>The basis of the Limit</span></p>
+              <p v-if="hero.dId === 'd-next' && dimensions[34].infTier > 15">Your maximum possible stage is below to enter</p>
           </div>
         </button>
       </div>
@@ -477,6 +478,18 @@ const isAbyssVisible = computed(() => {
     h.spCount >= 15
   ) && !h.isSingularity && h.dId !== 'hard';
 });
+
+const isSoulVisible = computed(() => {
+  const h = hero.value;
+  return (
+    (h.infEvents >= 6 || h.infTier >= 6) &&
+    !h.isSingularity &&
+    h.dId !== 'soulD' &&
+    h.dId !== 'bh'
+  );
+});
+
+
 function totalSp(){
   return formatNumber(Math.log(hero.value.kills + 3) ** 7.26 - Math.log(hero.value.singularityKills + 3) ** 7.26);
 }
@@ -590,6 +603,7 @@ const performSingularity = () => {
 const performSoulD = () => {
   if (enemy.value.isSpaceFight == 2) return;
   if (hero.value.souls >= hero.value.soulsCap) return;
+  if (hero.value.dId === 'd-next' && dimensions.value[34].infTier > 15) return;
   
   if(hero.value.selectedDivSkills.includes(11) || hero.value.selectedDivSkills.includes(6)){
     return;

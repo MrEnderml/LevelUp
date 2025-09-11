@@ -862,7 +862,8 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.isAbyss? 0: 1) * (hero.value.activeFormation == 3? 2: 1) * 
     (hero.value.mainInfTier >= 4? (infBase(1.035) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1) * 
     (1.15 ** (dimensions.value[11].infTier - 5)) * 
-    (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1);
+    (hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1) * 
+    (1 + 0.25 * perks.value[16].level);
 
     hero.value.curseBonus **= cursed[17].loot;
 
@@ -2110,7 +2111,7 @@ export function useBattle(hero, enemy, buffs) {
     (hero.value.mainInfTier >= 0 || hero.value.level >= 700? ((infBase(1.055, 1) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1)))) : 1) *
     (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1) *
     (hero.value.rebirthPts >= 4e5 && enemy.value.isSpaceFight == 2? 1.5: 1) *
-    (hero.value.dId == 'gravity' && hero.value.stage >= 20? 1 / 1.05 ** (hero.value.stage - 19): 1 ) *
+    (hero.value.dId == 'gravity' && hero.value.stage >= 20? 1 / 1.075 ** (hero.value.stage - 19): 1 ) *
     (1 - hero.value.survivalLevel * 0.04) * 
     (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1) *
     (hero.value.isSingularity && dimensions.value[10].infTier == dimensions.value[10].maxInfTier? 2: 1) *
@@ -2193,6 +2194,7 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.maxHp *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 0.25: 0.5): 1);
     hero.value.maxHp *= (hero.value.activeFormation == 2? 0.5: 1);
     hero.value.maxHp *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
+
     hero.value.maxHp *= (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 1? (1 + 0.001 * Math.floor(buffs.value[8].time)): 1);
     //d-survival
     hero.value.maxHp = (hero.value.dId == 'survival'? 1: hero.value.maxHp);
@@ -3101,20 +3103,7 @@ export function useBattle(hero, enemy, buffs) {
         hero.value.stage++;
 
         
-        if(hero.value.dId == 'next')
-          hero.value.stage = Math.min(hero.value.stage, 30);
-        if(hero.value.dId == 'd-next')
-          hero.value.stage = Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1));
-        if(hero.value.darkId.includes('d-next'))
-          hero.value.stage = Math.min(hero.value.stage, 30 + 5 * dimensions.value[34].infTier);
-        if(hero.value.soulD && hero.value.dId != 'soulD')
-          hero.value.stage = 15;
-        if(hero.value.stage > 100 && hero.value.isAbyss && hero.value.dId != 'abyss-d')
-          hero.value.stage = 100;
-        if(hero.value.stage >= 300)
-          hero.value.stage = 300;
-        
-        if(hero.value.abyssTier >= 3 && hero.value.isAbyss) hero.value.abyssDStages = Math.max(hero.value.stage, hero.value.abyssDStages);
+        stageCheking();
           
         if (hero.value.stage > 10)
           ascensionShardsProgress(hero.value.stage);
@@ -3122,6 +3111,23 @@ export function useBattle(hero, enemy, buffs) {
 
       refreshKillsPerZone();
     }
+  }
+
+  const stageCheking = () => {
+    if(hero.value.dId == 'next')
+      hero.value.stage = Math.min(hero.value.stage, 30);
+    if(hero.value.dId == 'd-next')
+      hero.value.stage = Math.min(hero.value.stage, Math.max(30 - dimensions.value[34].infTier, 1));
+    if(hero.value.darkId.includes('d-next'))
+      hero.value.stage = Math.min(hero.value.stage, 30 + 5 * dimensions.value[34].infTier);
+    if(hero.value.soulD && hero.value.dId != 'soulD')
+      hero.value.stage = 15;
+    if(hero.value.stage > 100 && hero.value.isAbyss && hero.value.dId != 'abyss-d')
+      hero.value.stage = 100;
+    if(hero.value.stage >= 300)
+      hero.value.stage = 300;
+    
+    if(hero.value.abyssTier >= 3 && hero.value.isAbyss) hero.value.abyssDStages = Math.max(hero.value.stage, hero.value.abyssDStages);
   }
 
   const overkillHandle = () => {
@@ -3576,7 +3582,11 @@ export function useBattle(hero, enemy, buffs) {
     hero.value.eqUpsMult['spRing'].bonus = Math.floor((equipment[4].tiers[hero.value.equipmentTiers['spRing']].bonus.minLevel * (0.05 * hero.value.eqUps['spRing'])));
     hero.value.eqUpsMult['spRing'].potential = (spaceShop.value[10].status? Math.floor(hero.value.eqUps['spRing'] ** 0.6): 0);
     hero.value.eqUpsMult['spRing'].infPoints = (spaceShop.value[10].status? hero.value.eqUps['spRing']: 0);
-
+    
+    hero.value.awakenedReq['sword'] = eqAwakenTierReq(hero.value.awakened['sword']);
+    hero.value.awakenedReq['armor'] = eqAwakenTierReq(hero.value.awakened['armor']);
+    hero.value.awakenedReq['boots'] = eqAwakenTierReq(hero.value.awakened['boots']);
+    hero.value.awakenedReq['ring'] = eqAwakenTierReq(hero.value.awakened['ring']);
 
     function getBaseValues(type, awakened, forgeTier) {
       return {
@@ -3584,6 +3594,14 @@ export function useBattle(hero, enemy, buffs) {
         bonus: 0.05 + 0.0015 * awakened[type] + 0.0005 * forgeTier
       };
     }
+  }
+
+  const eqAwakenTierReq = (tier) => {
+    let totalTier = 20 + 10 * tier - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
+    (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0) - 
+    (spaceShop.value[7].status? 1 * Math.floor(hero.value.spsCount / 5): 0);
+
+    return totalTier;
   }
 
   const spaceHandle = () => {
@@ -3749,15 +3767,15 @@ export function useBattle(hero, enemy, buffs) {
 
 
         if(hero.value.afkKills - hero.value.killsPerZone > 0 && hero.value.zone >= 5 && hero.value.stage > 5 && hero.value.stage%5 == 4){
-          if(hero.value.maxStage - 15 > hero.value.stage && !hero.value.isAbyss){
+          if(hero.value.maxStage - 5 > hero.value.stage && !hero.value.isAbyss){
             hero.value.afkKills -= Math.floor(hero.value.killsPerZone);
-            hero.value.zone++;
+            hero.value.zone = Math.min(hero.value.zone + 1, 6);
             refreshKillsPerZone();
           } else {
             refreshKillsPerZone();
             hero.value.kills = Math.floor(hero.value.killsPerZone) - 3;
             hero.value.afkKills = 0;
-            if(hero.value.zone > 5) hero.value.zone = 5; 
+            hero.value.zone = Math.min(hero.value.zone, 5);
             
             hero.value.showAfkPopup = hero.value.showAfkPopupRule? true: false;
             afkMessages(currentZone, currentStage, true);
@@ -3768,17 +3786,13 @@ export function useBattle(hero, enemy, buffs) {
 
         if(hero.value.zone > 5){
           hero.value.zone = 1;
-          if(hero.value.isAbyss && hero.value.stage >= 100)
-            hero.value.stage = Math.min(hero.value.stage + 1, 100);
-          else hero.value.stage++;
+          hero.value.stage++;
 
-          hero.value.stage = (hero.value.dId == 'next'? Math.min(hero.value.stage, 30): hero.value.stage);
+          stageCheking();
 
-          hero.value.maxStage = Math.max(hero.value.maxStage, hero.value.stage);
           if (hero.value.stage > 10)
             ascensionShardsProgress(hero.value.stage);
         }
-        if(hero.value.abyssTier >= 3 && hero.value.isAbyss) hero.value.abyssDStages = Math.max(hero.value.stage, hero.value.abyssDStages);
       }
     }
   }

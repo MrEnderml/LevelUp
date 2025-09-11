@@ -101,7 +101,7 @@
       </div>
 
       <div class="stats-content">
-        <div style="color: red">The stat sections are currently not working correctly.</div>
+        <div style="color: red">The stat section may contain bugs or mistakes</div>
         <ul v-if="currentSection">
           <li
             v-for="(item, index) in currentSection.content.filter(c => !c.req || c.req())"
@@ -1270,7 +1270,7 @@ const styledSections = [
     class: 'endless-section info',
     content: [
       'S - Can be stacked with the same effect',
-      '* - When you hover over it, a pop-up window appears with information',
+      'ℹ️ - When you hover over it, a pop-up window appears with information or click on it click on it to go to a specific page',
       '^ - Exponent',
       'ApS - Attack per Second',
       'Stage requirement scales better: You will need fewer kills to advance to the next Stage',
@@ -1287,8 +1287,7 @@ const styledSections = [
     content: [
       'You can kill a maximum of 1 enemy per second.',
       'Max AFK Kills = Max Stage Passed × 75.',
-      'You skip the boss fights if their stage is 15 below your max stage.',
-      'To get more profit from AFK, fight for at least 1 minute',
+      'You skip the boss fights if their stage is 5 below your max stage.',
       'Soul Booster increase The chance of soul appearence. The Power depends on Total AFK kills. Soul Booster works for only One Soul.',
     ]
   },
@@ -1328,13 +1327,13 @@ const styledSections = [
     title: 'Souls',
     class: 'souls-section',
     content: [
-      'Soul appears from Stage 15.',
-      'Each soul gives +1 Max Level & (+10% EXP until 40 Souls - +40 After [Infinity T6]).',
+      'Souls are special creatures. They are stronger than regular enemies, but they provide greater rewards',
+      'After stage 15, souls may appear with a certain chance',
+      'Each defeated Soul grants +1 Max Level and +10% EXP (up to 40 souls). After Infinity [T6], the bonus increases (up to 80 souls)',
       '+1 MIN Level per 10 Soul Tier [Infinity T6]',
-      'Next tier: 10 kills.',
-      'Soul Loot & Power depends on total souls',
-      'Soul chance depends on stage + total souls.',
-      'Soul Cap = 20 (expandable post-Abyss).'
+      'Soul appearance chance and Soul power depend on the total number of Souls',
+      'Soul appearance chance depends on stage and total Souls',
+      'Soul cap = 20 (expandable after Abyss)',
     ]
   },
   {
@@ -2299,6 +2298,7 @@ const statSections = [
         desc: 'Boss [Loot]',
         value: () => formatNumber(enemy.value.boss.isBoss? enemy.value.boss.drop: 1, true),
         color: 'red',
+        req: () => enemy.value.boss.isBoss
       },
       {
         desc: 'Soul [Loot]',
@@ -2309,6 +2309,7 @@ const statSections = [
         desc: 'Ascension Soul [Loot]',
         value: () => formatNumber(enemy.value.ascensionSoul.active || enemy.value.rebirthSoul? enemy.value.ascensionSoul.stats: 1, true),
         color: 'lightblue',
+        req: () => enemy.value.ascensionSoul.active || enemy.value.rebirthSoul
       },
       {
         desc: 'Rebirth [Loot]',
@@ -2339,6 +2340,7 @@ const statSections = [
         desc: 'Infinity',
         value: () => formatNumber(hero.value.mainInfTier >= 1? ((1.08 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1, true),
         color: 'gold',
+        req: () => hero.value.mainInfTier >= 1,
       },
       {
         desc: 'Tree [T6]',
@@ -2349,6 +2351,24 @@ const statSections = [
         desc: 'Curse [T5]',
         value: () => (hero.value.curset5? 2: 1),
         color: ' #a4ffe1',
+      },
+      {
+        desc: 'Quasar Core [Quasar Radiance] [Penalty]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(7)? divineSkills.value[7].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50
+      },
+      {
+        desc: 'Dimension [32] [Penalty]',
+        value: () => formatNumber(perks.value[15].value ** perks.value[15].level, true),
+        color: 'red',
+        req: () => hero.value.dId == 'd-noBuffs',
+      },
+      {
+        desc: 'Curse [Perdition of Poverty] [Penalty] [^]',
+        value: () => formatNumber(cursed[17].loot, true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 80,
       },
       {
         desc: 'Total',
@@ -2383,8 +2403,7 @@ const statSections = [
       },
       {
         desc: 'Awakened Tier Requirements',
-        value: () => 20 + 10 * hero.value.awakened['sword'] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-        (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0),
+        value: () => hero.value.awakenedReq['sword'],
         color: '#66ffcc',
       },
       { desc: 'Body', value: '', color: 'orange',  uppercase: true, },
@@ -2415,8 +2434,7 @@ const statSections = [
       },
       {
         desc: 'Awakened Tier Requirements',
-        value: () => 20 + 10 * hero.value.awakened['armor'] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-        (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0),
+        value: () => hero.value.awakenedReq['armor'],
         color: '#66ffcc',
       },
       { desc: 'Boots', value: '', color: 'orange',  uppercase: true, },
@@ -2447,8 +2465,7 @@ const statSections = [
       },
       {
         desc: 'Awakened Tier Requirements',
-        value: () => 20 + 10 * hero.value.awakened['boots'] -(hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-        (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0),
+        value: () => hero.value.awakenedReq['boots'],
         color: '#66ffcc',
       },
       { desc: 'Ring', value: '', color: 'orange',  uppercase: true, },
@@ -2479,8 +2496,7 @@ const statSections = [
       },
       {
         desc: 'Awakened Tier Requirements',
-        value: () => 20 + 10 * hero.value.awakened['ring'] - (hero.value.spCount >= 35? 1: 0) - (hero.value.spCount >= 46? 2: 0) -
-        (dimensions.value[8].infTier == dimensions.value[8].maxInfTier? hero.value.singularity: 0),
+        value: () => hero.value.awakenedReq['ring'],
         color: '#66ffcc',
       },
     ],
@@ -2681,13 +2697,18 @@ const statSections = [
   },
   {
     title: 'BUFF EXP',
-    id: 'only buff exp',
+    id: 'only buff exp buffexp',
     content: [
       { desc: 'BUFF EXP', value: '', color: 'orange',  uppercase: true, },
       {
         desc: 'Base [Curse Bonuses]',
         value: () => formatNumber(hero.value.cursedBonusExp * 50, true),
         color: '',
+      },
+      {
+        desc: 'Tree',
+        value: () => formatNumber((1 + 0.25 * perks.value[16].level), true),
+        color: 'lightgreen',
       },
       {
         desc: 'Soul [Tier]',
@@ -3084,7 +3105,7 @@ const statSections = [
     title: 'Danger',
     id: 'only danger',
     content: [
-      { desc: 'MAX Danger', value: '', color: 'red',  uppercase: true, req: () => true },
+      { desc: 'MAX Danger', value: '', color: 'gold',  uppercase: true, req: () => true },
       {
         desc: 'Base',
         value: 100,
@@ -3215,7 +3236,7 @@ const statSections = [
         value: () => formatNumber(((1 + 0.2 * Math.floor(hero.value.potential/20)) * 
         (Math.min(hero.value.maxLevel, hero.value.eLevel-1) + 
         (hero.value.eLevel > 700 && hero.value.maxLevel > 700? Math.min(hero.value.eLevel, hero.value.maxLevel) - 700: 0) + 
-        hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1))) * (hero.value.dId == 'noStats'? 0: 1), true),
+        hero.value.minLevel * (dimensions.value[12].infTier == dimensions.value[12].maxInfTier? 2: 1))) * (hero.value.dId == 'noStats' || hero.value.dId == 'd-noMinLevel'? 0: 1), true),
         color: 'lightgreen',
       },
       { desc: 'Damage MULT', value: '', color: 'red',  uppercase: true, },
@@ -3226,7 +3247,12 @@ const statSections = [
       },
        {
         desc: 'Tree [Radiation]',
-        value: () => formatNumber(perks.value[0].status? (1.01 ** Math.min(perks.value[0].kills,140) + (perks.value[0].kills >= 140? perks.value[0].kills ** 0.09 - 1: 0)): 1, true),
+        value: () => {
+        let soft = 140 + 10 * (dimensions.value[40].infTier - 40);
+        let result = (1.01 ** Math.min(perks.value[0].kills, soft) + (perks.value[0].kills >= soft? (perks.value[0].kills - soft) ** 0.09 - 1: 0));
+        
+        return formatNumber(result, true);
+        },
         color: '#66ff66',
       },
        {
@@ -3238,16 +3264,19 @@ const statSections = [
         desc: 'Sword',
         value: () => formatNumber(equipment[0].tiers[hero.value.equipmentTiers['sword']].bonus.multDmg, true),
         color: '#22cccc',
+         req: () => hero.value.mainInfTier >= 1 || hero.value.maxStage > 1
       },
       {
         desc: 'Sword [Enhances]',
         value: () => formatNumber(hero.value.eqUpsMult['sword'].bonus, true),
         color: '#22cccc',
+        req: () => hero.value.mainInfTier >= 1 || hero.value.spCount > 0
       },
        {
         desc: 'Infinity',
         value: () => formatNumber((hero.value.mainInfTier >= 1 || hero.value.level >= 700? ((1.055 + (hero.value.mainInfTier >= 25? 0.0035: 0) + (dimensions.value[20].infTier == dimensions.value[20].maxInfTier? 0.005: 0)) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))) : 1), true),
         color: 'gold',
+        req: () => hero.value.mainInfTier >= 1
       },
        {
         desc: 'Ascension [Celestial Overdrive]',
@@ -3255,14 +3284,16 @@ const statSections = [
         color: 'lightblue',
       },
       {
-        desc: 'Dimension [R0-X9a]',
-        value: () => formatNumber((hero.value.dId == 'gravity' && hero.value.stage >= 20? 1 / 1.05 ** (hero.value.stage - 19): 1 ), true),
+        desc: 'Dimension [R0-X9a] [2] [Penalty]',
+        value: () => formatNumber((hero.value.dId == 'gravity' && hero.value.stage >= 20? 1 / 1.075 ** (hero.value.stage - 19): 1 ), true),
         color: 'red',
+        req: () => hero.value.dId == 'gravity'
       },
       {
-        desc: 'Dimension [M2-Λ1s]',
+        desc: 'Dimension [M2-Λ1s] [4] [Penalty]',
         value: () => formatNumber((1 - hero.value.survivalLevel * 0.04), true),
         color: 'red',
+        req: () => hero.value.dId == 'survival'
       },
       {
         desc: 'BUFF: First Strike [T1]',
@@ -3302,6 +3333,11 @@ const statSections = [
         color: 'orange',
       },
       {
+        desc: 'BUFF: Berserk [T4]',
+        value: () => formatNumber((1 + buffs.value[12].rageAttackMult), true),
+        color: 'orange',
+      },
+      {
         desc: 'BUFF: Charge',
         value: () => formatNumber((1 + 0.05 * buffs.value[6].charges.power), true),
         color: 'orange',
@@ -3315,10 +3351,10 @@ const statSections = [
         desc: 'Formation',
         value: () => {
           let formation = 1;
-          formation *= (hero.value.activeFormation == 1? 2: 1);
+          formation *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 4: 2): 1);
           formation *= (hero.value.activeFormation == 0? 0.5: 1);
           formation *= (hero.value.activeFormation == 2? 0.5: 1);
-          formation *= (hero.value.activeFormation == 3? 0.5: 1);
+          formation *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
           return formation;
         },
         color: '#22cccc',
@@ -3332,21 +3368,24 @@ const statSections = [
         desc: 'Curse [Cursed Shield]',
         value: () => {
           if (hero.value.activeCurse.includes(2)){
-            let block = 0
-            if (hero.value.activeCurseTier[2] == 0) {
-              block = 0.1;
-            }
-            if (hero.value.activeCurseTier[2] == 1) {
-              block = 0.2;
-            }
-            if (hero.value.activeCurseTier[2] == 2) {
-              block = 0.3;
-            }
-            if (hero.value.activeCurseTier[2] == 3) {
-              block = 0.4;
-            }
+           let block = 0
+              if (hero.value.activeCurseTier[2] == 0) {
+                block = Math.min(0.1 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
+              }
+              if (hero.value.activeCurseTier[2] == 1) {
+                block = Math.min(0.2 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
+              }
+              if (hero.value.activeCurseTier[2] == 2) {
+                block = Math.min(0.3 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
+              }
+              if (hero.value.activeCurseTier[2] == 3) {
+                block = Math.min(0.4 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);;
+              }
+              if (hero.value.activeCurseTier[2] == 4) {
+                block = Math.min(0.6 * Math.max(hero.value.curseMult * 0.5, 1), 0.9);
+              }
 
-            return 1 - block;
+              return 1 - block;
           }
           return 1;
         },
@@ -3356,26 +3395,115 @@ const statSections = [
         desc: 'Singularity Pts',
         value: () => formatNumber((hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1), true),
         color: 'orange',
+        req: () => hero.value.rebirthPts >= 6e5,
       },
        {
         desc: 'Dimension [RX-ϴvLX] [10]',
         value: () => (hero.value.isSingularity && dimensions.value[10].infTier == dimensions.value[10].maxInfTier? 2: 1),
-        color: '#6a0dad',
+        color: '#930df3',
+        req: () => dimensions.value[20].infTier > 10
       },
        {
         desc: 'Ascension [Fractal Echoes]',
         value: () => formatNumber((ascenPerks[48].level? 1 + 0.05 * dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length: 1), true),
         color: 'lightblue',
+        req: () => dimensions.value[9].infTier >= dimensions.value[9].maxInfTier
       },
-       {
+      {
         desc: 'Dimension [LZ-ψdVV] [20]',
         value: () => formatNumber((1.04 ** (dimensions.value[20].infTier - 20)), true),
-        color: '#6a0dad',
+        color: '#930df3',
+        req: () => dimensions.value[20].infTier > 0
       },
       {
         desc: 'Dimension [DV-χuQZ] [21]',
         value: () => formatNumber((hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1), true),
-        color: '#6a0dad',
+        color: '#930df3',
+        req: () => dimensions.value[21].infTier > 0
+      },
+      { desc: 'Dimension [28]', value: '', color: 'gold',  uppercase: true, req: () => dimensions.value[28].infTier > 0 },
+      {
+        desc: `[Effect]`,
+        value: () => formatNumber(((1.01 + 0.0075 * dimensions.value[28].infTier) ** Math.log(3 + Math.sqrt(hero.value.damageStage))), true),
+        color: '#930df3',
+        req: () => dimensions.value[28].infTier > 0
+      },
+      {
+        desc: `[Total Kills]`,
+        value: () => formatNumber(hero.value.damageStage),
+        color: 'gold',
+        req: () => dimensions.value[28].infTier > 0
+      },
+       {
+        desc: `.`,
+        value: () => ``,
+        color: 'black',
+      },
+      {
+        desc: 'Dimension [30]',
+        value: () => formatNumber((hero.value.survivalLife > 0? 2: 1), true),
+        color: '#930df3',
+        req: () => dimensions.value[30].infTier > 0
+      },
+       {
+        desc: 'Transcendence [MAIN]',
+        value: () => formatNumber((hero.value.bhTier >= 2 && hero.value.dId == 'main'? 1 + 0.05 * hero.value.transcendence: 1), true),
+        color: '#00fdff',
+        req: () => hero.value.bhTier >= 2,
+      },
+      {
+        desc: 'Transcendence [BLACK HOLE]',
+        value: () => formatNumber((hero.value.bhTier >= 2 && hero.value.dId == 'bh'? 1 + 0.05 * hero.value.transcendenceBH: 1), true),
+        color: '#00fdff',
+        req: () => hero.value.bhTier >= 2,
+      },
+       {
+        desc: 'Dark Creature',
+        value: () => formatNumber((1 + 0.01 * enemy.value.darkEnemyLoot[1]), true),
+        color: 'red',
+        req: () => enemy.value.darkEnemyLoot[1]
+      },
+      {
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.025 * dimensions.value[28].infTier) * (hero.value.dId.startsWith('d-') && hero.value.isTravell? 1.25: 1), 1e6 * 1.05 ** dimensions.value[28].infTier): 1), true),
+        color: 'red',
+        req: () => hero.value.dId == 'd-damage'
+      },
+      {
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.015 * dimensions.value[28].infTier, 0.5) * (hero.value.dId.startsWith('d-') && hero.value.isTravell? 1.125: 1), 1e6): hero.value.d_damage_penalty.dmg), true),
+        color: 'red',
+        req: () => hero.value.darkId.includes('d-damage')
+      },
+      {
+        desc: 'Black Impulse [T1]',
+        value: () => formatNumber((hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 1? (Math.random()*100 + 20 * buffs.value[15].hits >= 100? 2: 1): 1), true),
+        color: 'orange',
+        req: () => hero.value.bhTier > 0
+      },
+      {
+        desc: 'Black Impulse [T2]',
+        value: () => formatNumber((hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 2 && enemy.value.def <= 0? 1.5: 1), true),
+        color: 'orange',
+        req: () => hero.value.bhTier > 1
+      },
+      {
+        desc: 'Black Impulse [T4]',
+        value: () => formatNumber((hero.value.activeBuffs.includes(15) && buffs.value[15].tier >= 4 && hero.value.attack * 10 < enemy.value.maxHp? 2: 1), true),
+        color: 'orange',
+        req: () => hero.value.bhTier > 3
+      },
+       {
+        desc: 'Quasar Core [Nova Surge]',
+        value: () => formatNumber((1.04 ** (dimensions.value[20].infTier - 20)), true),
+        color: '#00ffea',
+        req: () => hero.value.mainInfTier >= 50
+      },
+      {
+        desc: 'Quasar Core [Singularity Destruction] [Penalty]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50
       },
       {
         desc: 'Total',
@@ -3479,7 +3607,7 @@ const statSections = [
                   : 0
               )
             )
-          ) * (hero.value.dId == 'noStats'? 0: 1)
+          ) * (hero.value.dId == 'noStats' || hero.value.dId == 'd-noMinLevel'? 0: 1)
         ),
         color: 'lightgreen',
       },
@@ -3521,6 +3649,7 @@ const statSections = [
         desc: 'Infinity',
         value: () => formatNumber((hero.value.mainInfTier >= 1 || hero.value.level >= 700? ((1.015 + (hero.value.mainInfTier >= 25? 0.0035: 0)) ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), true),
         color: 'gold',
+        req: () => hero.value.mainInfTier >= 1
       },
       {
         desc: 'Ascension [Celestial Overdrive]',
@@ -3532,9 +3661,9 @@ const statSections = [
         value: () => {
           let f = 1;
           f *= (hero.value.activeFormation == 0? 2: 1);
-          f *= (hero.value.activeFormation == 1? 0.5: 1);
+          f *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 0.25: 0.5): 1);
           f *= (hero.value.activeFormation == 2? 0.5: 1);
-          f *= (hero.value.activeFormation == 3? 0.5: 1);
+          f *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
           return f;
         },
         color: 'green',
@@ -3558,32 +3687,39 @@ const statSections = [
         desc: 'Singularity Pts',
         value: () => (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1),
         color: '#a4ffe1',
+        req: () => hero.value.singularityPts >= 6e5
       },
        {
         desc: 'Dimension [DV-χuQZ] [21]',
         value: () => (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1),
         color: '#6a0dad',
+        req: () => dimensions.value[21].infTier > 0
       },
       {
-        desc: 'Total',
-        value: () => {
-          let f = 1;
-          f *= (hero.value.activeFormation == 0? 2: 1);
-          f *= (hero.value.activeFormation == 1? 0.5: 1);
-          f *= (hero.value.activeFormation == 2? 0.5: 1);
-          f *= (hero.value.activeFormation == 3? 0.5: 1);
-          f *= (hero.value.mainInfTier >= 1 || hero.value.level >= 700? (1.04 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
-          f *= (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1);
-          f *= (hero.value.activeBuffs.includes(8) && buffs.value[8].tier >= 1? (1 + 0.001 * Math.floor(buffs.value[8].time)): 1);
-          f *= (hero.value.activeBuffs.includes(13)? 1.5: 1);
-          f *= (1 + 0.05 * buffs.value[6].charges.life);
-          f *= (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1);
-          f *= (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1);
-          return formatNumber(f, true);
-        },
-        color: 'gold',
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.0125 * dimensions.value[28].infTier), 1e3): 1), true),
+        color: 'red',
+        req: () => hero.value.dId == 'd-damage'
       },
-      { desc: 'HP Total', value: '', color: 'lightgreen',  uppercase: true, },
+      {
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.02 * dimensions.value[28].infTier, 0.5), 1e3): hero.value.d_damage_penalty.hp), true),
+        color: 'red',
+        req: () => hero.value.darkId.includes('d-damage')
+      },
+      {
+        desc: 'Dimension [30]',
+        value: () => formatNumber((hero.value.survivalLife > 0? 2: 1), true),
+        color: '#6a0dad',
+        req: () => dimensions.value[30].infTier > 0
+      },
+      {
+        desc: 'Quasar Core [Singularity Destruction] [Penalty]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50
+      },
+      { desc: 'Total', value: '', color: 'lightgreen',  uppercase: true, },
       {
         desc: 'Total',
         value: () => formatNumber(hero.value.maxHp, true),
@@ -3637,15 +3773,16 @@ const statSections = [
         desc: 'Infinity',
         value: () => formatNumber((hero.value.mainInfTier >= 1 || hero.value.level >= 700? (1.02 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1), true),
         color: 'gold',
+        req: () => hero.value.mainInfTier >= 1,
       },
       {
         desc: 'Formation [T3]',
         value: () => {
         let f = 1;
         f *= (hero.value.activeFormation == 2? 2: 1);
-        f *= (hero.value.activeFormation == 1? 0.5: 1);
+        f *= (hero.value.activeFormation == 1? (ascenPerks[62].level? 0.25: 0.5): 1);
         f *= (hero.value.activeFormation == 0? 0.5: 1);
-        f *= (hero.value.activeFormation == 3? 0.5: 1);
+        f *= (hero.value.activeFormation == 3? (ascenPerks[59].level? 1: 0.5): 1);
         return f;
         },
         color: 'yellow',
@@ -3669,33 +3806,37 @@ const statSections = [
         desc: 'Singularity Pts',
         value: () => (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1),
         color: '#a4ffe1',
+        req: () => hero.value.rebirthPts >= 6e5,
       },
        {
         desc: 'Dimension [DV-χuQZ] [21]',
         value: () => (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1),
         color: '#6a0dad',
+        req: () => dimensions.value[21].infTier > 0
+      },
+       {
+        desc: 'Dimension [DV-χuQZ] [30]',
+        value: () => (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1),
+        color: '#6a0dad',
+        req: () => dimensions.value[30].infTier > 0
       },
       {
-        desc: 'Total',
-        value: () => {
-        let f = 1;
-        f *= (hero.value.activeFormation == 2? 2: 1);
-        f *= (hero.value.activeFormation == 1? 0.5: 1);
-        f *= (hero.value.activeFormation == 0? 0.5: 1);
-        f *= (hero.value.activeFormation == 3? 0.5: 1);
-        f *= hero.value.activeBuffs.includes(13) && buffs.value[13].tier >= 2? 1 + (1 - (hero.value.hp / hero.value.maxHp)): 1;
-        f *= (buffs.value[10].buffT2 > 0? 1.25: 1);
-        f *= (hero.value.activeBuffs.includes(13) && buffs.value[13].tier >= 1? 1.5: 1);
-        f *= (hero.value.mainInfTier >= 1 || hero.value.level >= 700? (1.02 ** (hero.value.infPoints / Math.sqrt(hero.value.infPoints + 1))): 1);
-        f *= buffs.value[0].def;
-        f *= (ascenPerks[28].level && enemy.value.isSpaceFight == 2? 1.25: 1);
-        f *= (1 + ((perks.value[2].value * perks.value[2].level)*0.01));
-        f *= (1 + 0.05 * buffs.value[6].charges.life);
-        f *= (hero.value.survivalStage ** 1.175 > hero.value.eLevel? 2: 1);
-        f *= (hero.value.isSingularity && hero.value.rebirthPts >= 6e5? 2: 1);
-        return formatNumber(f, true);
-        },
-        color: 'gold',
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.dId == 'd-damage'? Math.min(enemy.value.d_damagePenalty ** (1 + 0.0125 * dimensions.value[28].infTier), 1e3): 1), true),
+        color: 'red',
+        req: () => hero.value.dId == 'd-damage'
+      },
+      {
+        desc: 'Doom [Penalty]',
+        value: () => formatNumber((hero.value.darkId.includes('d-damage')? Math.min(enemy.value.d_damagePenalty ** Math.max(1 - 0.02 * dimensions.value[28].infTier, 0.5), 1e3): hero.value.d_damage_penalty.hp), true),
+        color: 'red',
+        req: () => hero.value.darkId.includes('d-damage')
+      },
+      {
+        desc: 'Quasar Core [Singularity Destruction] [Penalty]',
+        value: () => formatNumber((hero.value.selectedDivSkills.includes(8)? divineSkills.value[8].values[1]: 1), true),
+        color: 'red',
+        req: () => hero.value.mainInfTier >= 50
       },
       { desc: 'Extra DEF', value: '', color: 'yellow',  uppercase: true, },
       {
