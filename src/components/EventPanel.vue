@@ -1,39 +1,65 @@
 <template>
   <div class="sidebar">
     <div class="level-bar">
-      <div class="tooltip-wrapper-lvl" >
-          <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Level' }"><sup style="font-size: 8px">ℹ️</sup>
-            <span class="info-button-lvl"></span> 
-
-            <span style="font-size: 12px" :class="{'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }">*Lvl: {{ eLevel }}
-            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ formatNumber(maxLevel, false, true) }}
-            <span v-if="hero.trueLevel >= 70000 && hero.dId == 'main'" style="color: cyan">[{{ hero.transcendence >= 10 ? Math.floor(hero.transcendence) : hero.transcendence.toFixed(2) }}]</span>
-            <span v-else-if="hero.trueLevel > 300 && hero.dId != 'unlimitted'">[{{formatNumber(hero.trueLevel, false, true)}}]</span>
+      <Tooltip :text="() => lvlInfo()" position="bottom">
+        <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Level' }"
+          class="level-text">
+          <span 
+            :class="{
+              'singularity-text-lvl': hero.eLevel > 700,
+              'corruption-text-lvl': hero.eLevel >= 300,
+              'exp-text': hero.eLevel < 300
+            }"
+          >
+            Lvl: {{ hero.eLevel }}
+            <span v-if="hero.minLevel > 0">(+{{hero.minLevel}})</span>/{{ fn(hero.maxLevel, false) }}
+            <span v-if="hero.trueLevel >= 70000 && (hero.dId == 'main' || hero.tr.spread > 0)" style="color: cyan">
+              [{{ fn(hero.tr.count) }}]
             </span>
-          </p>
-          <div class="tooltip-lvl">
-            Every level gives you {{(2 + 0.5 * Math.floor(hero.potential/10)).toFixed(1)}} HP, {{(1 + 0.2 * Math.floor(hero.potential/20)).toFixed(1)}} DMG, 
-            {{(0.5 + 0.1 * Math.floor(hero.potential/30)).toFixed(1)}} DEF<br>
-            <span v-if="hero.eLevel > 700">Getting Double Stats After Level 700</span><br>
-            <span v-if="hero.rebirthPts >= 1e7">Reach 70000 True Level in main dimension to get first <span style='color: cyan'>transcendence</span></span>
-          </div>
-        </div>
+            <span v-else-if="hero.trueLevel > 300 && (hero.dId != 'unlimitted' || hero.dId != 'c-unlimitted' )">
+              [{{fn(hero.trueLevel, false)}}]
+            </span>
+          </span>
+        </p>
+      </Tooltip>
       
       <div class="exp-bar-container">
         <div
-          :class="{ 'exp-bar-singularity': eLevel > 700, 'exp-bar-corrupted': eLevel >= 300 }"
+          :class="{ 'exp-bar-singularity': hero.eLevel > 700, 'exp-bar-corrupted': hero.eLevel >= 300 }"
           class="exp-bar"
-          :style="{ width: `${Math.min(100, (exp / nextLevelExp) * 100)}%` }"
+          :style="{ width: `${Math.min(100, (hero.exp / hero.nextLevelExp) * 100)}%` }"
         ></div>
       </div>
-      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'EXP' }"><sup style="font-size: 8px">ℹ️</sup><span :class="{ 'singularity-text-lvl': eLevel > 700, 'corruption-text-lvl': eLevel >= 300, 'exp-text': eLevel < 300 }"> {{ formatNumber(exp) }} / {{ formatNumber(nextLevelExp) }} EXP</span></p>
+      <p @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'EXP' }"><sup style="font-size: 8px">ℹ️</sup><span :class="{ 'singularity-text-lvl': hero.eLevel > 700, 'corruption-text-lvl': hero.eLevel >= 300, 'exp-text': hero.eLevel < 300 }"> 
+        {{ fn(hero.exp) }} / {{ fn(hero.nextLevelExp) }} EXP</span></p>
     </div>
 
-    <p v-if="hero.abyssTier >= 3" style="text-align: center" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Corrupt.' }"><sup style="font-size: 8px">ℹ️</sup>
-      <span class="corruption-text-lvl">CORRUPTION [{{corruptionShow()}}]</span>
-    </p>
+    <div class="icons-wrapper">
+      <div class="minIcons">
+        <Tooltip :text="() => minIconsHandler(4)" position="right" maxWidth="180px">
+          <span v-if="hero.infUnlocked">R</span>
+        </Tooltip>
+        <Tooltip :text="() => minIconsHandler(0)" position="right" maxWidth="150px">
+          <span>L</span>
+        </Tooltip>
+        <Tooltip :text="() => minIconsHandler(1)" position="right" maxWidth="140px">
+          <span>R</span>
+        </Tooltip>
+        <Tooltip :text="() => minIconsHandler(2)" position="right" maxWidth="150px">
+          <span>S</span>
+        </Tooltip>
+        <Tooltip :text="() => minIconsHandler(3)" position="right" maxWidth="150px">
+          <span>E</span>
+        </Tooltip>
+      </div>
 
-    <h3>📜 Events</h3>
+      <div v-if="hero.notes.msg.length > 0" class="notification-toggle-btn" @click="togglePanel">
+        <span :class="{ 'has-notifications': hero.notes.msg.length > 0 }">
+          {{ hero.notes.msg.length > 99 ? '99+' : 'N' + hero.notes.msg.length }}
+        </span>
+      </div>
+    </div>
+    
     <div class="wrapper-events">
       <div
         v-for="event in events"
@@ -64,12 +90,26 @@
 
 
 <script setup>
-import { computed, watchEffect } from 'vue';
+import { computed, watchEffect, watch } from 'vue';
 import { useHero } from '../composables/useHero.js';
 import { useEnemy } from '../composables/useEnemy.js';
 import { perks as rawPerks } from '../data/radPerks.js';
 import ascensionIcon from '../assets/ascension.png';
 import { dimensions } from '../data/dimensions.js'
+
+import { fn } from '../composables/utils/global.js';
+import { useNotificationHandler } from '../composables/UI/useNotificationHandler.js';
+
+import { useSpaces } from '../composables/battleUtils/useSpace.js';
+import { useBaseEnemy } from '../composables/utils/enemySetup.js';
+import { usePlayer } from '../composables/utils/playerSetup.js';
+import { useDimensions } from '../composables/battleUtils/useDimensions.js';
+
+import { newicons } from '../composables/icons.js';
+
+const {
+  getDimSpecialReward
+} = useDimensions();
 
 const props = defineProps({
   hero: Object,
@@ -78,41 +118,35 @@ const props = defineProps({
 });
 const { enemy } = useEnemy();
 const { hero } = useHero();
+const { player } = usePlayer();
+
+const { villian } = useBaseEnemy("space");
+
+const { togglePanel } = useNotificationHandler();
 
 const emit = defineEmits(['update:modelValue']);
-
-const exp = computed(() => props.hero.exp);
-const nextLevelExp = computed(() => props.hero.nextLevelExp);
-const level = computed(() => props.hero.level);
-const eLevel = computed(() => props.hero.eLevel);
-const maxLevel = computed(() => props.hero.maxLevel);
 
 
 const icons = {
   'Combat': '⚔️',
-  'Equipment': '🔥',
-  'Buff': '⚡',
+  'Equipment': '🗡️',
+  'Skills': newicons.skillExp,
   'Tree': '🌿',
   'Ascension': '🌌',
   'Soul': '💀',
   'Amulet': '🔮',
   'Rebirth': '♻️',
   'Space': '✨',
-  'Radiation': '☢️',
+  'Radiation': newicons.radiation,
   'Infinity': '∞',
   'D-Atlas': '🌐',
+  'Void': newicons.voidShard,
   'Settings': '⚙️',
   'Info': '📖'
 }
 
-const extraIcons = [
-  '☄️', '👁️‍🗨️', '♊', '🧠', '🌑', '💥', '❄️', '💎', '🍀', '🌫️', '🔪', '🏹', '🩸', '⛓️', '🩹', '💖'
-]
 
 watchEffect(() => {
-  if (enemy.value.isSpaceFight == 1 && !hero.value.noBattleWindowChanges) {
-    emit('update:modelValue', 'Combat')
-  }
   if(hero.value.windowUpdate){
     emit('update:modelValue', 'Combat')
     hero.value.windowUpdate = false;
@@ -121,153 +155,264 @@ watchEffect(() => {
     hero.value.eLink.set = '';
     emit('update:modelValue', 'Info')
   }
+  if(hero.value.spaceWindowChange) {
+    emit('update:modelValue', 'Combat');
+    hero.value.battleId = "space";
+    hero.value.spaceWindowChange = false;
+  }
 
 })
 
-function formatNumber(num, f = false, lvl = false) {
-  if (num > 70000 && lvl) return `70k+`;
-  if (num < 10 && f) return num.toFixed(2)
-  if (num < 1000) return Math.floor(num).toString();
+watch(
+  () => [
+    hero.value.noBattleWindowChanges,
+    villian.value.space.spaceCooldown,
+    villian.value.space.isSpaceFight
+  ],
+  ([noChange, cd, fight]) => {
+    if (noChange && cd > 0 && fight) {
+      emit('update:modelValue', 'Combat');
+      hero.value.battleId = "space";
+    }
+  }
+);
 
-  const units = [
-  "",  // 10^0
-  "k", // 10^3
-  "m", // 10^6
-  "b", // 10^9
-  "t", // 10^12
-  "q", // 10^15 (quadrillion)
-  "Q", // 10^18 (quintillion)
-  "s", // 10^21 (sextillion)
-  "S", // 10^24 (septillion)
-  "o", // 10^27 (octillion)
-  "n", // 10^30 (nonillion)
-  "d", // 10^33 (decillion)
-  "u", // 10^36 (undecillion)
-  "D", // 10^39 (duodecillion)
-  "T", // 10^42 (tredecillion)
-  "qt", // 10^45 (quattuordecillion)
-  "Qd", // 10^48 (quindecillion)
-  "sd", // 10^51 (sexdecillion)
-  "St", // 10^54 (septendecillion)
-  "Od", // 10^57 (octodecillion)
-  "Nd", // 10^60 (novemdecillion)
-  "vg", // 10^63 (vigintillion)
-  "Uv", // 10^66 (unvigintillion)
-  "Dv", // 10^69 (duovigintillion)
-  "Tv", // 10^72 (tresvigintillion)
-  "qtv", // 10^75 (quattuorvigintillion)
-  "Qtv", // 10^78 (quinvigintillion)
-  "sdv", // 10^81 (sexvigintillion)
-  "Stv", // 10^84 (septenvigintillion)
-  "Odv", // 10^87 (octovigintillion)
-  "Ndv", // 10^90 (novemvigintillion)
-  "Tg", // 10^93 (trigintillion)
-  "∞",  // 10^96+
-];
-  const tier = Math.floor(Math.log10(num) / 3);
+const stageReq = {
+  Combat: 1,
+  Equipment: 2,
+  Skills: 5,
+  Tree: 1,
+  Ascension: 10,
+  Soul: 15,
+  Amulet: 20,
+};
 
-  if(tier >= units.length)
-    return "∞";
+const corruptionLocks = {
+  'c-noTree': ['Equipment','Skills','Ascension','Space','Radiation','Rebirth'],
+  'c-noEq': ['Tree','Skills','Ascension','Space','Radiation','Rebirth'],
+  'c-noSpace': ['Tree','Equipment','Skills','Ascension','Radiation','Rebirth'],
+  'c-noBuffs': ['Tree','Equipment','Space','Ascension','Radiation','Rebirth'],
+  'c-ascension': ['Tree','Equipment','Space','Skills','Radiation','Rebirth'],
+  'c-radiation': ['Tree','Equipment','Space','Ascension','Skills','Rebirth'],
+};
 
-  const suffix = units[tier];
-  const scale = Math.pow(10, tier * 3);
-  const scaled = num / scale;
+const dimensionLocks = {
+  noTree: ['Tree'],
+  ascension: ['Ascension'],
+  'ascension-2': ['Ascension'],
+  noEq: ['Equipment'],
+  noBuffs: ['Skills'],
+  noSpace: ['Space'],
+  radiation: ['Radiation'],
+};
 
-  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+const singularityReq = {
+  Tree: 2,
+  Ascension: 3,
+  Space: 4,
+  Skills: 5,
+  Equipment: 6
+};
+
+function eventReq(e) {
+  const heroData = hero.value;
+
+  if (heroData.isSingularity) {
+    const req = singularityReq[e];
+    if (req && heroData.singularity >= req) return true;
+  }
+
+  if (dimensionLocks[heroData.dId]?.includes(e)) return true;
+
+  if (corruptionLocks[heroData.dId]?.includes(e)) return true;
+
+  if (e === 'Soul' && heroData.dId === 'soulD') return false;
+
+  if (stageReq[e]) return heroData.maxStage < stageReq[e];
+
+  if (e === 'Rebirth') return heroData.level < 100 && heroData.rebirthPts <= 0;
+  if (e === 'Space') return heroData.abyssTier < 3 || heroData.rebirthPts < 100000;
+  if (e === 'Radiation') return heroData.spCount < 5;
+  if (e === 'Infinity') return !heroData.infUnlocked;
+  if (e === 'D-Atlas') return heroData.mainInfTier < 10;
+  if (e === 'Void') return heroData.mainInfTier < 100;
+  if (e === 'Info' || e === 'Settings') return heroData.maxStage < 1;
+}
+
+function eventReqD(e) {
+  const heroData = hero.value;
+
+  if (heroData.isSingularity) {
+    const req = singularityReq[e];
+    if (req && heroData.singularity >= req) return 'Singularity Conflict';
+  }
+
+  if (dimensionLocks[heroData.dId]?.includes(e)) return 'The Unknown';
+
+  if (corruptionLocks[heroData.dId]?.includes(e)) return 'Corruption Conflict';
+
+  const stageText = {
+    Equipment: 'Stage 2',
+    Skills: 'Stage 5',
+    Ascension: 'Stage 10',
+    Soul: 'Stage 15',
+    Amulet: 'Stage 20',
+  };
+
+  if (stageText[e]) return stageText[e];
+
+  if (e === 'Rebirth') return 'Level 100';
+  if (e === 'Space') return '2 Space Fragments';
+  if (e === 'Radiation') return '5 Space Power';
+  if (e === 'Infinity') return 'Total Level 700';
+  if (e === 'D-Atlas') return 'Infinity [T10]';
+  if (e === 'Void') return 'Infinity [T100]';
 }
 
 
-function corruptionShow(){
-  if(hero.value.dId == 'd-corruption' || hero.value.darkId.includes('d-corruption')){
-    return (hero.value.overcorruption).toFixed(2);
-  } else {
-    return (hero.value.corruption).toFixed(2)
+function minIconsHandler(id){
+  switch(id){
+    case 0: {
+      let d = (hero.value.eLevel > 700? 2: 1)
+      let text = `<b style="color: lightgreen">Every level gives you:</b>
+      <b style='color: lightgreen'>${(2 + 0.5 * Math.floor(hero.value.potential/10) * d).toFixed(1)} HP</b>
+      <b style='color: red'>${(1 + 0.2 * Math.floor(hero.value.potential/20) * d).toFixed(1)} DMG</b>
+      <b style='color: yellow'>${(0.5 + 0.1 * Math.floor(hero.value.potential/30) * d).toFixed(1)} DEF</b>`;
+
+      if(getDimSpecialReward(52))
+        text += `<br><b style='color: orange'>${0.001 * d} CRIT DMG</b>`;
+
+      if(hero.value.eLevel > 700)
+        text += `<br><br><b style="color: #6adfdf">Stats after Level 700 are doubled</b>`;
+
+      return text;
+    }
+    case 1: {
+      return `<b style="color: lightgreen">Level Rush</b> - Level increases automatically while below <span style='color: gold'>${Math.floor(hero.value.levelRush.c * 100)}%</span> of Max Level
+      <b style="color: #007bff">Stage Rush</b> - Defeat enemy to clear the stage up to <span style='color: gold'>${Math.floor(hero.value.stageRush.c * 100)}%</span> of your Max Stage`;
+    }
+    case 2: {
+      return `Max Stage: <b style="color: gold">${hero.value.maxStage}</b>`;
+    }
+    case 3: {
+      return `<div style="display:flex;flex-direction:column;gap:4px;width:70px">
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1k</b>
+          <b>1e3</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1m</b>
+          <b>1e6</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1b</b>
+          <b>1e9</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1t</b>
+          <b>1e12</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1qa</b>
+          <b>1e15</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1qi</b>
+          <b>1e18</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1sx</b>
+          <b>1e21</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1sp</b>
+          <b>1e24</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1o</b>
+          <b>1e27</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1n</b>
+          <b>1e30</b>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <b style="color:#ffd700">1d</b>
+          <b>1e33</b>
+        </div>
+
+      </div>`.replace(/\n\s*/g, '');
+    }
+    case 4: {
+
+      let text = `<div style="display:flex;flex-direction:column;gap:4px;width:170px"><b>All Resources</b>`;
+
+        const row = (label, value, color) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:${color}">${label}</span>
+          <span style="font-family:monospace; color:${color}"><b>${fn(value)}</b></span>
+        </div>`;
+
+      text += row('Ascension Shards', hero.value.ascensionShards, '#4f7cff');
+      text += row('Stardust', hero.value.stardust, 'orange');
+      text += row('Mutagen', hero.value.mutagen, '#bddd1c');
+      text += row('IP', hero.value.infPoints, 'gold');
+
+      if (hero.value.mainInfTier > 25)
+        text += row('Dimension Shards', hero.value.ds, '#fe41fe');
+
+      if (hero.value.bhTier >= 4)
+        text += row('Ancient Shards', hero.value.ancientShards, '#6fc');
+
+      if (hero.value.mainInfTier >= 60)
+        text += row('Corruption Shards', hero.value.dims.corrShards, '#b200ff');
+
+      if (hero.value.bhTier >= 5)
+        text += row('Singularity Shards', hero.value.gravity.shards, 'cyan');
+
+      if (hero.value.mainInfTier >= 100)
+        text += row('Void Shards', hero.value.void.totalShards, '#b6ff00');
+
+      return text + `</div>`;
+    }
+    
+    default: return ''; 
   }
 }
 
-function eventReq (e){
-  if(hero.value.isSingularity){
-    if(hero.value.singularity >= 2 && e == 'Tree') return true;
-    if(hero.value.singularity >= 3 && e == 'Ascension') return true;
-    if(hero.value.singularity >= 4 && e == 'Space') return true;
-    if(hero.value.singularity >= 5 && e == 'Buff') return true;
-    if(hero.value.singularity >= 6 && e == 'Equipment') return true;
-    if(hero.value.singularity == 7 && e == 'Rebirth') return true;
-  }
-  if(hero.value.dId == 'noTree' && e == 'Tree') return true;
-  if((hero.value.dId == 'ascension' || hero.value.dId == 'ascension-2') && e == 'Ascension')  return true;
-  if(hero.value.dId == 'noEq' && e == 'Equipment') return true;
-  if(hero.value.dId == 'noBuffs' && e == 'Buff') return true;
-  if(hero.value.dId == 'noSpace' && e == 'Space') return true;
-  if(hero.value.dId == 'radiation' && e == 'Radiation') return true;
+function lvlInfo() {
 
-  if(e == 'Soul' && hero.value.dId == 'soulD') return false;
+  let text =  `Current Level: <b style="color: lightgreen">${fn(hero.value.eLevel)}</b><br>`;
 
-  if(e == 'Combat') return hero.value.maxStage < 1;
-  if(e == 'Equipment') return hero.value.maxStage < 2;
-  if(e == 'Buff') return hero.value.maxStage < 5;
-  if(e == 'Tree') return hero.value.maxStage < 1;
-  if(e == 'Ascension') return hero.value.maxStage < 10;
-  if(e == 'Soul') return hero.value.maxStage < 15;
-  if(e == 'Amulet') return hero.value.maxStage < 20;
-  if(e == 'Rebirth') return (hero.value.level < 100 && hero.value.rebirthPts <= 0);
-  if(e == 'Space') return (hero.value.abyssTier < 3 || hero.value.rebirthPts < 100000);
-  if(e == 'Radiation') return hero.value.spCount < 5;
-  if(e == 'Infinity') return (hero.value.dId == 'main' && (hero.value.infTier < 1 && hero.value.infEvents < 2) && hero.value.level < 700);
-  if(e == 'D-Atlas') return hero.value.abyssDStages < 80;
-  if(e == 'Info') return hero.value.maxStage < 1;
-  if(e == 'Settings') return hero.value.maxStage < 1;
-}
+  if (hero.value.minLevel > 0)
+    text += `Min Level: <b style="color: lightgreen">${fn(hero.value.minLevel)}</b>
+    Total Lelel: <b style="color: lightgreen">${fn(hero.value.minLevel + hero.value.eLevel)}</b><br>`;
 
-function eventReqD (e){
-  if(hero.value.isSingularity){
-    if(hero.value.singularity >= 2 && e == 'Tree') return 'Singularity Conflict';
-    if(hero.value.singularity >= 3 && e == 'Ascension') return 'Singularity Conflict';
-    if(hero.value.singularity >= 4 && e == 'Space') return 'Singularity Conflict';
-    if(hero.value.singularity >= 5 && e == 'Buff') return 'Singularity Conflict';
-    if(hero.value.singularity >= 6 && e == 'Equipment') return 'Singularity Conflict';
-    if(hero.value.singularity == 7 && e == 'Rebirth') return 'Singularity Conflict';
-  }
-  if(hero.value.dId == 'noTree' && e == 'Tree'){
-    return 'The Unknown';
-  }
-  if((hero.value.dId == 'ascension' || hero.value.dId == 'ascension-2') && e == 'Ascension'){
-   return 'The Unknown';
-  }
-  if(hero.value.dId == 'noEq' && e == 'Equipment'){
-   return 'The Unknown';
-  }
-  if(hero.value.dId == 'noBuffs' && e == 'Buff'){
-   return 'The Unknown';
-  }
-  if(hero.value.dId == 'noSpace' && e == 'Space'){
-   return 'The Unknown';
-  }
-  if(hero.value.dId == 'radiation' && e == 'Radiation'){
-    return `The Unknown`;
-  }
+  text += `Max Level: <b style="color: lightgreen">${fn(hero.value.maxLevel)}</b><br>`
 
-  if(e == 'Equipment') return 'Stage 2';
-  if(e == 'Buff') return 'Stage 5';
-  if(e == 'Ascension') return 'Stage 10';
-  if(e == 'Soul') return 'Stage 15';
-  if(e == 'Amulet') return 'Stage 20';
-  if(e == 'Rebirth') return 'Level 100';
-  if(e == 'Space') return '2 Space Fragments';
-  if(e == 'Radiation') return '5 Space Power';
-  if(e == 'Infinity') return 'Total Level 700';
-  if(e == 'D-Atlas') return 'AbyssD Stage 80';
+  if(hero.value.spaceUnlocked)
+    text += `True Level: <b style="color: lightgreen">${fn(hero.value.trueLevel)}</b>`;
+
+  return text;
 }
 
 </script>
 
 <style scoped>
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
   width: 200px;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(6px);
@@ -276,10 +421,19 @@ function eventReqD (e){
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  z-index: 1000;
   scrollbar-width: thin;
   scrollbar-color: rgb(245, 229, 56) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.level-text {
+  display: inline-flex;
+  white-space: nowrap;      
+  max-width: 100%;         
+  font-size: clamp(10px, 1.5vw, 16px); 
 }
 
 .level-bar {
@@ -384,28 +538,6 @@ function eventReqD (e){
   opacity: 1;
 }
 
-.tooltip-lvl {
-  position: absolute;
-  top: 80%;
-  left: 100%;
-  transform: translateX(-50%);
-  background-color: #1c1917;
-  color: #fef2f2;
-  padding: 0.8rem;
-  border-radius: 0.5rem;
-  width: 220px;
-  font-size: 0.85rem;
-  text-align: left;
-  z-index: 10;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.tooltip-wrapper-lvl:hover .tooltip-lvl {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 .tooltip-wrapper-lvl {
   position: relative;
@@ -518,6 +650,87 @@ function eventReqD (e){
   -webkit-text-fill-color: transparent;
   display: inline-block;
   line-height: 20px;
+}
+
+
+.icons-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.25rem;
+}
+
+.minIcons span {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.minIcons:hover {
+  background: #444;
+}
+
+.number-abbr-tooltip ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.number-abbr-tooltip li {
+  white-space: nowrap;
+}
+
+/* Notifications */
+.notification-toggle-btn {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:0 8px;
+
+  background:linear-gradient(135deg,#1a1f2b,#0f131c);
+  color:#cfd6e6;
+
+  font-weight:700;
+  font-size:13px;
+
+  border-radius:8px;
+  border:1px solid #2a3142;
+
+  cursor:pointer;
+  transition:all .2s ease;
+
+  box-shadow:0 0 8px rgba(0,0,0,0.25);
+}
+
+.notification-toggle-btn:hover {
+  color:#fff;
+  border-color:#3a82ff;
+  box-shadow:0 0 10px rgba(58,130,255,0.25);
+}
+
+
+.notification-toggle-btn .has-notifications {
+  color:#ff4d4d;
+  text-shadow:0 0 6px rgba(255,77,77,0.6);
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 </style>

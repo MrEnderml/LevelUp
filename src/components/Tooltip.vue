@@ -1,6 +1,12 @@
 <template>
-  <div class="tooltip-wrapper" ref="wrapper">
+  <div
+    class="tooltip-wrapper"
+    ref="wrapper"
+    @mouseenter="hovered = true"
+    @mouseleave="hovered = false"
+  >
     <slot></slot>
+
     <div
       v-if="computedText"
       class="tooltip"
@@ -17,6 +23,8 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue';
+
+const hovered = ref(false);
 
 const props = defineProps({
   text: {
@@ -42,11 +50,21 @@ const props = defineProps({
   maxWidth: {
     type: String,
     default: '250px'
+  },
+  zIndex: {
+    type: String,
+    default: '100'
   }
 });
 
 const computedText = computed(() => {
-  const text = typeof props.text === 'function' ? props.text() : props.text;
+  if (!hovered.value) return null;
+
+  const text =
+    typeof props.text === "function"
+      ? props.text()
+      : props.text;
+
   return text?.trim() ? text : null;
 });
 
@@ -69,7 +87,8 @@ const tooltipStyle = computed(() => ({
   backgroundColor: props.background,
   color: props.color,
   boxShadow: props.boxShadow,
-  maxWidth: props.maxWidth
+  maxWidth: props.maxWidth,
+  zIndex: props.zIndex
 }));
 
 const positionClass = computed(() => {
@@ -78,6 +97,10 @@ const positionClass = computed(() => {
     case 'bottom': return 'tooltip-bottom';
     case 'left': return 'tooltip-left';
     case 'right': return 'tooltip-right';
+    case 'right-bottom': return 'tooltip-right-bottom';
+    case 'right-top': return 'tooltip-right-top';
+    case 'left-bottom': return 'tooltip-left-bottom';
+    case 'left-top': return 'tooltip-left-top';
     default: return '';
   }
 });
@@ -87,7 +110,6 @@ const positionClass = computed(() => {
 .tooltip-wrapper {
   position: relative;
   display: inline-block;
-  cursor: help;
 }
 
 .tooltip {
@@ -129,6 +151,38 @@ const positionClass = computed(() => {
   top: 50%;
   transform: translateY(-50%);
   margin-left: 8px;
+}
+
+.tooltip-right-bottom {
+  left: 100%;
+  top: 100%;
+  transform: translateY(-100%);
+  margin-left: 8px;
+  margin-top: 8px;
+}
+
+.tooltip-right-top {
+  left: 100%;
+  top: 0;
+  transform: translateY(0);
+  margin-left: 8px;
+  margin-bottom: 8px;
+}
+
+.tooltip-left-bottom {
+  right: 100%;
+  top: 100%;
+  transform: translateY(-100%);
+  margin-right: 8px;
+  margin-top: 8px;
+}
+
+.tooltip-left-top {
+  right: 100%;
+  top: 0;
+  transform: translateY(0);
+  margin-right: 8px;
+  margin-bottom: 8px;
 }
 
 .tooltip-wrapper:hover .tooltip {

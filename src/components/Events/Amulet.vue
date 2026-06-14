@@ -1,216 +1,99 @@
 <template>
-  <div class="amulet-panel red-theme">
-    <h2 @click="hero.eLink = { set: 'Info', info: 'Amulet' }">🔮 <sup style="font-size: 12px">ℹ️</sup>Amulets</h2>
-    
-    <div class="amulet-content">
-      <div class="amulet-list">
-        <div class="amulet-grid">
-          <div
-            v-for="(amulet, index) in amulets"
-            :key="index"
-            class="amulet-card"
-          >
-            <h3 class="amulet-name">{{ amulet.name }} [T{{amulet.tier}}]</h3>
-            <ul class="amulet-stats" v-if="amulet.status === true">
-              <li>Max Level: <strong>+{{ amulet.maxLevel }}</strong></li>
-              <li>Max Curses: <strong>+{{ amulet.cursedSlot }}</strong></li>
-              <li>Buff Slot: 
-                <span v-if="hero.maxStage >= 20 + 10 * (amulet.tier-1)"><strong>+{{ amulet.buffSlot }}</strong></span>
-                <span v-else class="closed">Reach {{20 + 10 * (amulet.tier-1)}} stage</span>
-              </li>
-              <li>Suffix: 
-                <span v-if="amulet.suffix.status === false" class="closed">{{suff[index]}}</span>
-                <span v-else>{{ amulet.suffix.text }}</span>
-              </li>
-              <li>Prefix:
-                <span v-if="amulet.prefix.status === false" class="closed">{{pref[index]}}</span>
-                <span v-else>{{ prefixHandle(amulet.tier) }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+  <div class="amulet-panel">
+    <h2 class="amulet-title"><sup style="font-size: 6px"></sup>Amulet</h2>
+
+    <div class="effects-cards">
+            <Tooltip
+              v-for="key in effectsActivated()"
+              :key="key"
+              :text="() => effectsHandler(key)"
+              position="right"
+            >
+              <div
+                class="effect-card"
+                :class="['effect-' + key, { active: activeSelect(key) }]"
+                @click="clickEffects(key)"
+              >
+                {{ key }}
+              </div>
+            </Tooltip>
       </div>
-      <div class="curse-panel">
-        <p class="curse-wrapper">
-          Max Curses: [{{hero.curse}}] | Min Curses [{{hero.minCurse}}]
-          <Tooltip :text="cursePowerHandle" boxShadow="0 0 10px #fda4af" position="bottom" maxWidth="120px">
-            <span v-if="hero.mainInfTier >= 30"><sup style="font-size: 6px">ℹ️</sup>Curse Power: [{{formatNumber(hero.curseMult, true)}}]</span>
-          </Tooltip>
-        </p>
-        <Tooltip :text="() => formatCurses()" position="right">
-          <h3 @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Curse' }">☠️ <sup style="font-size: 12px">ℹ️</sup>*Curses</h3>
-        </Tooltip>
-        <ul>
-          <li v-for="(curse, idx) in filterCurses" :key="idx">
-            <span style='display: flex'>
-              <strong v-html="curse.icon"></strong>
-              <strong>{{ curse.name }}</strong>
-            </span>
-            <ul>
-               <template v-for="(tier, tIndex) in curse.tier" :key="tIndex">
-                  <li 
-                    v-if="tIndex < 3 || tier.status" 
-                    :class="[
-                      { 'tier-four': tIndex === 3, 'tier-five': tIndex === 4 },
-                      { 'tier-green': tIndex === 0, 'tier-yellow': tIndex === 1, 'tier-red': tIndex === 2 }
-                    ]"
-                  > 
-                    [T{{ tIndex + 1 }}] {{ tEffect(tier, curse.id) }} 
-                    (Bonus: {{ tBonusEffect(tier) }})
-                  </li>
-                </template>
-            </ul>
-          </li>
-        </ul>
-      </div>
+
+    <div class="tabs">
+      <button :class="{ active: tab === 'stones' }" @click="tab = 'stones'">
+        Stones
+      </button>
+      <button :class="{ active: tab === 'curses' }" @click="tab = 'curses'">
+        Curses
+      </button>
     </div>
+
+    <StonePanel v-if="tab === 'stones'" />
+    <CursesPanel v-else />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { amulets } from '../../data/amulets.js';
-import { cursed as curses } from '../../data/cursed.js';
-import { useHero } from '../../composables/usehero.js';
-import { divineSkills } from '../../data/quasarCore.js';
+import { ref, computed } from "vue";
 
-const {hero} = useHero();
+import StonePanel from './AmuletPanel/StonePanel.vue';
+import CursesPanel from './AmuletPanel/CursesPanel.vue';
 
-const suff = ['Ascension [T2]', 'Soul [T3]', '10000 Rebirth Pts', 'Space 18SP']
-const pref = ['Ascension [T3]', 'Soul [T4]', '40000 Rebirth Pts', 'Space 34SP']
+import { useAmulets } from '../../composables/battleUtils/useAmulets.js';
 
-const filterAmulets = computed(() => 
-    amulets.filter(b => b.status === true)
-)
+const {
+  effectsActivated,
+  activeSelect,
+  clickEffects,
+  effectsHandler,
+} = useAmulets();
 
-const filterCurses = computed(() => 
-    curses.filter(curse => curse.status === true)
-)
+const tab = ref('stones');
 
-const filterCursesTier = computed(() => 
-    curses.filter
-)
-
-function tBonusEffect(tier) {
-  let base = tier.bonus;
-
-  let quasarShackles = (hero.value.selectedDivSkills.includes(0)? divineSkills.value[0].values[1]: 1);
-  let fluctuationFailures = (hero.value.selectedDivSkills.includes(10)? divineSkills.value[10].values[1]: 1);
-
-  base = base * (hero.rebirthTier >= 10 ? 1.5 : 1) * quasarShackles * fluctuationFailures;
-
-  return base.toFixed(2);
-}
-
-const curseRules  = {
-  0:  { mult: 1,       cap: 100 },      // Penetrate
-  1:  { mult: 0.75,    cap: 50 },       // Heal
-  2:  { mult: 0.5,     cap: 90 },       // Block
-  3:  { mult: 0.5,     cap: 4 },        // Attack Per Second
-  4:  { mult: 0.35,    cap: 90 },       // avoid attack
-  5:  { mult: 0.25,    cap: 50 },       // to STUN for
-  6:  { mult: 0.4,     cap: 1000 },     // to CRIT
-  7:  { mult: 0.35,    cap: 20 },       // Each of your
-  8:  { mult: 0.9,     cap: 90 },       // Enemy gets
-  9:  { mult: 1,       cap: 1000 },     // Max HP
-  10: { mult: 0.25,    cap: 90 },       // to bleed by
-  11: { mult: 0.25,    cap: 90 },       // The Hero
-  12: { mult: 0.4,     cap: 100 },      // Attack
-  13: { mult: 0.5,     cap: 5 },        // id 13
-  14: { mult: 1,       cap: Infinity }, // id 15
-  15: { mult: 0.4,     cap: 20 },       // id 16
-  16: { mult: 0.3,     cap: 50 },       // id 17
-  17: { mult: 0.2,     cap: 50 },       // id 18
-  18: { mult: 0.4,     cap: 20 },       // id 19
-};
-
-function tEffect(tier, curseId) {
-  const baseMult = hero.value.curseMult;
-  const rule = curseRules[curseId] || { mult: 1, cap: Infinity };
-
-  return tier.effect.replace(/(\d+(\.\d+)?)/g, match => {
-    let val = parseFloat(match) * Math.max(baseMult * rule.mult, 1);
-    val = Math.min(val, rule.cap);
-    return val.toFixed(2);
-  });
-}
-
-
-function prefixHandle(t){
-  return `Max Level MULT - ${1 + t * 0.02 * (hero.value.sp >= 99? 2: 1)}`
-}
-
-const CursesChance = computed(() => {
-  const t3 = Math.min(35, 1.1 * Math.log(hero.value.stage - 17)**1.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.35: 1));
-  const t2 = Math.min(45, 10 * Math.log(hero.value.stage - 17)**0.95 * (hero.value.sp >= 24 && hero.value.abyssDStages >= 20?Math.log(hero.value.abyssDStages) ** 0.25: 1));
-  const t1 = 100 - t2 - t3;
-
-   return {
-    t1: t1.toFixed(1),
-    t2: t2.toFixed(1),
-    t3: t3.toFixed(1)
-  };
-})
-
-function formatCurses() {
-  let tier = CursesChance.value;
-  let t5 = hero.value.curset5Chance = (hero.value.rebirthPts >= 1.5e5? 1: 0) * 
-  (hero.value.rebirthPts >= 3.5e5? Math.log(hero.value.rebirthPts + 3): 1) * Math.max(1.01 ** (hero.value.abyssDStages - 99), 1);
-  
-  let s = `<span>[T1(%)] - ${tier.t1}</span><br><span>[T2(%)] - ${tier.t2}</span><br><span>[T3(%)] - ${tier.t3}</span>`;
-  if (t5 > 0) s += `<br><span>[T5(%)] - ${t5.toFixed(2)}</span>`
-
-  if(hero.value.stage < 14)
-    return `Reach Stage 15`;
-  return s;
-}
-
-function cursePowerHandle() {
-  return `Every curse has its threshold. Once you overcome this threshold, the curse becomes stronger depends on Curse Power. <spna style='color: red'>Curse power does not affect its bonus.</span>`
-}
-
- const  formatNumber = (num, f = false) => {
-    if(f && num < 100) return num.toFixed(2);
-    if (num < 1000) return Math.floor(num).toString();
-  
-    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
-    const tier = Math.floor(Math.log10(num) / 3);
-
-    if(tier >= units)
-      return "999d";
-  
-    const suffix = units[tier];
-    const scale = Math.pow(10, tier * 3);
-    const scaled = num / scale;
-  
-    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
-  }
 </script>
 
 <style scoped>
-.amulet-panel.red-theme {
-  background-color: #3b0a0a;
-  padding: 1rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 10px #dc2626;
-  color: #ffe4e6;
-  width: 800px;
-  font-family: 'Segoe UI', sans-serif;
-  margin-left: 50px;
+.amulet-panel {
+  box-sizing: border-box;
+
+  height: 100dvh; 
+
+  background: linear-gradient(145deg,#2f2020,#372828);
+  color: #f0f0f0;
+
+  padding: clamp(12px, 2vh, 24px);
+
+  border-radius: 0; 
+  box-shadow: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.5vh, 18px);
+
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.amulet-title {
+  color:rgb(251, 93, 36);            
+  text-shadow: 0 0 6px rgba(251, 93, 36, 0.74); 
 }
 
 .amulet-content {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .amulet-list {
-  width: 65%;
+  flex: 1 1 60%;
+  min-width: 250px;
 }
 
 .amulet-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 }
 
@@ -228,9 +111,29 @@ function cursePowerHandle() {
   color: #fecaca;
 }
 
+.amulet-stats {
+  list-style: none; 
+  padding: 0;
+  margin: 0;
+}
+
 .amulet-stats li {
+  margin: 0.4rem 0;
   font-size: 0.95rem;
-  margin: 0.25rem 0;
+  display: flex;
+  justify-content: space-between; 
+  color: #ffe4e6;
+  font-weight: 700;
+}
+
+.amulet-stats li strong.highlight {
+  font-weight: bold;
+}
+
+.closed {
+  opacity: 0.5;
+  font-style: italic;
+  color: #fca5a5;
 }
 
 .closed {
@@ -240,11 +143,12 @@ function cursePowerHandle() {
 }
 
 .curse-panel {
+  flex: 1 1 35%;
+  min-width: 200px;
   background-color: #7f1d1d;
   padding: 1rem;
   border-radius: 1rem;
   box-shadow: 0 0 5px #f87171;
-  width: 30%;
   color: #ffe4e6;
   max-height: 500px;
   overflow-y: auto;
@@ -327,40 +231,118 @@ function cursePowerHandle() {
   pointer-events: auto;
 }
 
-.tier-four {
-  color: #c56eff;
-  font-weight: bold;
-  text-shadow: 0 0 6px #c56eff;
-}
-
-.tier-five {
-  color: #66ffcc;
-  font-weight: bold;
-  text-shadow: 0 0 6px #66ffcc;
-}
-
-.tier-green {
-  color: #4ade80;
-  font-weight: bold;
-  text-shadow: 0 0 6px #4ade80;
-}
-
-.tier-yellow {
-  color: #facc15;
-  font-weight: bold;
-  text-shadow: 0 0 6px #facc15;
-}
-
-.tier-red {
-  color: #f87171;
-  font-weight: bold;
-  text-shadow: 0 0 6px #f87171;
-}
-
 .curse-wrapper {
   font-weight: bold;
   font-size: 0.9em;
   color: #ff1b37;
 }
 
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  position: relative;
+  padding: 6px 16px;
+
+  font-size: 0.95em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+
+  color: #fca5a5;
+  background: linear-gradient(
+    180deg,
+    #1a0b0b,
+    #120606
+  );
+
+  border: 1px solid #3f1d1d;
+  border-radius: 8px;
+
+  cursor: pointer;
+  transition: 
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.tabs button:hover {
+  color: #fecaca;
+  border-color: #7f1d1d;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.25);
+}
+
+.tabs button.active {
+  color: #fff;
+  border-color: #ef4444;
+
+  background: linear-gradient(
+    180deg,
+    #2a0b0b,
+    #180606
+  );
+
+  box-shadow:
+    0 0 10px rgba(239, 68, 68, 0.5),
+    inset 0 0 6px rgba(255, 120, 120, 0.25);
+}
+
+.tabs button.active::after {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: -5px;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ef4444,
+    transparent
+  );
+
+  box-shadow: 0 0 6px #ef4444;
+}
+
+.tabs button:active {
+  transform: translateY(1px);
+}
+
+
+
+
+.effects-cards {
+  display: flex;
+  gap: 6px;
+}
+
+.effect-card {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: default;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
+}
+
+.effect-S { color: #efd191; box-shadow: 0 0 6px #d6b368; }
+.effect-E { color: #24d8fc; box-shadow: 0 0 6px #4c70d4; }
+.effect-A { color: #24d8fc; box-shadow: 0 0 6px #4c70d4; }
+.effect-T { color: orange; box-shadow: 0 0 6px orange; }
+.effect-M, .effect-B { color: #d15528;     box-shadow: 0 0 6px #d15528; }
+.effect-C { color: #eae198;     box-shadow: 0 0 6px #eae198; }
+.effect-R { color: #f9453f;     box-shadow: 0 0 6px #f9453f; }
 </style>

@@ -1,6 +1,6 @@
 export const amulets = [
     {
-      name: "Ethereal Pendant",
+      name: "Ascension Shard",
       tier: 1,
       maxLevel: 4,
       buffSlot: 1,
@@ -10,14 +10,14 @@ export const amulets = [
         status: false 
       },
       prefix: {
-        text: "Max Level MULT - 1.02",
+        text: "Max Level MULT",
         value: 0.02,
         status: false 
       },
       status: false
     },
     {
-      name: "Void Talisman",
+      name: "Soul Core",
       tier: 2,
       maxLevel: 8,
       buffSlot: 1,
@@ -27,14 +27,14 @@ export const amulets = [
         status: false
       },
       prefix: {
-        text: "Max Level MULT - 1.04", 
+        text: "Max Level MULT", 
         value: 0.04,
         status: false
       },
       status: false
     },
     {
-        name: "Endless Eye",
+        name: "Rebirth Eye",
         tier: 3,
         maxLevel: 12,
         buffSlot: 1,
@@ -44,14 +44,14 @@ export const amulets = [
           status: false
         },
         prefix: {
-          text: "Max Level MULT - 1.06", 
+          text: "Max Level MULT", 
           value: 0.06,
           status: false
         },
         status: false
     },
     {
-        name: "Star Space",
+        name: "Star Nexus",
         tier: 4,
         maxLevel: 16,
         buffSlot: 1,
@@ -61,10 +61,18 @@ export const amulets = [
           status: false
         },
         prefix: {
-          text: "Max Level MULT - 1.08",
+          text: "Max Level MULT",
           value: 0.08, 
           status: false
         },
+        status: false
+    },
+    {
+        name: "Corruption Heart",
+        tier: 5,
+        text: `Resonance affects the Max Level and Max Level Mult of all stones.`,
+        maxLevel: 1,
+        maxLevelMult: 1,
         status: false
     }
 ];

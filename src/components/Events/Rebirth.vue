@@ -1,172 +1,203 @@
 <template>
   <div class="rebirth-panel">
     <div class="left-panel">
-      <h2 @click="hero.eLink = { set: 'Info', info: 'Rebirth' }">♻️ <sup style="font-size: 12px">ℹ️</sup>Rebirth [T{{hero.rebirthTier}}]</h2>
-      
-      <p>
-        <strong class="pot"><span style="color: gold" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Potential' }"><sup style="font-size: 12px">ℹ️</sup>Potential: {{hero.potential}}</span></strong><br>
-        <strong><span style="color: lightgreen">+0.5 HP per 10 Potential</span></strong>
-        <strong><span style="color: #eb4e4e">+0.2 DMG per 20 Potential</span></strong>
-        <strong><span style="color: orange">+0.1 DEF per 30 Potential</span></strong>
-      </p>
-      <p style="font-weight: bold">
-        <Tooltip :text="enemyEvo" boxShadow="0 0 10px lightgreen" position="right">
-          <span><sup style="font-size: 6px">ℹ️</sup>Enemy EVO</span>
-        </Tooltip>
-        <span>DMG - [{{enemy.rebirthEnemy["dmg"]}}]</span>
-        <span>HP - [{{enemy.rebirthEnemy["hp"]}}]</span>
-        <Tooltip :text="rebirthLootHandle" boxShadow="0 0 10px lightgreen" position="right">
-          <span><sup style="font-size: 6px">ℹ️</sup>LOOT - [{{formatNumber(enemy.rebirthEnemy["drop"])}}] </span>
-        </Tooltip>
-      </p>
+      <h2 
+        class="rebirth-title" 
+        :class="{dark: hero.rebirthTier >= 100}" 
+        @click="hero.eLink = { set: 'Info', info: 'Rebirth' }"
+      >
+        Rebirth [T{{hero.rebirthTier}}]
+      </h2>
 
-      <Tooltip :text="ascendEffectHandle" boxShadow="0 0 10px #062e9f" position="right">
-        <span v-if="hero.abyssTier >= 2" style="color: #062e9f; font-weight: bold"><sup style="font-size: 6px">ℹ️</sup>ASCENSION AFFECT</span>
-      </Tooltip>
+      <div class="effects-cards">
+        <Tooltip
+          v-for="key in effectsActivated()"
+          :key="key"
+          :text="() => effectsHandler(key)"
+          position="right-top"
+          maxWidth="200px"
+        >
+          <div
+            class="effect-card"
+            :class="['effect-' + key, { active: activeSelect(key) }]"
+            @click="clickEffects(key)"
+          >
+            {{ key }}
+          </div>
+        </Tooltip>
+      </div>
 
       <p class="rebirthTiers">
-        <span v-if="hero.rebirthTier >= 5">[T5] - Rebirth Tier forces Abyss enemies getting weaker [{{(1 / (1.025 ** hero.rebirthTier)).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 10">[T10] - 50% curse Bonus. +1 Max Curse</span>
-        <span v-if="hero.rebirthTier >= 15">[T15] - +1 max Buff in Abyss</span>
-        <span v-if="hero.rebirthTier >= 20">[T20] - Get Rebirth Pts as if you had 25 more Levels</span>
-        <span v-if="hero.rebirthTier >= 30">[T30] - Potential based on Rebirth Tier [{{Math.floor(1.053 ** Math.min(hero.rebirthTier, 80))}}]</span>
-        <span v-if="hero.rebirthTier >= 40">[T40] - MIN Level based on Rebirth Tier [{{Math.floor(1.05 ** Math.min(hero.rebirthTier, 80))}}]</span>
-        <span v-if="hero.rebirthTier >= 50">[T50] - Equipment Chance based on Rebirth Tier [{{formatNumber(1.03 ** hero.rebirthTier)}}]</span>
-        <span v-if="hero.rebirthTier >= 60">[T60] - Space Boss appearance based on Rebirth Tier [{{formatNumber(1.02 ** hero.rebirthTier)}}]</span>
-        <span v-if="hero.rebirthTier >= 70">[T70] - Corruption weakness based on Rebirth Tier [{{(1.02 ** Math.sqrt(hero.rebirthTier) - 1).toFixed(2)}}]</span>
-        <span v-if="hero.rebirthTier >= 80">[T80] - Max Level Mult based on Rebirth Tier [{{(0.02 * (Math.min(hero.rebirthTier, 200) - 79)).toFixed(2)}}]</span>
+        <span>Rebirth Features</span>
+        <span
+          v-for="bonus in getRebirthBonusText()"
+          :key="bonus.tier"
+          class="rebirth-item"
+        >
+          <strong>[T{{ bonus.tier }}]</strong>
+          <span v-html="bonus.label"></span>
+        </span>
       </p>
     </div>
 
     <div class="right-panel">
-      <h2 v-if="hero.rebirthPts <= 1e5" class="rbPts" @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Rebirth' }"><sup style="font-size: 12px">ℹ️</sup>Rebirth Pts(RP): {{Math.floor(hero.rebirthPts)}}</h2>
-      <h2 v-else class="snPts">Singularity Pts(SP): {{Math.floor(hero.rebirthPts)}}</h2>
+      <!-- Rebirth -->
+      <h2
+        v-if="activeRewardTab === 'rebirth'"
+        class="rbPts"
+        @click="hero.eLink = { set: 'Info', info: 'Stats', stat: 'Rebirth' }"
+      >
+        <sup style="font-size: 12px"></sup>
+        Rebirth Pts (RP): {{ Math.min(Math.floor(hero.rebirthPts), 1e5) }} / 100000
+      </h2>
+
+      <!-- Singularity -->
+      <div v-else class="singularity-header">
+        <h2 class="snPts">
+          Singularity Pts (SP): {{ Math.floor(hero.rebirthPts) }}
+        </h2>
+      </div>
+
+      <div class="reward-tabs">
+        <button
+          class="tab"
+          :class="{ active: activeRewardTab === 'rebirth' }"
+          @click="activeRewardTab = 'rebirth'"
+        >
+          Rebirth
+        </button>
+
+        <button
+          v-if="hero.singularity >= 8"
+          class="tab singularity"
+          :class="{ active: activeRewardTab === 'singularity' }"
+          @click="activeRewardTab = 'singularity'"
+        >
+          Singularity
+        </button>
+      </div>
+
       <div class="rewards-panel">
         <div
-            v-for="reward in rewardsFilter"
-            :key="reward.points"
-            :class="[
-              reward.points <= 1e5 ? 'reward' : 'rewardAbove',
-              hero.rebirthPts >= reward.points && reward.points <= 1e5 ? 'unlocked' : '',
-              hero.rebirthPts >= reward.points && reward.points > 1e5 ? 'unlocked' : ''
-            ]"
+          v-for="reward in rewardsFilter"
+          :key="reward.points"
+          :class="[
+            reward.points <= 1e5 ? 'reward' : 'rewardAbove',
+            hero.rebirthPts >= reward.points && reward.points <= 1e5
+              ? 'unlocked'
+              : '',
+            hero.rebirthPts >= reward.points && reward.points > 1e5
+              ? 'unlocked'
+              : '',
+          ]"
         >
-            <span>{{ reward.points }} pts → {{ reward.description }}</span>
+          <span>{{ reward.points }} pts → {{ reward.description }}</span>
         </div>
       </div>
-      
     </div>
   </div>
 </template>
 
 <script setup>
-import { rewards } from '../../data/rebirth.js'
-import { ref, computed } from 'vue'
-import { useHero } from '../../composables/useHero.js'
-import { useEnemy } from '../../composables/useEnemy.js'
-import { perks as radPerks} from '../../data/radPerks.js';
-import { perks as ascenPerks } from '../../data/ascension.js';
+import { rewards } from "../../data/rebirth.js";
+import { ref, computed } from "vue";
+import { useHero } from "../../composables/useHero.js";
+import { useEnemy } from "../../composables/useEnemy.js";
+import { perks as radPerks } from "../../data/radPerks.js";
+import { perks as ascenPerks } from "../../data/ascension.js";
+import { newicons } from "../../composables/icons.js";
+
+import { fn } from "../../composables/utils/global.js";
+
+import { useRebirths } from "../../composables/battleUtils/useRebirth.js";
+
+const { effectsActivated, activeSelect, clickEffects, effectsHandler } =
+  useRebirths();
 
 const { hero } = useHero();
 const { enemy } = useEnemy();
 
-const rewardsFilter = computed(() => 
-  rewards.filter(r => r.points <= (hero.value.singularity >= 8? 1e7: 1e5))
-)
+const activeRewardTab = ref("rebirth");
 
-function ascendEffectHandle() {
-  let effect = Math.max(1 / (1.04 + (ascenPerks[29].level? 0.01: 0)) ** Math.log(hero.value.ascensionShards + 3), 0.01);
-  let text = `Enemy weakness. Depends on Ascension Shards [${effect.toFixed(2)}]`;
+const rebirthBonusesConfig = [
+  {
+    tier: 5,
+    text: "Depending on the Tier of Rebirth, the enemies of the Abyss become weaker.",
+    valueIndex: 0,
+  },
+  { tier: 10, text: "Boss Appearance Chance", valueIndex: 1 },
+  { tier: 15, text: "+1 Max slot for skills in Abyss", valueIndex: null },
+  { tier: 20, text: "Souls Appearance", valueIndex: 3 },
+  { tier: 30, text: "Potential", valueIndex: 4 },
+  { tier: 40, text: "MIN Level", valueIndex: 5 },
+  { tier: 50, text: "Equipment Drop Chance", valueIndex: 6 },
+  { tier: 60, text: "Increase Essense Bonus gain", valueIndex: 7 },
+  { tier: 70, text: "Corruption weakness", valueIndex: 8 },
+  { tier: 80, text: "Max Level Mult", valueIndex: 9 },
+  { tier: 90, text: "Rebirth Loot scales better", valueIndex: 10 },
+  { tier: 100, text: "Increase the Rebirth features effects with [T100]", valueIndex: 11 }
+];
 
-  return text;
+function getRebirthBonusText() {
+  const tier = hero.value.rebirthTier ?? 0;
+  const handle = hero.value.rebirthBonusesHandle ?? [];
+
+  return rebirthBonusesConfig
+    .filter((cfg) => tier >= cfg.tier)
+    .map((cfg) => {
+      let valueStr = "";
+
+      if (cfg.valueIndex !== null) {
+        const v =
+          handle?.[cfg.valueIndex]?.value ?? handle?.[cfg.valueIndex] ?? null;
+        if (v !== null && v !== undefined && v !== "") {
+          valueStr = ` [${fn(v)}]`;
+        }
+      }
+
+      return {
+        tier: cfg.tier,
+        label: `${cfg.text} ${valueStr}`,
+      };
+    });
 }
 
-function rebirthLootHandle() {
-  let text = `Rebirth [Loot] affects:<br>
-    - <span style="color: #4CAF50">EXP</span><br>
-    - <span style="color:rgb(33, 243, 233)">Equipment Drop Chance</span><br>
-    - <span style="color: #FF9800">20 Rebirth Pts</span>: Chance of <span style="color:rgb(189, 30, 233)">Soul</span> appearance<br>
-    - <span style="color: #FF9800">100 Rebirth Pts</span>: <span style="color: lightgreen">Rebirth Pts</span> gain<br>
-    - <span style="color: #FF9800">2500 Rebirth Pts</span>: Gain <span style="color:rgb(57, 125, 234)">Ascension Shards</span> when you Ascend<br>
-    - <span style="color: #FF9800">50000 Rebirth Pts</span>: <span style="color: orange">Buff EXP</span>
-  `;
-  
-  return text;
-}
-
-function enemyEvo() {
-  let text = `Each Rebirth Tier increases Enemy Power and increases Loot Drops.`;
-
-  return text;
-}
-
-const  formatNumber = (num, f = false) => {
-    if(f && num < 100) return num.toFixed(2);
-    if (num < 1000) return Math.floor(num).toString();
-  
-    const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d"];
-    const tier = Math.floor(Math.log10(num) / 3);
-
-    if(tier >= units)
-      return "999d";
-  
-    const suffix = units[tier];
-    const scale = Math.pow(10, tier * 3);
-    const scaled = num / scale;
-  
-    return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
+const rewardsFilter = computed(() => {
+  if (activeRewardTab.value === "rebirth") {
+    return rewards.filter((r) => r.points <= 1e5);
   }
 
+  return rewards.filter((r) => r.points > 1e5);
+});
 </script>
 
 <style scoped>
 .rebirth-panel {
+  box-sizing: border-box;
+
+  height: 100dvh;
+
+  background: linear-gradient(145deg, #203925, #1a231c);
+  color: #f0f0f0;
+
+  padding: clamp(12px, 2vh, 24px);
+
+  border-radius: 0;
+  box-shadow: none;
+
   display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, #1b5e20, #43a047);
-  border-radius: 12px;
-  box-shadow: 0 0 25px rgba(0, 255, 128, 0.4);
-  position: relative;
+  align-items: center;
+  gap: clamp(8px, 1.5vh, 18px);
+
   overflow: hidden;
-  max-width: 90%;
-  margin-left: 100px;
-}
-
-/* Светящиеся частицы */
-.rebirth-panel::before,
-.rebirth-panel::after {
-  content: '';
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  background: rgba(0, 255, 128, 0.1);
-  border-radius: 50%;
-  filter: blur(60px);
-  animation: float 12s infinite ease-in-out;
-  z-index: 0;
-}
-
-.rebirth-panel::before {
-  top: -50px;
-  left: -50px;
-}
-
-.rebirth-panel::after {
-  bottom: -40px;
-  right: -40px;
-  animation-delay: 6s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(15px); }
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .left-panel,
 .right-panel {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 12px;
@@ -174,21 +205,34 @@ const  formatNumber = (num, f = false) => {
   position: relative;
   z-index: 1;
   box-shadow: inset 0 0 8px rgba(0, 255, 128, 0.2);
+
+  overflow-x: hidden;
+  height: 90%;
 }
 
 .left-panel {
   overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 550px;
   scrollbar-width: thin;
   scrollbar-color: rgb(62, 226, 40) transparent;
 }
 
-.left-panel h2 {
+.right-panel h2 {
   color: #b9f6ca;
-  text-shadow: 0 0 8px #00ff80;
+  text-shadow: 0 0 10px #00ff80, 0 0 15px #66ff66;
   font-size: 1.6rem;
   margin-bottom: 0.8rem;
+}
+
+.rebirth-title {
+  color: #b9f6ca;
+  text-shadow: 0 0 10px #00ff80, 0 0 15px #66ff66;
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.rebirth-title.dark {
+  color:rgb(229, 120, 250);
+  text-shadow: 0 0 10px rgb(255, 0, 221), 0 0 15px rgb(252, 102, 255);
 }
 
 .left-panel p,
@@ -203,65 +247,41 @@ strong {
   color: #a0ff9d;
   text-shadow: 0 0 3px #00ff80;
 }
-
 span {
   display: block;
   margin: 0.1rem 0;
 }
 
-.reward {
-  background: rgba(76, 175, 80, 0.2);
-  border: 1px solid #66bb6a;
-  color: #e8f5e9;
+.reward,
+.rewardAbove {
+  flex-shrink: 0;
   padding: 0.7rem 1rem;
-  margin: 0.5rem 0;
+  margin: 0.3rem 0;
   border-radius: 10px;
-  transition: 0.3s;
   font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  background: rgba(76, 175, 80, 0.2);
+  color: #e8f5e9;
 }
 
 .reward.unlocked {
   background: #00e676;
+  border-color: #00c853;
   color: #002910;
   font-weight: bold;
-  border-color: #00c853;
 }
-
-.rewardAbove {
-  background: rgba(76, 175, 80, 0.2);
-  border: 1px solid #70e3bd;
-  color: #e8f5e9;
-  padding: 0.7rem 1rem;
-  margin: 0.5rem 0;
-  border-radius: 10px;
-  transition: 0.3s;
-  font-size: 0.95rem;
-}
-
 .rewardAbove.unlocked {
   background: #70e3bd;
+  border-color: #70e3bd;
   color: #002910;
   font-weight: bold;
-  border-color: #70e3bd;
-}
-
-.rbPts {
-  color: #b9f6ca;
-  text-shadow: 0 0 8px #00ff80;
-  font-size: 1.6rem;
-  margin-bottom: 0.8rem;
-}
-
-.snPts {
-  color: #a4ffe1;
-  text-shadow: 0 0 8px rgb(128, 247, 207);
-  font-size: 1.6rem;
-  margin-bottom: 0.8rem;
 }
 
 .rewards-panel {
-  max-height: 500px;
+  flex: 1;
   overflow-y: auto;
+  margin-top: 1rem;
   scrollbar-width: thin;
   scrollbar-color: rgb(62, 226, 40) transparent;
 }
@@ -271,13 +291,144 @@ span {
   gap: 10px;
 }
 
-.rebirthTiers {
-  font-weight: bold;
-  text-align: justify;
+
+.rbPts {
+  font-size: 1.6rem;
+  color: #b9f6ca;
+  text-shadow: 0 0 10px #00ff80;
+  margin-bottom: 0.8rem;
+}
+.snPts {
+  font-size: 1.6rem;
+  color: #a4ffe1;
+  text-shadow: 0 0 10px rgb(128, 247, 207);
+  margin-bottom: 0.8rem;
 }
 
-.radPot {
-  color: "#66ff66";
-  display: block;
+@media (max-width: 900px) {
+  .rebirth-panel {
+    flex-direction: column;
+    gap: 1rem;
+    height: auto;
+  }
+  .left-panel,
+  .right-panel {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.rebirthTiers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  margin: 6px 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.25)
+  );
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+
+  font-weight: bold;
+  text-align: justify;
+  margin-top: 0.5rem;
+}
+
+.rebirth-item {
+  color: #dfeff0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.rebirth-item strong {
+  color: #00ff80;
+  margin-right: 6px;
+  text-shadow: 0 0 6px rgba(249, 66, 249, 0.15);
+}
+
+.reward-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tab {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.tab.active {
+  color: #fff;
+  border-color:rgb(68, 255, 0);
+  background: rgba(0, 255, 240, 0.15);
+}
+
+.tab.singularity {
+  color: #84ffff;
+}
+
+.tab.singularity.active {
+  border-color: #00fff0;
+  background: rgba(0, 255, 240, 0.15);
+}
+
+
+
+.effects-cards {
+  display: flex;
+  gap: 6px;
+}
+
+/* MINI CARD */
+.effect-card {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: default;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.08);
+}
+
+/* COLOR CODING */
+.effect-L, .effect-T {
+  color: #9ff5b0;
+  box-shadow: 0 0 6px #9ff5b0;
+}
+.effect-P {
+  color: gold;
+  box-shadow: 0 0 6px gold;
+}
+.effect-I {
+  color: gold;
+  box-shadow: 0 0 6px gold;
+}
+.effect-F {
+  color: #00ff80;
+  box-shadow: 0 0 6px #00ff80;
+}
+.effect-S {
+  color: #ff0e0e;
+  box-shadow: 0 0 6px #ff0e0e;
+}
+.effect-C, .effect-A {
+  color: #d931ec;
+  box-shadow: 0 0 6px #b860c2;
 }
 </style>

@@ -53,32 +53,31 @@ export const soulNames = [
 
   export const rewards = [
     [
-      "Ascension Shard multiplier increased by 1.5x when Ascended",
-      "Buff Exp multiplier - 1.5",
-      "BUFF - Overkill (P)",
-      "Increase the chance of equipment on 75% per SOUL TIER"
+      "Ascension Shard MULT increased by 1.5x when Ascended",
+      "Skill EXP MULT increased by 1.5x",
+      "New Skill - Overkill (P)",
+      "Increase The Equipment Drop Chance by 75% per SOUL TIER"
     ],
     [
-      "Ascension Shard multiplier increased by 1.5x when Ascended",
-      "Buff Exp multiplier - 1.5",
-      "BUFF - Blood Art (P)",
-      "Unlock Amulet [T2] (P)",
-      "Stage requirement scales better"
+      "Ascension Shard MULT increased by 1.5x when Ascended",
+      "Skill EXP MULT increased by 1.5x",
+      "New Skill - Blood Art (P)",
+      "Unlock the Amulet Stone [T3]",
+      "Reduce stage requirement"
     ],
     [
-      "Ascension Shard multiplier increased by 1.5x when Ascended",
-      "Buff Exp multiplier - 1.5",
-      "BUFF - Sniper (P)",
-      "Unlock the Suffix for Amulet [T2] (P)",
-      "+5% extra Exp for each soul found",
-      "Your HP is full when a special enemy appears (P)"
+      "Ascension Shard MULT increased by 1.5x when Ascended",
+      "Skill EXP MULT increased by 1.5x",
+      "New Skill - Sniper (P)",
+      "Unlock a suffix for the Amulet Stone",
+      "+5% Extra EXP MULT for each soul",
+      "Your HP is always full when a special enemy appears"
     ],
     [
-      "Rebirth Pts multiplier - 1.5",
-      "BUFF - Berserk (P)",
-      "Unlock the Prefix for Amulet [T2] (P) ",
-      "*Level Rush - +10% (P)(S)",
-      "Unlock Formation [T3] (P)",
-      "Strength Power scales better per tree tier (P)"
+      "Rebirth Pts multiplier increased by 1.5",
+      "New Skill - Berserk (P)",
+      "Unlock a prefix for the Amulet Stone",
+      "Level Rush: +10%",
+      "Base Strength [Tree] scales better for each Tree Tier"
     ]
   ];

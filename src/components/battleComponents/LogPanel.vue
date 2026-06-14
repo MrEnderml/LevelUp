@@ -1,7 +1,5 @@
 <template>
   <div class="log-panel">
-    <h2>📝 Logs</h2>
-    
     <div class="filter-buttons">
       <button
         v-for="type in logTypes"
@@ -19,7 +17,7 @@
         :key="index"
         class="log-entry"
       >
-        <span class="message">{{ log.message }}</span><br>
+        <span class="message" v-html="log.message"></span><br>
         <small class="timestamp">{{ log.timestamp }}</small>
       </div>
     </div>
@@ -28,14 +26,14 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
-import { addLog, getLogs } from '../composables/logService.js';
-import { useHero } from '../composables/useHero.js';
+import { addLog, getLogs } from '../../composables/logService.js';
+import { useHero } from '../../composables/useHero.js';
 
 const { hero } = useHero();
 
 const logs = ref(getLogs());
 const logContainer = ref(null);
-const logTypes = ['All', 'EXP', 'Weapon', 'Ascend && Rebirth', 'Curses', 'Radiation', 'Stardust', 'Creatures'];
+const logTypes = ['All', 'EXP', 'Weapons', 'Ascension', 'Essence', 'Mutagen', 'Stardust', 'Creatures'];
 
 const filteredLogs = computed(() => {
   return hero.value.combatFilterStatus === 'All'
@@ -43,20 +41,20 @@ const filteredLogs = computed(() => {
     : logs.value.filter(log => log.type === hero.value.combatFilterStatus);
 });
 
-watch(logs, async () => {
-  await nextTick();
-  if (logContainer.value) {
-    logContainer.value.scrollTop = logContainer.value.scrollHeight;
+watch(
+  () => logs.value.length,
+  async () => {
+    await nextTick();
+
+    logContainer.value?.scrollTo({
+      top: logContainer.value.scrollHeight
+    });
   }
-}, { deep: true });
+);
 </script>
 
 <style scoped>
 .log-panel {
-  max-width: 250px;
-  position: fixed;
-  right: 0;
-  top: 20%;
   background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
   border: 1px solid #444;
   border-radius: 12px;
@@ -69,6 +67,7 @@ watch(logs, async () => {
   display: flex;
   flex-direction: column;
 }
+
 
 h2 {
   font-size: 20px;

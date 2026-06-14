@@ -1,73 +1,163 @@
 <template>
   <div class="ascension-panel">
     <div class="tabs">
-      <div
-        v-for="tier in tiers"
-        :key="tier"
-        class="tier-wrapper"
-      >
+      <div class="tier-wrapper">
         <button
-          :class="{ active: currentTier === tier, locked: tier > maxTier }"
-          @click="selectTier(tier)"
-          :disabled="tier > maxTier"
+          :class="{ active: currentTier === 1, locked: 1 > maxTier }"
+          @click="selectTier(1)"
+          :disabled="1 > maxTier"
         >
-          TIER {{ tier }}
+          <Tooltip :text="() => tiersActivated(0)">
+            TIER 1
+          </Tooltip>
         </button>
-        <span
-          v-if="tier > maxTier"
-          class="tooltip"
+
+        <button
+          style="margin-left: 10px"
+          :class="{ active: currentTier === 2, locked: 2 > maxTier }"
+          @click="selectTier(2)"
+          :disabled="2 > maxTier"
         >
-          Reach {{ tierUnlockStage(tier) }} stage
-        </span>
-        <button style="margin-left: 10px" v-if="radPerks[8].level == 1 && tier >= 3"
+          <Tooltip :text="() => tiersActivated(1)">
+            TIER 2
+          </Tooltip>
+        </button>
+
+        <button
+          style="margin-left: 10px"
+          :class="{ active: currentTier === 3, locked: 3 > maxTier }"
+          @click="selectTier(3)"
+          :disabled="3 > maxTier"
+        >
+          <Tooltip :text="() => tiersActivated(2)">
+            TIER 3
+          </Tooltip>
+        </button>
+
+        <button style="margin-left: 10px" v-if="highTiersActivated(0)"
           class="active-r"
           @click="selectTier(5)"
         >
           TIER-R
         </button>
-        <button style="margin-left: 10px" v-if="(hero.infEvents >= 2 || hero.mainInfTier >= 2) && tier >= 3"
+
+        <button style="margin-left: 10px" v-if="highTiersActivated(1)"
           class="active-inf"
           @click="selectTier(6)"
         >
           TIER-INF
         </button>
-        <button style="margin-left: 10px" v-if="hero.singularity >= 4 && tier >= 3"
+
+        <button style="margin-left: 10px" v-if="highTiersActivated(2)"
           class="active-s"
           @click="selectTier(7)"
         >
           TIER-S
         </button>
-        <button style="margin-left: 10px" v-if="dimensions[9].infTier == dimensions[9].maxInfTier && tier >= 3" 
+
+        <button style="margin-left: 10px" v-if="highTiersActivated(3)" 
           class="active-d"
           @click="selectTier(8)"
         >
           TIER-D
         </button>
+
       </div>
     </div>
+    
 
-    <p @click="hero.eLink = { set: 'Info', info: 'Ascension' }"><sup style="font-size: 12px">ℹ️</sup>Shards: <img :src="ascensionIcon" width="16px" height="16px" style="vertical-align: -2px;"/> <strong>{{ formatNumber(hero.ascensionShards) }}</strong> 
-    <span v-if="dimensions[1].infTier == dimensions[1].maxInfTier"> (+{{formatNumber(hero.totalAscensionShards * 0.1)}})</span>
-    </p>
-    <div class="ds-container" v-if="currentTier == 8">
-      <span v-if="dimensions[9].infTier === dimensions[9].maxInfTier">
-        Dimension Shards(DS):
-        <img :src="ascensionDIcon" width="16" height="16" style="vertical-align: -2px;" />
-        <strong class="ds-text">{{ hero.dsTotal }}</strong>
-      </span>
-      <button :title="'Get your DS back'" class="ds-button" @click="dsHandle" v-if="hero.infProgress && hero.dId == 'main'">Annihilation</button>
+    <div class="ascension-effects">
+
+        <div class="effects-cards">
+          <Tooltip
+            v-for="key in effectsActivated(currentTier)"
+            :key="key"
+            :text="() => effectsHandler(key)"
+            position="right"
+          >
+            <div
+              class="effect-card"
+              :class="['effect-' + key, { active: activeSelect(key) }]"
+              @click="clickEffects(key)"
+            >
+              {{ key }}
+            </div>
+          </Tooltip>
+        </div>
+      
+
+
+      <div
+        class="ascension-shards"
+        @click="hero.eLink = { set: 'Info', info: 'Ascension' }"
+      >
+        <span class="as-label">
+          <sup></sup> Ascension Shards: 
+        </span>
+
+        <span class="as-value">
+          <img
+            :src="ascensionIcon"
+            width="16"
+            height="16"
+          />
+          {{ getAscensionShards() }}
+        </span>
+      </div>
+
     </div>
+
+
+    <div class="ds-container" v-if="currentTier == 8">
+
+      <div class="d-ascension-shards" v-if="dimensions[9].infTier === dimensions[9].maxInfTier">
+          <span class="d-as-label">
+            Dimension Shards [DS]: 
+          </span>
+
+          <span class="d-as-value">
+            <img :src="ascensionDIcon" width="16" height="16" />
+            {{ hero.dsTotal }}
+          </span>
+
+          <Tooltip :text="() => 'Get your DS back'" boxShadow="0 0 10px purple">
+            <button class="ds-button" @click="dsReset" v-if="!hero.infProgress && hero.dId == 'main'">Annihilation</button>
+          </Tooltip>
+      </div>
+
+    </div>
+
     <div class="perk-container">
-      <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
-        <h3>{{ perk.name }}</h3>
-        <p class="perk-description">{{ getPerkDescription(perk) }}</p>
-        <p v-if="currentTier != 6">Level: {{ perk.level }} / {{ perk.max }}</p>
-        <p v-if="currentTier == 6">Level: {{ perk.level }}</p>
-        <button :disabled="!canUpgrade(perk)" @click="upgradePerk(perk)">
-          {{ formatNumber(getCost(perk)) }} 
-          <img v-if="currentTier < 8" :src="ascensionIcon" width="16px" height="16px" style="vertical-align: -2px;"/>
-          <img v-else :src="ascensionDIcon" width="16px" height="16px" style="vertical-align: -2px;"/>
-        </button>
+      <div class="perks-grid">
+        <div class="perk" v-for="perk in filteredPerks" :key="perk.id">
+          <h3>{{ perk.name }}</h3>
+          <p class="perk-description" v-html="getPerkDescription(perk)"></p>
+          <div class="perk-footer">
+
+            <p>Level: {{ perk.level }} / {{ perk.max }}</p>
+
+            <button
+
+              :disabled="!canUpgrade(perk)"
+              @click="upgradePerk(perk)"
+            >
+              {{ getCost(perk) }}
+              <img
+                v-if="currentTier < 8"
+                :src="ascensionIcon"
+                width="16"
+                height="16"
+              />
+              <img
+                v-else
+                :src="ascensionDIcon"
+                width="16"
+                height="16"
+              />
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -83,11 +173,27 @@ import { dimensions } from '../../data/dimensions.js';
 import ascensionIcon from '../../assets/ascension.png';
 import ascensionDIcon from '../../assets/ascnesion-d.png';
 
+import { useAscensions } from '../../composables/battleUtils/useAscension.js';
+import { useDimensions } from '../../composables/battleUtils/useDimensions.js';
 
+const {
+  getCost,
+  getPerkDescription,
+  getAscensionShards,
+  dsReset,
+  canUpgrade,
+  upgradePerk,
+  effectsActivated,
+  activeSelect,
+  clickEffects,
+  effectsHandler,
+} = useAscensions();
+
+const {
+  getDimSpecialReward
+} = useDimensions();
 
 const { hero } = useHero();
-
-
 
 const currentTier = ref(1);
 const tiers = [1, 2, 3];
@@ -100,39 +206,26 @@ const maxTier = computed(() =>
 );
 
 const selectTier = (tier) => {
-  if(tier == 5)
-    currentTier.value = 5;
-  
-  if(tier == 6)
-    currentTier.value = 6;
-
-  if(tier == 7)
-    currentTier.value = 7;
-  
-  if(tier == 8)
-    currentTier.value = 8;
-
-  if (tier <= maxTier.value) {
-    currentTier.value = tier;
-  }
+  currentTier.value = tier;
 };
 
 const filteredPerks = computed(() => {
   if (currentTier.value === 8) {
     return perks.filter(
-      (p) => p.tier === 8 && 58 + dimensions.value[34].infTier  > p.id
+      (p) => p.tier === 8 && 57 + Math.min(Math.floor(dimensions.value[34].infTier / 2), 9) +
+      (getDimSpecialReward(60)? 3: 0) > p.id
     );
   }
 
   if (currentTier.value === 7) {
     return perks.filter(
-      (p) => p.tier === 7 && 38 + hero.value.singularity > p.id
+      (p) => p.tier === 7 && 37 + hero.value.singularity > p.id
     );
   }
 
   if (currentTier.value === 6) {
     return perks.filter(
-      (p) => p.tier === 6 && p.infStatus === true
+      (p) => p.tier === 6 && p.max > 0
     );
   }
 
@@ -140,313 +233,335 @@ const filteredPerks = computed(() => {
 });
 
 
-const getCost = (perk) => {
-  let iPenalty = 1 - 0.01 * dimensions.value[1].infTier; 
-  let aPenalty = 1 - 0.0075 * Math.max(dimensions.value[17].infTier - 15, 0);
-  let sPenalty = (hero.value.rebirthPts >= 1e6? 1 - 0.01 * Math.log(hero.value.rebirthPts + 3): 1);
-  let total = iPenalty * sPenalty * aPenalty;
-  if(perk.tier == 6)
-    return Math.floor((perk.baseCost ** perk.level) ** total);
-  if(perk.tier == 7)
-    return perk.baseCost ** total
-  return perk.baseCost + perk.level * perk.costPerLevel;
-};
 
-const canUpgrade = (perk) => {
-  return (
-    perk.tier < 8 && perk.level < perk.max &&
-    hero.value.ascensionShards >= getCost(perk) ||
-    perk.tier == 8 && perk.level < perk.max &&
-    hero.value.dsTotal >= getCost(perk)
+function tiersActivated(id) {
+  let stage = 10 + 15 * id;
 
-  );
-};
+  if(stage <= hero.value.maxStage) return '';
 
-const upgradePerk = (perk) => {
-  const cost = getCost(perk);
-  if(perk.tier == 8 && hero.value.dsTotal >= cost && perk.level < perk.max){
-    hero.value.dsSpend += cost;
-    perk.level++;
-    
-    if(perk.id == 64)
-      swordCheck()
-  }
-  else if (hero.value.ascensionShards >= cost && perk.level < perk.max) {
-    hero.value.ascensionShards -= cost;
-    perk.level++;
-  }
-};
-
-function dsHandle(){
-  hero.value.dsSpend = 0 + (perks[53].level == 1? 3: 0);
-
-  swordCheck();
-
-  perks.forEach(perk => {
-    if (perk.tier === 8 && perk.id !== 54) perk.level = 0;
-  })
-
-  checkRadiationPerksLimit();
+  return `Reach Stage ${stage} to unlock`;
 }
 
-const checkRadiationPerksLimit = () => {
-  const maxActivePerks = (radPerks[7].level ? 1 : 0) + (perks[64].level ? 1 : 0);
-  const activeCount = treePerks.value.filter(p => p.status).length;
-
-  if (activeCount > maxActivePerks) {
-    treePerks.value.forEach(p => {
-      p.status = false;
-      p.kills = 0;
-    });
+function highTiersActivated(id) {
+  switch(id) {
+    case 0: 
+      return radPerks[8].level == 1;
+    case 1:
+      return (hero.value.infExpansions.ascensioin);
+    case 2:
+      return hero.value.singularity >= 4;
+    case 3:
+      return dimensions.value[9].infTier == dimensions.value[9].maxInfTier;
   }
-};
-
-const swordCheck = () => {
-  hero.value.eqUps['sword'] = 0;
-}
-
-
-function getPerkDescription(perk) {
-  if (perk.id === 28) {
-    return `Enemies weakness based on Corruption weakness [${ Math.max(1 / (2 + Math.max(hero.value.corruption, 0))).toFixed(2)}]. Also works in The Abyss`
-  }
-  if (perk.id === 30) {
-    return `Gain Ascension Shards based on SP - [${(1 + 0.04 * hero.value.sp).toFixed(2)}]. Ascension Affect scales better`
-  }
-  if(perk.id === 37){
-    return `Level Exp Reduction based on Rebirth Pts [${Math.max(1.2 / Math.log(Math.sqrt(hero.value.rebirthPts) + 2), 0.1).toFixed(2)}]`
-  }
-  if(perk.id === 42){
-    return `Max Level MULT based on overcap corruption [${(1 + hero.value.overcorruption / (4 - 0.15 * (dimensions.value[22].infTier - 25))).toFixed(2) }]`
-  }
-  if(perk.id === 48){
-    return `The reduction in the INF Penalty depends on Total Dimension completed [${(dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length/200).toFixed(3)}]`
-  }
-  if(perk.id === 49){
-    return `+0.05% DMG for each Dimension completed [${(1 + 0.05 * dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length ).toFixed(2)}]`
-  }
-  if(perk.id === 50){
-    return `Enemies weakness based on Current Stage. [HARDCAP After 0.1] [${(1 - 0.006 * Math.min(hero.value.stage, 150) - 0.0003 * Math.max(hero.value.stage - 150, 0)).toFixed(2)}]`
-  }
-   if(perk.id === 53){
-    return `Get extra Enhances Level per 2 Dimensions completed [${Math.floor(dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length/2)}]`
-  }
-   if(perk.id === 55){
-    return `+Min Level based on Total Dimension completed [${dimensions.value.filter(dim => dim.infTier >= dim.maxInfTier).length}]`
-  }
-
-
-  return perk.description
-}
-
-function formatNumber(num) {
-  if (num < 1000000) return Math.floor(num).toString();
-
-  const units = ["", "", "m", "b", "t", "q", "Q", "s", "S", "o", "n", "d", "u", "D", "T", "qt", "Qd", "sd"];
-  const tier = Math.floor(Math.log10(num) / 3);
-
-  const suffix = units[tier];
-  const scale = Math.pow(10, tier * 3);
-  const scaled = num / scale;
-
-  return scaled.toFixed(1).replace(/\.0$/, '') + suffix;
 }
 </script>
 
 <style scoped>
 .ascension-panel {
-  background: linear-gradient(145deg, #1f2d46, #2e3b66); 
+  box-sizing: border-box;
+
+  height: 100dvh; 
+
+  background: linear-gradient(145deg, #1f2d46, #2e3b66);
   color: #f0f0f0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  max-width: 100%;
-  overflow: hidden; 
-  margin-left: 50px;
+
+  padding: clamp(12px, 2vh, 24px);
+
+  border-radius: 0; 
+  box-shadow: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.5vh, 18px);
+
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+
+/* Tabs */
 .tabs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1vw;
+  margin-bottom: 2vh;
 }
 
 .tier-wrapper {
   position: relative;
-  display: inline-block;
 }
 
+
 button {
-  padding: 0.5rem 1rem;
+  padding: 0.8vh 1.5vw;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.8rem;
   background: rgba(255, 255, 255, 0.08);
   color: #eee;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  font-size: clamp(0.8rem, 1vw, 1.1rem);
 }
 
-button.active {
-  background-color: #2196f3;
-  color: white;
-}
+button.active { background-color: #2196f3; color: #fff; }
+button.active-r { background-color: #0fe56c; color: #fff; }
+button.active-inf { background-color: rgb(215,229,15); color: #000; }
+button.active-s { background-color: #66ffcc; color: #000; }
+button.active-d { background-color: rgb(254,65,254); color: #fff; }
+button.locked { background-color: rgba(255,255,255,0.04); color: #888; cursor: not-allowed; }
 
-button.active-r {
-  background-color: #0fe56c;
-  color: white;
-}
+.tier-wrapper:hover .tooltip { visibility: visible; opacity: 1; }
 
-button.active-inf {
-  background-color:rgb(215, 229, 15);
-  color: white;
-}
-
-button.active-s {
-  background-color: #66ffcc;
-  color: white;
-}
-
-button.active-d {
-  background-color:rgb(254, 65, 254);
-  color: white;
-}
-
-button.locked {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: #888;
-  cursor: not-allowed;
-}
-
-.tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: 80%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  font-size: 0.75rem;
-  transition: opacity 0.2s;
-  pointer-events: none;
-  z-index: 100;
-}
-
-.tier-wrapper:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-h2 {
-  text-align: center;
-  font-size: 1.5rem; /* Уменьшаем размер заголовка */
-  margin-bottom: 15px;
-  color: #a7b9d9;
-}
-
+/* Perks */
 .perk-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 10px; 
-  max-height: calc(100vh - 220px); 
-  overflow-y: auto; 
-  padding: 5px;
-  max-width: 800px;
+  overflow-y: auto;
+
   scrollbar-width: thin;
-  scrollbar-color: rgb(40, 71, 226) transparent;
+  scrollbar-color: rgb(40,71,226) transparent;
+}
+
+.perks-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+
+  gap: 1vw;
+  width: 100%;
+  padding: 1vh 0;
+}
+
+@media (max-width: 1000px) {
+  .perk-container {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .perk-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 .perk {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 0.5vh;
+
   background-color: #24324f;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-  overflow: hidden; 
+  padding: 1vh 1vw;
+  border-radius: 1rem;
+  box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.2);
+
+  min-height: max-content;
 }
 
-.perk h3 {
-  font-size: 1rem; /* Уменьшаем шрифт заголовка */
-  color: #f4f4f4;
-}
+.perk h3 { font-size: clamp(0.9rem, 1vw, 1.1rem); color: #f4f4f4; margin-bottom: 0.5vh; }
+.perk p { font-size: clamp(0.75rem, 0.9vw, 1rem); color: #b1c2d3; margin-bottom: 0.5vh; }
 
-.perk p {
-  font-size: 0.9rem; /* Уменьшаем размер текста */
-  color: #b1c2d3;
-}
 
 .perk button {
+  width: 100%;
   background-color: #3b5d7a;
   color: white;
-  padding: 6px 12px;
-  border-radius: 5px;
+  padding: 0.5vh 1vw;
+  border-radius: 0.5rem;
   border: none;
-  margin-top: 8px;
   cursor: pointer;
+  font-size: clamp(0.7rem, 0.9vw, 0.9rem);
   transition: background-color 0.3s, transform 0.2s;
-  font-size: 0.8rem;
+}
+.perk button:disabled { background-color: #2a3b5f; cursor: not-allowed; }
+.perk button:hover:not(:disabled) { background-color: #4b6d8d; transform: scale(1.05); }
+.perk button:active { transform: scale(0.98); }
+
+.perk-footer {
+  margin-top: auto;
 }
 
-.perk button:disabled {
-  background-color: #2a3b5f;
-  cursor: not-allowed;
+
+
+.ascension-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.perk button:hover:not(:disabled) {
-  background-color: #4b6d8d;
-  transform: scale(1.05);
+/* EFFECTS ROW */
+.effects-cards {
+  display: flex;
+  gap: 6px;
 }
 
-.perk button:active {
-  transform: scale(0.98);
+/* MINI CARD */
+.effect-card {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: default;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
 }
 
-.perk-description {
-  max-width: 100%;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
+/* COLOR CODING */
+.effect-E, .effect-S { color: #6ee7ff; box-shadow: 0 0 6px #0a2878; }
+.effect-G { color: #4f7cff; box-shadow: 0 0 6px #0d3dc1; }
+.effect-I { color: gold;     box-shadow: 0 0 6px gold; }
+.effect-C { color: cyan;     box-shadow: 0 0 6px cyan; }
+
+
+.effect-A {
+  background-color: #333;          
+  border: 1px solid #666;
 }
 
-.ds-text {
-  color: #fb15fb;
+.effect-A:hover {
+  background-color: #555;         
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.5);
 }
 
-.ds-container {
+.effect-A.active {
+  background-color: #00fff0;       
+  border-color: #00cccc;
+  color: #0a0a0a;                
+  box-shadow: 0 0 10px #00fff0, 0 0 15px #00cccc;
+  transform: scale(1.1);         
+}
+
+
+
+.ascension-shards {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #1a001a;
-  padding: 8px 12px;
-  border: 1px solid #6a0dad;
+
+  padding: 6px 10px;
   border-radius: 8px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(10,40,120,0.35),
+    rgba(5,15,40,0.35)
+  );
+
+  border: 1px solid rgba(100,140,255,0.25);
+  cursor: pointer;
+
+  transition: 0.2s;
 }
 
-.ds-text {
-  color: #d4b0ff;
-  font-weight: bold;
-  margin-left: 4px;
+.ascension-shards:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(15,60,180,0.45),
+    rgba(10,25,70,0.45)
+  );
 }
+
+.as-label {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.as-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-weight: 700;
+  color: #9db8ff;
+}
+
+
+
+.ds-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.d-ascension-shards {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  padding: 6px 12px;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(90, 0, 110, 0.35),
+    rgba(25, 0, 40, 0.4)
+  );
+
+  border: 1px solid rgba(200, 80, 255, 0.3);
+  box-shadow: 0 0 8px rgba(200, 80, 255, 0.2);
+
+  transition: all 0.2s ease;
+}
+
+.d-ascension-shards:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(140, 0, 160, 0.45),
+    rgba(40, 0, 60, 0.5)
+  );
+
+  box-shadow: 0 0 12px rgba(200, 80, 255, 0.35);
+}
+
+.d-as-label {
+  font-size: 12px;
+  color: #c084fc;
+  opacity: 0.9;
+}
+
+.d-as-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-weight: 700;
+  font-size: 13px;
+
+  color: #f0abfc;
+  text-shadow: 0 0 6px rgba(240, 171, 252, 0.6);
+}
+
 
 .ds-button {
-  background-color: #6a0dad;
-  color: white;
-  border: none;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 6px;
+  border: 1px solid rgba(255, 120, 255, 0.4);
+
+  background: linear-gradient(90deg, #a855f7, #d946ef);
+  color: #fff;
+  font-weight: 600;
+  font-size: 11px;
+
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .ds-button:hover {
-  background-color: #8e3fdc;
+  background: linear-gradient(90deg, #c084fc, #e879f9);
+  box-shadow: 0 0 8px rgba(216, 180, 254, 0.6);
 }
+
+.ds-button:active {
+  transform: scale(0.95);
+}
+
 </style>

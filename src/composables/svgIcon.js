@@ -1668,7 +1668,7 @@ export const icons = {
           <rect width="64" height="64" fill="black"/>
           <circle cx="32" cy="32" r="28" stroke="#e6f020" stroke-width="3" fill="none"/>
           <line x1="16" y1="16" x2="48" y2="48" stroke="#e6f020" stroke-width="3"/>
-          <line x1="48" y1="16" x2="16" y2="48" stroke="#e6f020" stroke-width="3"/>
+          <line x1="48" y1="16" x2=Ц"16" y2="48" stroke="#e6f020" stroke-width="3"/>
         </svg>
       `
     },
@@ -1750,13 +1750,438 @@ export const icons = {
         </svg>
 
       `
+    },
+    stoneLaw: {
+      viewBox: "0 0 64 64",
+      body: ({ tier }) => {
+        const tierColors = {
+          1: "#3bb273", 
+          2: "#f2d541", 
+          3: "#d94e67", 
+          4: "#a93df2", 
+          5: "#66ffcc"  
+        };
+        
+        const color = tierColors[tier] || "#fff";
+        switch (tier) {
+          case 1: 
+          return `
+            <circle cx="32" cy="32" r="20" fill="none" stroke="${color}" stroke-width="3"/>
+            <circle cx="32" cy="32" r="15" fill="none" stroke="${color}" stroke-width="3"/>
+            <circle cx="32" cy="32" r="10" fill="none" stroke="${color}" stroke-width="3"/>
+          `;
+          case 2: 
+          return `
+            <polygon points="32,4 56,60 8,60"
+                    fill="${color}" stroke="white" stroke-width="2"/>
+          `;
+          case 3: 
+            return `<polygon points="32,4 60,32 32,60 4,32" fill="${color}" stroke="white" stroke-width="3"/>`;
+          case 4: 
+            return `<polygon points="32,4 56,16 56,48 32,60 8,48 8,16" fill="${color}" stroke="white" stroke-width="3"/>`;
+          case 5: 
+            return `<path d="M32 4 C44 4 60 28 32 60 C4 28 20 4 32 4 Z" fill="${color}" stroke="white" stroke-width="3"/>`;
+          default:
+            return `<rect x="4" y="4" width="56" height="56" rx="10" fill="${color}" stroke="white" stroke-width="3"/>`;
+        }
+      }
+    },
+    ancientShards: {
+      viewBox: "0 0 64 64",
+      body: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+          <!-- Внешний обод -->
+          <circle cx="32" cy="32" r="30" stroke="#66ffcc" stroke-width="2" fill="none"/>
+          <circle cx="32" cy="32" r="26" stroke="#333" stroke-dasharray="4 3" stroke-width="1" fill="none"/>
+
+          <!-- Рунические метки -->
+          <circle cx="32" cy="2" r="2" fill="#ffaa00"/>
+          <circle cx="62" cy="32" r="2" fill="#ffaa00"/>
+          <circle cx="32" cy="62" r="2" fill="#ffaa00"/>
+          <circle cx="2" cy="32" r="2" fill="#ffaa00"/>
+          <circle cx="50" cy="12" r="1.5" fill="#ffaa00"/>
+          <circle cx="14" cy="12" r="1.5" fill="#ffaa00"/>
+          <circle cx="50" cy="52" r="1.5" fill="#ffaa00"/>
+          <circle cx="14" cy="52" r="1.5" fill="#ffaa00"/>
+
+          <!-- Песочные часы -->
+          <path d="M24 14 Q32 28 24 42 Q32 56 40 42 Q32 28 40 14 Z" 
+                stroke="#ffaa00" stroke-width="2" fill="none"/>
+          
+          <!-- Трещина -->
+          <path d="M28 18 L36 48" stroke="#ff4444" stroke-width="2" stroke-dasharray="3 2"/>
+
+          <!-- Центральное ядро -->
+          <circle cx="32" cy="32" r="5" fill="#66ffcc" stroke="#ffaa00" stroke-width="1.5"/>
+
+          <!-- Кристаллы (осколки) -->
+          <polygon points="8,28 12,22 14,30 10,34" fill="#66ffcc" stroke="#333" stroke-width="0.5"/>
+          <polygon points="54,18 58,12 60,20 56,24" fill="#66ffcc" stroke="#333" stroke-width="0.5"/>
+          <polygon points="48,50 52,44 54,52 50,56" fill="#66ffcc" stroke="#333" stroke-width="0.5"/>
+          <polygon points="10,46 14,40 16,48 12,52" fill="#66ffcc" stroke="#333" stroke-width="0.5"/>
+
+          <!-- Линии энергии -->
+          <path d="M20 32 Q32 22 44 32 Q32 42 20 32 Z" 
+                stroke="#66ffcc" stroke-width="1" fill="none"/>
+          <path d="M22 24 Q32 18 42 24" stroke="#ffaa00" stroke-width="1" fill="none"/>
+          <path d="M22 40 Q32 46 42 40" stroke="#ffaa00" stroke-width="1" fill="none"/>
+        </svg>
+
+      `
+    },
+    CorrInfluence: {
+      viewBox: "0 0 128 128",
+      body: `
+        <defs>
+          <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="60%" stop-color="#a78bfa" />
+            <stop offset="100%" stop-color="#f472b6" />
+          </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <radialGradient id="g2" cx="30%" cy="30%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+            <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+    
+        <!-- background circle with subtle stroke -->
+        <circle cx="64" cy="64" r="56" fill="#0b0220" stroke="#2a0b3a" stroke-width="4" />
+    
+        <!-- purple aura glow -->
+        <g filter="url(#glow)">
+          <circle cx="64" cy="64" r="46" fill="url(#g1)" fill-opacity="0.12" />
+          <g transform="translate(0, -4)">
+            <!-- amulet body -->
+            <ellipse cx="64" cy="66" rx="28" ry="36" fill="#1b0730" stroke="url(#g1)" stroke-width="2" />
+    
+            <!-- inner gem / rune plate -->
+            <path d="M64 44 C78 44, 86 56, 74 72 C64 86, 54 80, 50 72 C42 58, 50 44, 64 44 Z"
+                  fill="url(#g1)" fill-opacity="0.95" stroke="#2b0930" stroke-width="1" />
+    
+            <!-- central rune (upward curse enhancer) -->
+            <g transform="translate(64,64)">
+              <path d="M-8 10 L0 -14 L8 10 L4 10 L0 0 L-4 10 Z" fill="#0b0810" stroke="#ffe6ff" stroke-width="1" stroke-opacity="0.35" />
+              <!-- chevron upward to show 'strengthen' -->
+              <path d="M-12 -4 L0 -22 L12 -4" fill="none" stroke="#fff3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+    
+            <!-- small runic sparks -->
+            <g transform="translate(64,64)">
+              <circle cx="24" cy="-18" r="2.2" fill="#ffd5ff" fill-opacity="0.95" />
+              <circle cx="-20" cy="-14" r="1.6" fill="#ffd5ff" fill-opacity="0.85" />
+              <circle cx="14" cy="16" r="1.2" fill="#ffd5ff" fill-opacity="0.8" />
+            </g>
+    
+            <!-- hanging loop -->
+            <path d="M64 26 C66 20, 62 18, 60 26" stroke="#2a0b3a" stroke-width="3" fill="none" stroke-linecap="round" />
+          </g>
+        </g>
+    
+        <!-- overlay shine -->
+        <ellipse cx="56" cy="52" rx="22" ry="10" fill="url(#g2)" opacity="0.6" />
+    
+        <!-- subtle border accent -->
+        <circle cx="64" cy="64" r="56" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="2" />
+      `
+    },
+
+
+    dHeaderGrid: {
+      viewBox: "0 0 48 48",
+      body: `
+        <rect x="6" y="6" width="36" height="36" rx="3" fill="#222" stroke="#555" stroke-width="2"/>
+        
+        <rect x="10" y="10" width="10" height="10" fill="#444" stroke="#00FF00" stroke-width="1.5"/>
+        <rect x="28" y="10" width="10" height="10" fill="#444" stroke="#00FF00" stroke-width="1.5"/>
+        <rect x="10" y="28" width="10" height="10" fill="#444" stroke="#00FF00" stroke-width="1.5"/>
+        <rect x="28" y="28" width="10" height="10" fill="#444" stroke="#00FF00" stroke-width="1.5"/>
+        
+        <rect x="19" y="19" width="10" height="10" fill="#00FF00" stroke="#00AA00" stroke-width="1.5"/>
+      `
+    },
+    dHeaderAtlas: {
+      viewBox: "0 0 48 48",
+      body: `
+        <circle cx="12" cy="12" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+        <circle cx="36" cy="12" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+        <circle cx="24" cy="24" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+        <circle cx="12" cy="36" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+        <circle cx="36" cy="36" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+        
+       
+        <path d="M12 12 L24 24 L36 12" stroke="#FFA500" stroke-width="1.5"/>
+        <path d="M12 36 L24 24 L36 36" stroke="#FFA500" stroke-width="1.5"/>
+      `
+    },
+    dHeaderDarkDim: {
+      viewBox: "0 0 48 48",
+      body: `
+        <circle cx="24" cy="24" r="20" fill="url(#darkGrad)" stroke="#800000" stroke-width="2"/>
+          <path d="M24 4C28 12 20 36 24 44" stroke="#FF4C4C" stroke-width="2" stroke-linecap="round"/>
+          <path d="M24 10C30 18 18 30 24 38" stroke="#FF0000" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <defs>
+            <radialGradient id="darkGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24 24) scale(20)">
+              <stop offset="0%" stop-color="#FF4C4C"/>
+              <stop offset="60%" stop-color="#800000"/>
+              <stop offset="100%" stop-color="#300000"/>
+            </radialGradient>
+          </defs>
+      `
+    },
+    dHeaderDimMerge: {
+      viewBox: "0 0 48 48",
+      body: `
+        <circle cx="18" cy="24" r="12" fill="url(#greenGlow1)" stroke="#00FF00" stroke-width="2"/>
+        <circle cx="30" cy="24" r="12" fill="url(#greenGlow2)" stroke="#00FF00" stroke-width="2"/>
+        <circle cx="24" cy="24" r="6" fill="#00FF00" opacity="0.6"/>
+        <path d="M18 24H30" stroke="#00FF00" stroke-width="2"/>
+        <defs>
+          <radialGradient id="greenGlow1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18 24) scale(12)">
+            <stop offset="0%" stop-color="#00FF00" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#004400" stop-opacity="0.2"/>
+          </radialGradient>
+          <radialGradient id="greenGlow2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(30 24) scale(12)">
+            <stop offset="0%" stop-color="#00FF00" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#004400" stop-opacity="0.2"/>
+          </radialGradient>
+        </defs>
+      `
+    },
+
+    AscensionCore: {
+      viewBox: "0 0 128 128",
+      body: `
+        <defs>
+          <radialGradient id="s1" cx="50%" cy="40%">
+            <stop offset="0%" stop-color="#e0fcff"/>
+            <stop offset="55%" stop-color="#67e8f9"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+          </radialGradient>
+    
+          <filter id="soulGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge>
+              <feMergeNode in="b"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+    
+        <circle cx="64" cy="64" r="56" fill="#020617" stroke="#164e63" stroke-width="4"/>
+    
+        <g filter="url(#soulGlow)">
+          <circle cx="64" cy="64" r="42" fill="url(#s1)" fill-opacity="0.25"/>
+    
+          <!-- soul core -->
+          <circle cx="64" cy="64" r="22" fill="#0ea5e9" stroke="#e0fcff" stroke-width="2"/>
+    
+          <!-- pulse ring -->
+          <circle cx="64" cy="64" r="30" fill="none" stroke="#67e8f9" stroke-width="2" stroke-dasharray="6 8"/>
+        </g>
+    
+        <ellipse cx="52" cy="50" rx="20" ry="10" fill="#ffffff22"/>
+      `
+    },
+    SoulCore: {
+      viewBox: "0 0 128 128",
+      body: `
+        <defs>
+          <linearGradient id="a1" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#f424fb"/>
+            <stop offset="100%" stop-color="#f424fb"/>
+          </linearGradient>
+    
+          <filter id="ascGlow">
+            <feGaussianBlur stdDeviation="4"/>
+          </filter>
+        </defs>
+    
+        <circle cx="64" cy="64" r="56" fill="#120a02" stroke="#312647" stroke-width="4"/>
+    
+        <g filter="url(#ascGlow)">
+          <polygon
+            points="64,30 92,60 64,98 36,60"
+            fill="url(#a1)"
+            stroke="#fde68a"
+            stroke-width="2"
+          />
+    
+          <!-- ascension rune -->
+          <path d="M64 78 V46 M54 56 L64 46 L74 56"
+                stroke="#fff3c4"
+                stroke-width="3"
+                stroke-linecap="round"/>
+        </g>
+    
+        <circle cx="64" cy="64" r="40" fill="none" stroke="#f424fb" stroke-width="2"/>
+      `
+    },
+    VoidCore: {
+      viewBox: "0 0 128 128",
+      body: `
+        <defs>
+          <radialGradient id="v1">
+            <stop offset="0%" stop-color="#7f1d1d"/>
+            <stop offset="100%" stop-color="#020617"/>
+          </radialGradient>
+        </defs>
+    
+        <circle cx="64" cy="64" r="56" fill="#05010a" stroke="#450a0a" stroke-width="4"/>
+    
+        <circle cx="64" cy="64" r="40" fill="url(#v1)" />
+    
+        <!-- lock rune -->
+        <path d="M48 66 C48 52, 80 52, 80 66 V84 H48 Z"
+              fill="#0f172a"
+              stroke="#fecaca"
+              stroke-width="2"/>
+    
+        <circle cx="64" cy="74" r="4" fill="#fecaca"/>
+      `
+    },
+    StarCore: {
+      viewBox: "0 0 128 128",
+      body: `
+        <defs>
+          <radialGradient id="st1">
+            <stop offset="0%" stop-color="#c7d2fe"/>
+            <stop offset="100%" stop-color="#1e1b4b"/>
+          </radialGradient>
+        </defs>
+    
+        <circle cx="64" cy="64" r="56" fill="#030712" stroke="#312e81" stroke-width="4"/>
+    
+        <circle cx="64" cy="64" r="36" fill="url(#st1)"/>
+    
+        <!-- orbit -->
+        <ellipse cx="64" cy="64" rx="44" ry="18"
+                 fill="none" stroke="#a5b4fc" stroke-width="2"/>
+    
+        <ellipse cx="64" cy="64" rx="18" ry="44"
+                 fill="none" stroke="#818cf8" stroke-width="2"/>
+    
+        <!-- star core -->
+        <polygon points="64,46 68,60 82,64 68,68 64,82 60,68 46,64 60,60"
+                 fill="#eef2ff"/>
+      `
+    },
+
+    FirstStrike: {
+      viewBox: "0 0 64 64",
+      body: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="First Strike">
+          <style>
+            :root{
+              --fs-core: #1f1f2e;
+              --fs-glow: #f87171;
+              --fs-blade: #fca5a5;
+              --fs-hilt: #fbbf24;
+            }
+          </style>
+    
+          <defs>
+            <radialGradient id="fsGlow" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stop-color="var(--fs-glow)" stop-opacity="0.6"/>
+              <stop offset="60%" stop-color="var(--fs-blade)" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+            </radialGradient>
+    
+            <filter id="blurFS" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5"/>
+            </filter>
+    
+            <filter id="innerShadowFS">
+              <feOffset dx="0" dy="1" result="off"/>
+              <feGaussianBlur in="off" stdDeviation="1.2" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="arithmetic" k2="-1" k3="1"/>
+            </filter>
+          </defs>
+    
+          <!-- glow вокруг удара -->
+          <circle cx="32" cy="32" r="28" fill="url(#fsGlow)" filter="url(#blurFS)"/>
+    
+          <!-- меч -->
+          <rect x="28" y="10" width="4" height="36" fill="var(--fs-blade)" stroke="#ffffff" stroke-width="0.6" filter="url(#innerShadowFS)" transform="rotate(20 32 32)"/>
+          <rect x="30" y="44" width="4" height="6" fill="var(--fs-hilt)" stroke="#fbbf24" stroke-width="0.5" transform="rotate(20 32 32)"/>
+    
+          <!-- ударные линии / всплески -->
+          <line x1="16" y1="28" x2="40" y2="24" stroke="#f87171" stroke-width="1.5"/>
+          <line x1="15" y1="36" x2="42" y2="32" stroke="#f87171" stroke-width="1.2"/>
+          <circle cx="38" cy="20" r="1.2" fill="#fca5a5"/>
+          <circle cx="36" cy="24" r="1.0" fill="#fca5a5"/>
+        </svg>
+      `
+    },
+    Invisible: {
+      viewBox: "0 0 64 64",
+      body: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Invisible">
+          <style>
+            :root{
+              --inv-core: #1f1f2e;
+              --inv-glow: #93c5fd;
+              --inv-human: #60a5fa;
+              --inv-line: #ffffff;
+            }
+          </style>
+    
+          <defs>
+            <radialGradient id="invGlow" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stop-color="var(--inv-glow)" stop-opacity="0.65"/>
+              <stop offset="60%" stop-color="var(--inv-human)" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+            </radialGradient>
+    
+            <filter id="blurInv" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2"/>
+            </filter>
+    
+            <filter id="innerShadowInv">
+              <feOffset dx="0" dy="1" result="off"/>
+              <feGaussianBlur in="off" stdDeviation="1.5" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="arithmetic" k2="-1" k3="1"/>
+            </filter>
+          </defs>
+    
+          <!-- glow вокруг человека -->
+          <circle cx="32" cy="32" r="28" fill="url(#invGlow)" filter="url(#blurInv)"/>
+    
+          <!-- силуэт человека -->
+          <rect x="30" y="20" width="4" height="16" fill="var(--inv-human)" stroke="#ffffff" stroke-width="0.5" filter="url(#innerShadowInv)"/>
+          <circle cx="32" cy="16" r="4" fill="var(--inv-human)" stroke="#ffffff" stroke-width="0.5"/>
+          <rect x="28" y="36" width="8" height="8" fill="var(--inv-human)" stroke="#ffffff" stroke-width="0.5"/>
+    
+          <!-- линии уклонения / щит -->
+          <line x1="20" y1="48" x2="44" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+          <line x1="24" y1="48" x2="48" y2="20" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      `
+    },
+    extraLifeEffect: {
+      viewBox: "0 0 32 32",
+      body: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 32px; width: 32px;"><defs><radialGradient id="delapouite-winged-scepter-gradient-0"><stop offset="0%" stop-color="#000" stop-opacity="1"></stop><stop offset="100%" stop-color="#000" stop-opacity="1"></stop></radialGradient></defs><path d="M0 0h512v512H0z" fill="url(#delapouite-winged-scepter-gradient-0)"></path><g class="" transform="translate(1,-4)" style=""><path d="M256 16c-40.2 0-73 32.79-73 73 0 32.2 21 59.6 50 69.3V496h46V158.3c29-9.7 50-37.1 50-69.3 0-40.21-32.8-73-73-73zm0 18c30.5 0 55 24.52 55 55 0 30.5-24.5 55-55 55s-55-24.5-55-55c0-3.55.3-7.02 1-10.38C207.2 90.01 218.7 98 232 98c18.1 0 33-14.88 33-33 0-13.27-8-24.79-19.4-30.02 3.4-.63 6.8-.98 10.4-.98zM29.51 65.88c4.35 23.5 9.23 45.72 14.87 66.82 46.3 25.2 114.92 54.7 170.62 69.5V192C149.6 159 75.7 106.7 29.51 65.88zm452.99 0C436.3 106.7 362.4 159 297 192v10.2c55.7-14.8 124.3-44.3 170.6-69.5 5.7-21.1 10.6-43.33 14.9-66.82zM28.58 144.6c6.32 15.5 12.81 30.2 19.55 44.1C94.15 206 159.6 224.2 215 232.4v-11.6c-62-15.6-137.33-48.3-186.42-76.2zm454.82 0C434.3 172.5 359 205.2 297 220.8v11.6c55.4-8.2 120.9-26.4 166.9-43.7 6.7-13.9 13.2-28.6 19.5-44.1zM247 161.4c3 .4 6 .6 9 .6s6-.2 9-.6V425h-18zm-213.63 41c9.56 16.5 19.21 31.9 29.08 46.4 43.15 8.5 102.75 15 152.55 14.6v-12.7c-61.3-8.6-132.95-29-181.63-48.3zm445.23 0C430 221.7 358.3 242.1 297 250.7v12.7c49.8.4 109.5-6.1 152.5-14.6 9.9-14.5 19.6-29.9 29.1-46.4zm-427 62.5c36.7 44.2 72.6 78.2 112.6 100.4 19.5 10.9 34.6 18.6 50.8 23.4V281.4c-54.5.7-118.2-6.7-163.4-16.5zm408.8 0c-45.2 9.8-108.9 17.2-163.4 16.5v107.3c16.2-4.8 31.3-12.5 50.8-23.4 40-22.2 75.9-56.2 112.6-100.4z" fill="#c93333" fill-opacity="1"></path></g></svg>`
     }
+    
+    
+    
+    
+    
             
   };
 
-  export function getSvgIconHTML(name, size = '1em') {
+  export function getSvgIconHTML(name, size = '1em', options = {}) {
     const icon = icons[name];
     if (!icon) return '';
+    
+    const body = typeof icon.body === 'function' ? icon.body(options) : icon.body;
+  
     return `
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -1765,7 +2190,8 @@ export const icons = {
         height="${size}"
         fill="none"
       >
-        ${icon.body}
+        ${body}
       </svg>
     `;
   }
+  

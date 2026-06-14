@@ -1,333 +1,270 @@
 <template>
-  <div class="perk-tree">
-    <h2 @click="hero.eLink = { set: 'Info', info: 'Tree' }"><sup style="font-size: 8px">ℹ️</sup>Perk Tree [T{{hero.treeTier+1}}]</h2>
-    
-    <p class="perk-points">
-      <Tooltip :text="treePointsHandle" boxShadow="0 0 10px lightgreen">
-        <sup style="font-size: 6px">ℹ️</sup><span :class="hero.perkPoints > 0 ? 'has-points' : 'no-points'">Tree Points(TP): {{ Math.max(Math.floor(hero.perkPoints), 0) }}</span>
-      </Tooltip>
-    </p>
+  <div class="tree-wrapper">
+    <h2 class="tree-title">
+      Tree [T{{ hero.tree.tier }}]
+    </h2>
 
-    <div class="btn-wrapper">
-      <div class="auto-buttons" v-if="hero.infEvents >= 2 || hero.infTier >= 1 || hero.singularity >= 3">
-        <button
-          @click="toggleAuto"
-          :class="['btn', 'btn-auto', { active: hero.treeAuto }]"
-        >
-          AUTO
-        </button>
-      </div>
-
-      <button class="reset-button" @click="resetPerks">
-        🔄 Reset perks
-      </button>
+    <div class="perk-points">
+      <span :class="hero.tree.points > 0 ? 'has-points' : 'no-points'">
+        Tree Points [TP]: <strong>{{ hero.tree.points }}</strong>
+      </span>
     </div>
 
-    
+    <div class="effects-cards">
+          <Tooltip
+            v-for="key in effectsActivated()"
+            :key="key"
+            :text="() => effectsHandler(key)"
+            position="right"
+          >
+            <div
+              class="effect-card"
+              :class="['effect-' + key, { active: activeSelect(key) }]"
+              @click="clickEffects(key)"
+            >
+              {{ key }}
+            </div>
+          </Tooltip>
+    </div>
+
+
+    <!-- Perks -->
     <div class="perks-container">
       <div
         v-for="perk in visiblePerks"
         :key="perk.id"
-        :class="['perk-base', {'perk-card': !perk.status, 'radPerk-Card': perk.status, 'infPerk-Card': perk.infStatus}]"
+        :class="[
+          'perk-base',
+          {
+            'perk-card': perk.currentStatus === 'base',
+            'radPerk-Card': perk.currentStatus === 'rad',
+            'infPerk-Card': perk.currentStatus === 'inf'
+          }
+        ]"
       >
+        <!-- Header -->
         <div class="perk-header">
-          <h3>{{ perk.name }}</h3>
-          <span class="perk-level" v-if="!perk.status && !perk.infStatus">Lvl {{ perk.level }} / {{perk.maxLevel[hero.treeTier]}}</span>
-          <span class="perk-level" v-if="perk.infStatus">Lvl {{perk.level}}</span>
+          <h3 :class="perk.currentStatus">
+            {{ perk.name }} 
+            {{ perk.currentStatus == 'inf'? "[T" + Math.floor(perk.level.inf / perk.infThreshold) + "]": "" }}
+          </h3>
+          <span class="perk-level" v-if="perk.currentStatus != 'rad'">
+            Lvl {{ perk.level[perk.currentStatus] }} 
+            <span v-if="perk.currentStatus == 'base'"> / {{ perk.maxLevel[hero.tree.tier] }}</span>
+          </span>
         </div>
 
+        <!-- Buttons -->
         <div class="perk-buttons">
-          <button class="btnInf" v-if="(hero.infTier >= 1 || hero.infEvents >= 2) && !perk.status && perk.infStatus !== undefined" @click="infPerk(perk)"><span style="font-size: 14px">∞</span></button>
-          <button class="radPerks tooltip-wrapper" @click="radiationPerks(perk)" v-if="perk.id < 7 && radPerks[7].level && !perk.infStatus">☢
-              <div class="tooltip">
-                Click to activate/deactivate radiation perk. 
-                You can choose only one perk.
-              </div>
+          <button class="perk-btn inf" v-if="canInfActivate(perk)" @click="infActivate(perk)">
+            ∞
           </button>
-          <button v-if="hero.infTier >= 1 || hero.singularity >= 3" class="btnBlock" :class="{ active: perk.block }" @click="perk.block = !perk.block">
-            <Tooltip :text="perk.block ? 'Perk is blocked' : 'Activate to block this perk for AUTO'">
-              <span>🔒</span>
+
+          <button class="perk-btn rad" v-if="canRadActivate(perk)" @click="radActivate(perk)">
+            ☢
+          </button>
+
+          <button class="perk-btn system" v-if="hero.infExpansions.tree" :class="{ active: perk.system.block }" @click="toggleSystem(perk)">
+            S
+          </button>
+
+          <button class="perk-btn reset" @click="resetNodes(perk)">
+            <Tooltip :text="() => TooltipHandler(3)" boxShadow="0 0 10px red" maxWidth="120px">
+              R
             </Tooltip>
           </button>
         </div>
-        
-        <div class="perk-desc">
-          <p>{{ descriptionPerks(perk) }}</p>
-          <p v-if="!perk.status && perk.level > 0">{{ calculate(perk) }}</p>
-          <p v-if="perk.status && perk.id == 1">Total: [{{ hero.radAttack.toFixed(2) }}]</p>
-          <p v-if="perk.status && perk.id == 6">Total: {{ hero.radAPS.toFixed(2) }}</p>
+
+        <!-- Description -->
+        <div 
+          class="perk-desc" 
+          :class="perk.currentStatus"
+          :style="nodeProgressStyle(perk)"
+          >
+          <p class="perk-text">{{ descNodes(perk) }}</p>
+          <p class="perk-effect">{{ descEffects(perk) }}</p>
         </div>
 
-        <div class="perk-footer">
-          <button 
+
+        <!-- Footer -->
+        <div class="perk-footer" v-if="perk.currentStatus != 'rad'">
+          <button
             class="upgrade-button"
-            :disabled="hero.perkPoints < perk.cost || perk.level >= perk.maxLevel"
-            @click="upgrade(perk)"
-            v-if="!perk.status && !perk.infStatus"
+            @click="upgradeNode(perk)"
           >
-            UPGRADE
+            {{ upgradeLabel(perk) }}
           </button>
-          <button 
+
+          <button
             class="upgrade-button"
-            @click="infUpgrade(perk)"
-            v-if="perk.infStatus"
+            @click="upgradeMaxNode(perk)"
           >
-            {{infCost(perk)}}
-          </button>
-          <button 
-            class="upgrade-button"
-            style="margin-left: 5px"
-            :disabled="hero.perkPoints < perk.cost || perk.level >= perk.maxLevel"
-            @click="maxUpgrade(perk)"
-            v-if="!perk.status && !perk.infStatus"
-            >MAX
-          </button>
-          <button 
-            class="upgrade-button"
-            style="margin-left: 5px"
-            @click="infMaxUpgrade(perk)"
-            v-if="perk.infStatus"
-            >MAX
+            MAX
           </button>
         </div>
+
+        
+
       </div>
     </div>
+
+    <NodeSystemPanel
+          v-if="systemPerk"
+          :perk="systemPerk"
+          :hero="hero"
+          @close="systemPerk = null"
+        />
+  
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useHero } from '../../composables/useHero.js';
 import { perks } from '../../data/perks.js';
-import { perks as radPerks} from '../../data/radPerks.js';
-import { dimensions } from '../../data/dimensions.js';
-import { perks as ascendPerks } from '../../data/ascension.js';
-import { perks as treePerks } from '../../data/perks.js';
+import { perks as radPerks } from '../../data/radPerks.js';
+import { useTrees } from '../../composables/battleUtils/useTree.js';
 
 const { hero } = useHero();
 
-const toInt = (n) => Math.max(0, Math.floor(n || 0));
+import NodeSystemPanel from './TreePanel/NodeSystemPanel.vue';
 
-function toggleAuto() {
-  hero.value.treeAuto = !hero.value.treeAuto? true: false;
-}
+const {
+  upgradeNode,
+  upgradeMaxNode,
+  infActivate,
+  radActivate,
+  resetNodes,
+  descNodes,
+  descEffects,
+  toggleAuto,
+  infNodesCostHandle,
+  effectsActivated,
+  activeSelect,
+  clickEffects,
+  effectsHandler,
+} = useTrees();
 
-const visiblePerks = computed(() => {
-  return perks.value.filter(perk => perk.maxLevel?.[hero.value.treeTier] > 0);
-});
 
-const upgrade = (perk) => {
-  const points = toInt(hero.value.perkPoints);
-  const maxLevel = toInt(perk.maxLevel[hero.value.treeTier]);
-  const currentLevel = toInt(perk.level);
+const visiblePerks = computed(() =>
+  perks.value.filter(p => p.maxLevel?.[hero.value.tree.tier] > 0)
+);
 
-  if (points > 0 && currentLevel < maxLevel) {
-    hero.value.perkPoints = points - 1;
-    perk.level = currentLevel + 1;
+const systemPerk = ref(null);
+
+const toggleSystem = (perk) => {
+  systemPerk.value =
+    systemPerk.value === perk ? null : perk;
+};
+
+const canInfActivate = (perk) =>
+  hero.value.infExpansions.tree &&
+  perk.infStatus &&
+  perk.currentStatus !== 'rad';
+
+const canRadActivate = (perk) =>
+  perk.id < 7 &&
+  radPerks[7].level &&
+  perk.currentStatus !== 'inf';
+
+const upgradeLabel = (perk) =>
+  perk.currentStatus === 'inf'
+    ? infNodesCostHandle(perk.id) + ' TP'
+    : '1 TP';
+
+
+function TooltipHandler(id) {
+  switch(id) {
+    case 1: 
+      return '<span style="font-size:0.9em;">Click to activate / deactivate the radiation node</span>'
+    case 3: 
+      return '<span style="font-size:0.9em;">Refund all <span style="color:lightgreen;">[TP]</span> and reset the node\'s level</span>'
+    case 4: 
+      return '<span style="font-size:0.9em;">Refund all <span style="color:lightgreen;">[TP]</span> and reset all nodes level</span>'
+    case 5: 
+      return '<span style="font-size:0.9em; font-weight: bold">Tree Points <span style="color:lightgreen;">[TP]</span> are granted by leveling up.<br></span>' + 
+    (hero.value.mainInfTier >= 1? '<span style="font-size:0.9em; font-weight: bold; color: gold">Infinity grants double points gain</span>': '');
+    case 6:
+      return '<span style="font-size: 0.9em">Tree Tier increases the maximum level of nodes and unlocks new nodes.</span>'
   }
-};
-
-const infPerk = (perk) => {
-  if (perk.id === 7 || perk.id === 10 || perk.id === 14) return;
-
-  hero.value.capInfPerks = toInt(hero.value.infTier) + 1;
-
-  const infActiveCount = perks.value.filter(p => p.infStatus).length;
-  if (perk.infStatus || hero.value.capInfPerks > infActiveCount) {
-    perk.infStatus = !perk.infStatus;
-    const level = toInt(perk.level);
-
-    if (perk.infStatus) {
-      hero.value.perkPoints = toInt(hero.value.perkPoints) + level;
-    } else {
-      hero.value.perkPoints = toInt(hero.value.perkPoints) + toInt(totalInfCost(perk)) * level;
-    }
-
-    perk.level = 0;
-  }
-};
-
-const infCost = (perk) => {
-  let cost = totalInfCost(perk);
-  return `${cost}TP`
 }
 
-const totalInfCost = (perk) => {
-  return Math.floor(perk.baseCost * getMult());
-}
+function nodeProgressStyle(perk) {
+  if (perk.currentStatus != 'inf') return {};
 
-const infUpgrade = (perk) => {
-  const cost = totalInfCost(perk);
-  const points = toInt(hero.value.perkPoints);
-  if (points >= cost) {
-    perk.level = toInt(perk.level) + 1;
-    hero.value.perkPoints = points - cost;
-  }
-};
+  const progress = Math.min(1, (perk.level.inf % perk.infThreshold) / perk.infThreshold);
 
-const infMaxUpgrade = (perk) => {
-  const cost = totalInfCost(perk);
-  const points = toInt(hero.value.perkPoints);
-  if (points <= 0 || cost <= 0) return;
-  const count = toInt(points / cost);
+  const percent = Math.floor(progress * 100);
 
-  perk.level = toInt(perk.level) + count;
-  hero.value.perkPoints = points - cost * count;
-};
-
-const maxUpgrade = (perk) => {
-  const maxUp = toInt(perk.maxLevel[hero.value.treeTier]) - toInt(perk.level);
-  const available = toInt(hero.value.perkPoints);
-
-  const up = Math.min(maxUp, available);
-  perk.level = toInt(perk.level) + up;
-  hero.value.perkPoints = available - up;
-};
-
-const resetPerks = () => {
-  for (const perk of perks.value) {
-    if (perk.name !== "Invisible" && perk.name !== "Traveller") {
-      perk.level = 0;
-    }
-  }
-
-  const basePoints = toInt(hero.value.freeTreePoints) +
-    toInt(hero.value.eLevel) *
-    ((hero.value.infTier >= 1 || hero.value.infEvents >= 2) ? 2 : 1);
-
-  hero.value.perkPoints = Math.max(0, basePoints);
-};
-
-const calculate = (perk) => {
-  if(perk.id == 1 && !perk.infStatus)
-    return "TOTAL: " + (perk.value ** perk.level).toFixed(2);
-
-  if(perk.id == 1 && perk.infStatus)
-    return "TOTAL: " + ((perk.value - 0.001) ** perk.level).toFixed(2);  
-
-  if(perk.id == 4)
-    return "TOTAL: " + (1 + perk.value * perk.level * 0.01).toFixed(2);
-
-  if(perk.id == 6)
-    return "TOTAL: " + (perk.value * perk.level).toFixed(1);  
-
-  if(perk.id == 7 || perk.id == 10 || perk.id == 11 || perk.id == 12 || perk.id == 14 || perk.id == 17)
-    return "";
-  
-  if(perk.id == 15)
-    return "TOTAL: " + (1 + 0.2 * perk.level).toFixed(2);
-
-  if(perk.id == 16)
-    return "TOTAL: " + (perk.value ** perk.level).toFixed(2);
-
-  if(perk.id == 20)
-    return "TOTAL: " + (2 - 1.04 ** hero.value.treeTier).toFixed(2);
-
-  return "TOTAL: " + (perk.value * perk.level);
-}
-
-function descriptionPerks(perk) {
-let softAttack = 1.01 ** (139.3 + 10 * (dimensions.value[40].infTier - 40));
-let healEffect = Math.min(1 + 1 * (dimensions.value[40].infTier - 40), 10);
-
-let stunEffect = 30 + 1 * (dimensions.value[40].infTier - 40);
-let stunDuration = (0.5 + 0.05 * (dimensions.value[40].infTier - 40));
-
-let levelUp = 10 + 1 * (dimensions.value[40].infTier - 40);
-let maxLevelMult = 1.1 + 0.01 * (dimensions.value[40].infTier - 40);
-let aps = 0.1 + 0.01 * (dimensions.value[40].infTier - 40);
-
-let radDescription = [
-    `+1.01 MULT DMG per each killed enemy [Softcap - ${softAttack.toFixed(2)}]`,
-    `+${healEffect}% HEAL from Max HP per second`,
-    `When you were attacked, ${stunEffect}% TO STUN ENEMY FOR ${stunDuration.toFixed(2)} SECONDS`,
-    `Level Rush - +${levelUp}%.(S)`,
-    `x${maxLevelMult.toFixed(2)} Global Max Level Mult`,
-    `+${aps.toFixed(2)} Attack per Second for each boss killed [Max - 1.5]`
-  ]
-
-  return perk.status? radDescription[perk.id - 1]: perk.description;
-}
-
-const radiationPerks = (perk) => {
-  const maxActivePerks = (radPerks[7].level? 1: 0) + (ascendPerks[64].level? 1: 0); 
-
-  const activeCount = treePerks.value.filter(p => p.status).length;
-
-  if (!perk.status) {
-    if (activeCount < maxActivePerks) {
-      perk.status = true;
-      hero.value.perkPoints += perk.level;
-      perk.level = 0;
-    }
-  } else {
-    perk.status = false;
-    perk.kills = 0;
-  }
-};
-
-
-function getMult() {
-  let mult = (dimensions.value[6] && dimensions.value[6].infTier === dimensions.value[6].maxInfTier) ? 0.9 : 1;
-  mult *= 1 - dimensions.value[35].infTier * 0.01;
-  mult *= (hero.value.dId == 'd-noTree'? 2 + 0.25 * dimensions.value[35].infTier : 1);
-  mult *= (hero.value.darkId.includes('d-noTree')? 2 - 0.02 * dimensions.value[35].infTier: 1);
-
-  return mult;
-}
-
-function treePointsHandle() {
-  let text = `Tree Points(TP) are granted by leveled up. `
-  if(hero.value.mainInfTier >= 1)
-    text += `<span style="color: gold">Infinity [T1]</span> grants double points gain`
-
-  return text;
+  return {
+    boxShadow: `
+      inset ${percent * 1.8}px 0 0 rgba(249, 251, 107, 0.25),
+      inset 3px 0 0 rgba(207,186,70,0.9),
+      0 0 8px rgba(207,186,70,0.35)
+    `
+  };
 }
 </script>
 
+
 <style scoped>
-.perk-tree {
-  padding: 1.5rem;
-  background: #242925;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  max-width: 1400px;
-  margin: 0 auto;
+.tree-wrapper {
+  box-sizing: border-box;
+
+  height: 100dvh; 
+
+  background: linear-gradient(145deg,rgb(30, 43, 34),rgb(22, 41, 27));
+  color: #f0f0f0;
+
+  padding: clamp(12px, 2vh, 24px);
+
+  border-radius: 0; 
+  box-shadow: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.5vh, 18px);
+
+  overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(102, 253, 82) transparent;
 }
 
-.perk-tree h2 {
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #65fd9c;
+
+.tree-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color:rgb(122, 223, 159);
 }
+
 
 .perk-points {
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin-bottom: 1rem;
 }
 
+
 .has-points {
-  color: #0dc399; /* зелёный */
+  color: #0dc399; 
   font-weight: bold
 }
 
 .no-points {
-  color: #f44336; /* красный */
+  color: #f44336; 
   font-weight: bold
 }
 
 .perks-container {
-  max-height: 60vh;
+  max-height: 70vh;
   overflow-y: auto;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgb(90, 246, 47) transparent;
 }
 
 .perk-card {
@@ -355,7 +292,18 @@ function treePointsHandle() {
 .perk-header h3 {
   font-size: 1.1rem;
   margin: 0;
-  color: #333;
+}
+
+.perk-header h3.base {
+  color: #0dc399; /* Base color */
+}
+
+.perk-header h3.inf {
+  color: #cfba46; /* Inf color */
+}
+
+.perk-header h3.rad {
+  color: #1cb71c; /* Rad color */
 }
 
 .perk-level {
@@ -366,18 +314,61 @@ function treePointsHandle() {
   font-size: 0.8rem;
 }
 
+
+/* DESC */
 .perk-desc {
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: #1c1c1c;
-  margin-bottom: 1rem;
-  min-height: 40px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  padding: 6px 8px;
 }
 
+.perk-text,
+.perk-effect {
+  font-size: 0.85rem;
+  color: #e6e6e6;
+  line-height: 1.25;
+  margin: 2px 0;
+}
+
+.perk-effect {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+
+.perk-desc.base {
+  box-shadow: inset 3px 0 0 rgba(13, 195, 153, 0.9),
+              0 0 8px rgba(13, 195, 153, 0.25);
+}
+
+.perk-desc.base .perk-effect {
+  text-shadow: 0 0 4px rgba(13, 195, 153, 0.6);
+}
+
+.perk-desc.infff {
+  box-shadow: inset 3px 0 0 rgba(207, 186, 70, 0.9),
+              0 0 8px rgba(207, 186, 70, 0.3);
+}
+
+.perk-desc.inf .perk-effect {
+  text-shadow: 0 0 4px rgba(207, 186, 70, 0.6);
+}
+
+.perk-desc.rad {
+  box-shadow: inset 3px 0 0 rgba(28, 183, 28, 0.9),
+              0 0 8px rgba(28, 183, 28, 0.35);
+}
+
+.perk-desc.rad .perk-effect {
+  text-shadow: 0 0 4px rgba(28, 183, 28, 0.6);
+}
+
+
+/* PERK */
 .perk-base {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   padding: 1rem;
   min-height: 220px;
 }
@@ -411,53 +402,78 @@ function treePointsHandle() {
   cursor: not-allowed;
 }
 
+
+
 .perk-buttons {
   display: flex;
-  gap: 6px; /* расстояние между кнопками */
-  margin-bottom: 0.5rem; /* отступ от нижнего контента */
+  gap: 6px; 
+  margin-bottom: 0.5rem; 
   align-items: center;
 }
 
-.radPerks {
-  padding: 6px 10px;
-  background: linear-gradient(145deg, #66ff66, #33cc33);
-  font-size: 12px;
-  font-weight: bold;
-  color: #0a0a0a;
+.perk-btn {
+  width: 30px;         /* одинаковая ширина */
+  height: 30px;        /* одинаковая высота */
+  padding: 0;          /* убираем внутренние отступы */
   border: none;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 255, 0, 0.3);
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
-  width: 30px;
 }
 
-.radPerks:hover {
+/* INF */
+.perk-btn.inf {
+  background: linear-gradient(145deg, #fff200, #ffcc00);
+  color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.perk-btn.inf:hover {
+  background: linear-gradient(145deg, #ffcc00, #fff200);
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(255, 204, 0, 0.4);
+}
+
+/* RAD */
+.perk-btn.rad {
+  background: linear-gradient(145deg, #66ff66, #33cc33);
+  color: #0a0a0a;
+  box-shadow: 0 2px 4px rgba(0, 255, 0, 0.3);
+}
+.perk-btn.rad:hover {
   background: linear-gradient(145deg, #33cc33, #66ff66);
   transform: scale(1.05);
   box-shadow: 0 4px 6px rgba(102, 255, 102, 0.5);
 }
 
-.btnInf {
-  padding: 4px 6px;
-  background: linear-gradient(145deg, #fff200, #ffcc00);
-  font-size: 12px;
-  font-weight: bold;
-  color: #2c2c2c;
-  border: none;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 30px;
+/* BLOCK (S) */
+.perk-btn.system {
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #555;
+}
+.perk-btn.system.active {
+  background: #220000;
+  border-color: #ff4444;
+  color: #ff7777;
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.4);
 }
 
-.btnInf:hover {
-  background: linear-gradient(145deg, #ffcc00, #fff200);
-  transform: scale(1.05);
-  box-shadow: 0 4px 6px rgba(255, 204, 0, 0.4);
+/* RESET (R) */
+.perk-btn.reset {
+  background: #f44336;
+  color: white;
 }
+.perk-btn.reset:hover {
+  background: #d32f2f;
+}
+
+
+
 
 .radPerk-Card {
   box-shadow:  3px 3px 6px #66ff66,
@@ -479,34 +495,6 @@ function treePointsHandle() {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tooltip {
-  position: absolute;
-  top: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #1c1917;
-  color: #fef2f2;
-  padding: 0.8rem;
-  border-radius: 0.5rem;
-  width: 220px;
-  font-size: 0.85rem;
-  text-align: left;
-  z-index: 10;
-  box-shadow: 0 0 10px rgba(81, 255, 0, 0.8);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.tooltip-wrapper:hover .tooltip {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.tooltip-wrapper {
-  position: relative;
-  display: inline-block;
-}
 
 .info-button {
   cursor: pointer;
@@ -607,6 +595,76 @@ function treePointsHandle() {
 }
 .auto-buttons .active {
   background-color: #4caf50;
+}
+
+
+
+.effects-cards {
+  display: flex;
+  gap: 6px;
+}
+
+/* MINI CARD */
+.effect-card {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: default;
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
+}
+
+.effect-T, .effect-F {
+  color: #7cff9e;
+  box-shadow: 0 0 6px rgba(124, 255, 158, 0.6);
+}
+.effect-I, .effect-C {
+  color: gold;
+  box-shadow: 0 0 6px gold;
+}
+.effect-N {
+  color: #ffd966;
+  box-shadow: 0 0 6px #ffd966;
+}
+.effect-R {
+  color: #ff4d4d;
+  box-shadow: 0 0 6px rgba(255, 77, 77, 0.7);
+}
+.effect-Z {
+  color: #9bff3d;
+  box-shadow: 0 0 8px rgba(155, 255, 61, 0.8);
+}
+.effect-i {
+  color: yellow;
+  box-shadow: 0 0 8px rgba(249, 255, 61, 0.8);
+}
+
+.effect-A {
+  background-color: #132b2b;
+  border: 1px solidrgb(42, 255, 74);
+  color:rgb(63, 255, 92);
+  transition: all 0.25s ease;
+}
+
+.effect-A:hover {
+  box-shadow: 0 0 8px rgba(63, 255, 101, 0.7);
+}
+
+.effect-A.active {
+  background-color:rgb(63, 255, 89);
+  color: #052b27;
+  box-shadow:
+    0 0 10px rgb(63, 255, 130),
+    0 0 18px rgba(63, 255, 124, 0.8);
+  transform: scale(1.12);
 }
 
 

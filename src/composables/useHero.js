@@ -3,28 +3,117 @@ import { reactive, ref } from 'vue';
 
 
 const hero = ref({
+  version: "1.0",
+  time: 0,
+  battleId: "main",
+  battleContent: {
+    "main" : {
+      player: null,
+      villian: null
+    },
+    "space": {
+      player: null,
+      villian: null
+    }
+  },
+  timePenalty: false,
+  maxTime: 0,
+  corruption: {
+    base: 0.1,
+    total: 0.1,
+    cap: 1,
+    dcap: 10,
+    killsLose: 1,
+    status: 'base',
+  },
+  tree: {
+    kills: 0,
+    freePoints: 0,
+    points: 0,
+    tier: 0,
+    auto: false,
+    autoCooldown: 0,
+    maxRadNodes: 0,
+  },
+  rad: {
+    radTarget: 0,
+    tempTarget: 0,
+    isAuto: false,
+  },
+  buff: {
+    showLayoutEditor: false,
+    layoutNameInput: '',
+    layoutBeingEdited: 0,
+  },
+  dimShards: {
+    base: 150,
+    stage: 150,
+  },
+  recovery: {
+    penalty: 1,
+  },
+  heal: {
+    mult: 1
+  },
+  stages: {
+    min: 1,
+    max: 300,
+    current: 1
+  },
+  baseStage: 1.2,
+  infExpansions: {
+    tree: false,
+    ascensioin: false,
+    rebirth: false,
+    radiation: false,
+    space: false,
+    soul: false,
+  },
+  timeline: {
+    showUpgradeModal: false,
+    lineShows: true,
+    show: false,
+    activeNoramlDims: [],
+    activeDarkDims: [],
+    activeLawDims: [],
+    activeDimsCache: [],
+  },
+  autoTimeLine: {
+    isAuto: false,
+    tier: null,
+    time: [1800, 3600, 7200, 14400, 28800],
+    timer: 0,
+  },
+  void: {
+    zoom: 1,
+    viewBox: '0 0 800 600',
+    currentShards: 0,
+    totalShards: 0,
+    maxTime: 28800,
+    time: 28800,
+    stage: 1,
+    tier: 0
+  },
+  gravity: {
+    shards: 0,
+    totalShards: 0,
+    stageReq: 0,
+    isTrial: false,
+    bhDmg: 0,
+    bhMaxDmg: 0, 
+  },
   hp: 100,
   maxHp: 100,
-  attack: 10,
-  averageAttack: {
-    min: 0,
-    max: 10,
-    avg: 5,
-    currentAttack: 0,
-    old: 0,
-    status: 1,
-    critStatus: false,
-    dodgeStatus: false,
-    deBossStatus: false,
-    curseCrit: false,
-  },
+  atk: 10,
   def: 0,
   crit: 0,
   critAttack: 1.5,
   level: 0,
   eLevel: 1,
   minLevel: 0,
+  minLevelAdd: 0,
   maxReachedLevel: 0,
+  maxLevelAdd: 30,
   divLevel: 0,
   maxLevel: 30,
   trueLevel: 0,
@@ -37,14 +126,10 @@ const hero = ref({
   resetKilledTime: 0,
   kills: 0,
   killsPerZone: 5,
-  zone: 1,
-  stage: 1,
   maxStage: 1,
   isStage: true,
   isBattleActive: true,
   overkill: 0,
-  treeTier: 0,
-  perkPoints: 0,
   eqTotalDrop: 0,
   equipmentTiers: {
     sword: 0,
@@ -68,6 +153,12 @@ const hero = ref({
     spRing: 0
   },
   eqDrop: {
+    sword: 0,
+    armor: 0,
+    boots: 0,
+    ring: 0,
+  },
+  eqDropChances: {
     sword: 0,
     armor: 0,
     boots: 0,
@@ -133,13 +224,15 @@ const hero = ref({
   shardsMult: 0,
   shardsPerformMult: 0,
   ascensionShards: 0,
+  shardsInterval: 0,
   totalAscensionShards: 0,
   isAscend: false,
   ascendShardPerform: 0,
   ascensionTier: 1,
   maxBuffs: 1,
-  activeBuffs: [],
+  
   souls: 0,
+  cSoulsMax: 0,
   soulsMax: 0,
   soulsCap: 20,
   soulTier: 0,
@@ -150,24 +243,40 @@ const hero = ref({
   cursedBonus: 0,
   cursedBonusExp: 0,
   afkTime: 0,
-  showAfkPopup: false,
+  startAfkTime: 0,
+  afkStarted: false,
   afkKills: 0,
+  afkModeKills: 0,
   afkMessage: "",
   autoSpaceCondition: "",
-  showAfkPopupRule: true,
+  settings: {
+    showAfkPopupRule: false,
+    afkStoredTime: false,
+    showOfflineRewards: true,
+    showStoredTime: false,
+    damageDisplay: true,
+    notes: true,
+    dimTeleport: false,
+    autoSave: true,
+    storedTime: 0,
+    storedTimeUsed: 0,
+    autoLeave: false,
+    battleTime: 0,
+    fileInput: null,
+    afkMode: 's',
+  },
   isRebirth: false,
   rebirthPts: 0,
+  baseRebirthPts: 0,
   totalRebirthPts: 1,
   rebirthTier: 0,
   totalPtsMult: 0,
   potential: 0,
-  avoid: 0,
-  activeFormation: null,
   formationTypes : [
-    { name: 'HP', id: 0, icon: '💚', description: 'HP - x2, ATK - x0.5, DEF - x0.5',status: false },
+    { name: 'HP', id: 0, icon: '💚', description: 'HP - x2, ATK - x0.5, DEF - x0.5', status: false },
     { name: 'Attack', id: 1, icon: '⚔️', description: 'ATK - x2, HP - x0.5, DEF - x0.5' , status: false},
     { name: 'Defense', id: 2, icon: '🛡️', description: 'DEF - x2, HP - x0.5, ATK - x0.5' , status: false},
-    { name: 'Loot', id: 3, icon: '💎', description: 'DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2(EXP, BUFF EXP, WEAPON CHANCE, ASCENSION SHARDS(Abyss [T2]))' , status: false},
+    { name: 'Loot', id: 3, icon: '💎', description: 'DEF - x0.5, HP - x0.5, ATK - x0.5, LOOT: 2' , status: false},
   ],
   abyssTier: 0,
   isAbyss: false,
@@ -185,31 +294,47 @@ const hero = ref({
   sp: 0,
   st: 0,
   spCount: 0,
+  spbCount: 0,
   spsCount: 0,
   spsCountMax: 0,
   spMaxCount: 24,
   isInfSpace: false,
   stardust: 0,
-  corruption: 0.1,
   spaceFight : false,
   abyssDStages: 1,
   infPoints: 0,
+  infPointsAdd: 0,
   infPointsGoals: 0,
   infTier: 0,
   maxInfTier: 0,
   infTree: false,
+  quasar: {
+    cores: 1,
+    usedCores: 0,
+    freeCores: 1,
+    next: 55,
+    power: 1,
+  },
+  tr: {
+    count: 0,
+    bhCount: 0,
+    max: [30, 30, 30, 30, 30],
+    spread: 0,
+    countSpread: 0,
+  },
   soulD: false,
   treeAuto: false,
   isSpaceBuff: false,
-  spActiveBuffs: [],
   isSpaceAuto: false,
   repeatOnDefeat: false,
   nextEnemyOnWin: false,
   noBattleWindowChanges: false,
+  spaceWindowChange: false,
   isSpaceFightCooldown: false,
   spaceFightCooldown: 0,
   spBossPerk: 0,
   afkSoulBoost: 1,
+  soulStageHp: 1,
   capInfPerks: 1,
   mutations: 0,
   radAttack: 0,
@@ -220,8 +345,8 @@ const hero = ref({
     info: true,
     lore: true,
     tree: true,
-    equipment: false,
-    buffs: false,
+    equipment: true,
+    skill: true,
     souls: false,
     ascension: false,
     corruption: false,
@@ -232,11 +357,13 @@ const hero = ref({
     radiation: false,
     infinity: false,
     singularity: false,
-    dimensions: false,
+    dimension: false,
     stats: true
   },
   singularity: 0,
   isSingularity: false,
+  singLeft: false,
+  singMult: 1,
   overcorruption: 0,
   freeEnchances: 0,
   isDimension: false,
@@ -247,7 +374,6 @@ const hero = ref({
   freeTreePoints: 0,
   unlimitLevel: 0,
   unlimitLevelMax: 3000,
-  gcnpSetting: false,
   singularityAscension: [],
   singularitySpace: {
     sp: 0,
@@ -276,6 +402,7 @@ const hero = ref({
   dsTotal: 0,
   infPenalty: 0,
   dangerStage: 0,
+  cDangerMax: 0,
   dsStage: 150,
   dTimeReward: 0,
   dTimer: 0,
@@ -308,14 +435,16 @@ const hero = ref({
   damageStage: 1,
   survivalLife: 0,
   selectedDivSkills: [],
-  dimDispayMode: 'map',
+  dimDisplayMode: 'map',
   multEnchance: 0,
   buffLayouts: [
-    { id: 0, name: 'Layout 1', buffs: [], spBuffs: [], unlocked: true }, 
-    { id: 1, name: 'Layout 2', buffs: [], spBuffs: [], unlocked: false }, 
-    { id: 2, name: 'Layout 3', buffs: [], spBuffs: [], unlocked: false },
+    { id: 0, name: 'Layout 1', buffs: [], unlocked: true }, 
+    { id: 1, name: 'Layout 2', buffs: [], unlocked: true }, 
+    { id: 2, name: 'Layout 3', buffs: [], unlocked: true },
+    { id: 3, name: 'Layout 4', buffs: [], unlocked: true },
+    { id: 4, name: 'Layout 5', buffs: [], unlocked: true },
   ],
-  selectedLayoutIndex: 0,
+  
   showProgressionCircles: false,
   forgeTier: 0,
   forgeTierReq: 50,
@@ -333,11 +462,19 @@ const hero = ref({
   spBuffsCache: [],
   eventDoubleClick: false,
   infPower: 1,
+  infUnlocked: false,
   transcendenceBH: 0,
   transferAscensionArray: {},
-  recoveryPenalty: 1,
   spaceAutoCooldown: 1,
-  levelRush: 0,
+  levelRush: {
+    c: 0,
+    m: 0.75,
+  },
+  stageRush: {
+    c: 0,
+    m: 0.75,
+    active: true,
+  },
   infCorruption: 0,
   dCorruptionEffect: 0,
   autoTreeCooldown: 2,
@@ -346,16 +483,12 @@ const hero = ref({
   minStage: 0,
   unlimitMaxLevel: 0,
   unlimitMinLevel: 0,
+  cUnlimitMaxLevel: 0,
   minLevelMult: 1,
   autoTreeCooldown: 0,
   stBosses: 0,
   totalAvoid: 0,
   spaceTimer: -1,
-  newUpdateChanges: {
-    dimensions: false,
-    blackHole: false,
-    dimReworks: false,
-  },
   maxLevelInfo: 0,
   singularityLevels: 0,
   gridFilterStatus: "all",
@@ -365,6 +498,388 @@ const hero = ref({
   stageReq: 1.35,
   baseDangerPower: 1.017,
   currentMutagen: 0,
+
+  timelineActiveTier: 0,
+  timelineTier: 0,
+  timelinePass: [true, false, false, false, false, false],
+  lawSlots: [null, null],
+  selectedStones: [null, null],
+  ancientShards: 0,
+  inventorySize: 16,
+  mainInfTierCap: 60,
+  infTierLevelReq: 700,
+  corrInfluence: 0,
+  lawStonesSet: [],
+  dimensionStatus: 1,
+  dimId: [],
+  isDimCorruption: false,
+  dims: {
+    viewBox: '0 0 800 600',
+    searchQuery: "",
+    zoom: 1,
+    selectedDim: null,
+    teleportedMode: false,
+    teleportName: "",
+    teleports: [],
+    corrShards: 0,
+    damage: {
+      kills: 0,
+      effect: 1,
+    },
+    veil: {
+      stacks: 0,
+      damage: 0,
+    },
+    survival: {
+      stage: 0,
+    },
+    passedDims: 0,
+  },
+
+  infs: {
+    infBonusesCache: 0,
+  },
+  rebirthTierBonusesChance: 0,
+  soulPower: {
+    tier: 0,
+    req: 100,
+    label: {
+      maxLevel: 1,
+      exp: 10,
+      minLevel: 1,
+    },
+    base: {
+      maxLevel: 0,
+      exp: 0,
+      min: 0,
+      stardust: 1,
+      mutagen: 1
+    },
+    special: [
+      {
+        base: 0,
+        tier: 0,
+        value: 1,
+        next: 0
+      },
+      {
+        base: 0,
+        tier: 1,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 2,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 3,
+        value: 1,
+        next: 0
+      },{
+        base: 0,
+        tier: 4,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 5,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 6,
+        value: 1,
+        next: 0
+      },{
+        base: 0,
+        tier: 7,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 8,
+        value: 0,
+        next: 0
+      },{
+        base: 0,
+        tier: 9,
+        value: 0,
+        next: 0
+      },
+    ]
+  },
+  abyssDRewards: [
+    { id: 0, value: 1 },   
+    { id: 1, value: 2 },        
+    { id: 2, value: 0.1 },      
+    { id: 3, value: 1 },        
+    { id: 4, value: 1 },        
+    { id: 5, value: 0.01 },     
+    { id: 6, value: 1 },        
+    { id: 7, value: 0 },        
+    { id: 8, value: 1 },        
+    { id: 9, value: 1 },      
+    { id: 10, value: 0 },  
+    { id: 11, value: 0 },       
+  ],
+  cursesChances: [
+    {
+      tier: 1,
+      value: 0
+    },
+    {
+      tier: 2,
+      value: 0
+    },
+    {
+      tier: 3,
+      value: 0
+    },
+    {
+      tier: 5,
+      value: 0,
+      status: false
+    },
+  ],
+  rebirthBonusesHandle: [
+    {
+      id: 0,
+      value: 1
+    },
+    {
+      id: 1,
+      value: 1.5,
+    },
+    {
+      id: 2,
+      value: 0
+    },
+    {
+      id: 3,
+      value: 0
+    },
+    {
+      id: 4,
+      value: 0
+    },
+    {
+      id: 5,
+      value: 0
+    },
+    {
+      id: 6,
+      value: 1
+    },
+    {
+      id: 7,
+      value: 0
+    },
+    {
+      id: 8,
+      value: 0
+    },
+    {
+      id: 9,
+      value: 0
+    },
+    {
+      id: 10,
+      value: 1
+    },
+    {
+      id: 11,
+      value: 1
+    },
+    {
+      id: 12,
+      value: 0
+    },
+    {
+      id: 13,
+      value: 0
+    },
+    {
+      id: 14,
+      value: 0
+    },
+    {
+      id: 15,
+      value: 0
+    },
+    {
+      id: 16,
+      value: 0
+    },
+    
+  ],
+  gravityShardsEffect: [
+    {
+      id: 0,
+      req: 1,
+      totalReq: 1,
+      nowReq: 0,
+      tier: 0,
+      type: 3
+    },
+    {
+      id: 1,
+      req: 2,
+      totalReq: 2,
+      nowReq: 0,
+      tier: 0,
+      type: 2
+    },
+    {
+      id: 2,
+      req: 5,
+      totalReq: 5,
+      nowReq: 0,
+      tier: 0,
+      type: 0
+    },
+    {
+      id: 3,
+      req: 10,
+      totalReq: 10,
+      nowReq: 0,
+      tier: 0,
+      type: 1
+    },
+    {
+      id: 4,
+      req: 10,
+      totalReq: 10,
+      nowReq: 0,
+      tier: 0,
+      type: 1,
+    },
+    {
+      id: 5,
+      req: 25,
+      totalReq: 25,
+      nowReq: 0,
+      tier: 0,
+      type: 3
+    },
+    {
+      id: 6,
+      req: 40,
+      totalReq: 40,
+      nowReq: 0,
+      tier: 0,
+      type: 3
+    },
+    {
+      id: 7,
+      req: 50,
+      totalReq: 50,
+      nowReq: 0,
+      tier: 0,
+      type: 1
+    },
+    {
+      id: 8,
+      req: 50,
+      totalReq: 50,
+      nowReq: 0,
+      tier: 0,
+      type: 1
+    },
+    {
+      id: 9,
+      req: 50,
+      totalReq: 50,
+      nowReq: 0,
+      tier: 0,
+      type: 1,
+    },
+    {
+      id: 10,
+      req: 60,
+      totalReq: 60,
+      nowReq: 0,
+      tier: 0,
+      type: 0
+    },
+    {
+      id: 11,
+      req: 70,
+      totalReq: 70,
+      nowReq: 0,
+      tier: 0,
+      type: 1,
+    },
+    {
+      id: 12,
+      req: 80,
+      totalReq: 80,
+      nowReq: 0,
+      tier: 0,
+      type: 3,
+    },
+    {
+      id: 13,
+      req: 90,
+      totalReq: 90,
+      nowReq: 0,
+      tier: 0,
+      type: 1
+    },
+    {
+      id: 14,
+      req: 100,
+      totalReq: 100,
+      nowReq: 0,
+      tier: 0,
+      type: 0,
+    },
+    {
+      id: 15,
+      req: 200,
+      totalReq: 200,
+      nowReq: 0,
+      tier: 0,
+      type: 1
+    },
+  ],
+  voidTreeStats: {},
+  notes: {
+    msg: [],
+    triggers: {},
+    cooldowns: {},
+  },
+  stardustPenalty: {
+    d32: 1,
+  },
+  trackerTimer: 0,
+  trackerResTimer: 0,
+  trackerSleep: 0,
+  avgLoot: {
+    exp: { perSec: 0, acc: 0, smoothing: 0.05 },
+    skillExp: { perSec: 0, acc: 0, smoothing: 0.05 },
+    mutagen: { perSec: 0, acc: 0, smoothing: 0.05 },
+    stardust: { perSec: 0, acc: 0, smoothing: 0.05 },
+    kills: { perSec: 0, acc: 0, smoothing: 0.2},
+  },
+  avgResources: {
+    ascension: {perSec: 0, acc: 0, timer: 0},
+    rebirth: {perSec: 0, acc: 0, timer: 0},
+  },
+  afkSnapshot: {},
+  totalStats: {
+    maxDmgDealded: 0,
+    totalAS: 0,
+    spEnhances: 0,
+    totalLevel: 0,
+  },
+  levelFactor: {
+    hp: 0,
+    atk: 0,
+    def: 0,
+    critDmg: 0,
+  }
 });
 
 export function useHero() {

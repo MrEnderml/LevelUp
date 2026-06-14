@@ -10,21 +10,7 @@
 <button class="btn" @click="tool('+10 Stage')">+10 stage</button>
 <button class="btn" @click="tool('+300 souls')">+300 souls</button>
 <button class="btn" @click="tool('Stardust')">Stardust</button>
-<div style="display: none">
-<button class="btn" @click="tool('levelPlus')">+1 Level</button>
-    
-    <button class="btn" @click="tool('mutagen')">+mutagen</button>
-    <button class="btn" @click="tool('Shards')">+100 Ascension Shards</button>
-    
-    <button class="btn" @click="tool('RebirthTier')">+1 Rebirth Tier</button>
-    <button class="btn" @click="tool('RebirthPts')">+10 Rebirth Pts</button>
-    <button class="btn" @click="tool('RebirthPtsMore')">+1000 Rebirth Pts</button>
-    <button class="btn" @click="tool('ClearStage')">Clear stage</button>
-    <button class="btn" @click="tool('StageBoss')">Clear until the boss</button>
-    <button class="btn" @click="tool('FourEnemies')">Kill 4 Enemies</button>
-    
-</div>
-    
+
 </div>
 </template>
 

@@ -61,15 +61,14 @@ export const spEnemy = [
         },
         {
           id: 6,
-          name: "Boss - Orion Hunter",
+          name: "Celestial - Orion Hunter",
           stats: {
             dmg: 1300,
             hp: 145000,
             def: 12800,
             AS: 1.5,
-            curses: ["⚙️T4", "🌪️T2", "🤺T4", "🩸T4"]
           },
-          reward: "🌟1 STAR | +25 Max Level",
+          reward: "🌟1 STAR | +50 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -135,7 +134,7 @@ export const spEnemy = [
         },
         {
           id: 12,
-          name: "Boss - Saturn Chronos",
+          name: "Celestial - Saturn Chronos",
           stats: {
             dmg: 1900,
             hp: 211000,
@@ -143,7 +142,7 @@ export const spEnemy = [
             AS: 1.9,
             curses: ["💫T4", "🌪️T4", "💢T3", "🔪T2", "💉T2"]
           },
-          reward: "🌟1 STAR | +50 Max Level",
+          reward: "🌟1 STAR | +100 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -209,7 +208,7 @@ export const spEnemy = [
         },
         {
           id: 18,
-          name: "Boss - Solar Titan Helios",
+          name: "Celestial - Solar Titan Helios",
           stats: {
             dmg: 2200,
             hp: 332000,
@@ -217,7 +216,7 @@ export const spEnemy = [
             AS: 1.5,
             curses: ["🛡️T4", "⚙️T2", "🤺T4", "🔰T4", "💉T2"]
           },
-          reward: "🌟1 STAR | +75 Max Level",
+          reward: "🌟1 STAR | +150 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -283,7 +282,7 @@ export const spEnemy = [
         },
         {
           id: 24,
-          name: "Boss - Mars Ares",
+          name: "Celestial - Mars Ares",
           stats: {
             dmg: 5000,
             hp: 730000,
@@ -291,7 +290,7 @@ export const spEnemy = [
             AS: 1.5,
             curses: ["⚙️T3", "🌪️T3", "🤺T4", "🩸T4", "💫T3", "💢T1", "🔪T2", "💉T3"]
           },
-          reward: "🌟1 STAR | +100 Max Level",
+          reward: "🌟1 STAR | +200 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -358,7 +357,7 @@ export const spEnemy = [
         },
         {
           id: 30,
-          name: "Boss - The Black Star – Nyxion",
+          name: "Celestial - The Black Star – Nyxion",
           stats: {
             dmg: 15000,
             hp: 4500000,
@@ -366,7 +365,7 @@ export const spEnemy = [
             AS: 1.5,
             curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
           },
-          reward: "🌟1 STAR | +150 Max Level",
+          reward: "🌟1 STAR | +250 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -437,7 +436,7 @@ export const spEnemy = [
         },
         {
           id: 36,
-          name: "Boss - Eclipse Sovereign",
+          name: "Celestial - Eclipse Sovereign",
           stats: {
             dmg: 24000,
             hp: 6e7,
@@ -445,7 +444,7 @@ export const spEnemy = [
             AS: 1.6,
             curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
           },
-          reward: "🌟1 STAR | +200 Max Level",
+          reward: "🌟1 STAR | +300 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -511,7 +510,7 @@ export const spEnemy = [
         },
         {
           id: 42,
-          name: "Boss - Celestarch Aurelion Vox",
+          name: "Celestial - Celestarch Aurelion Vox",
           stats: {
             dmg: 32000,
             hp: 9e8,
@@ -519,7 +518,7 @@ export const spEnemy = [
             AS: 1.7,
             curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
           },
-          reward: "🌟1 STAR | +300 Max Level",
+          reward: "🌟1 STAR | +350 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
@@ -585,15 +584,14 @@ export const spEnemy = [
         },
         {
           id: 48,
-          name: "Boss - MyrrKath, Starborn Sovereign",
+          name: "Celestial - MyrrKath, Starborn Sovereign",
           stats: {
             dmg: 105000,
             hp: 4e10,
             def: 5e7,
             AS: 2,
-            curses: ["⚙️T4", "💉T4", "🌪️T4", "🤺T4", "🩸T4", "🛡️T4", "💢T4", "🔪T4", "🔰T4", "🩸T4", "🩹T4"]
           },
-          reward: "🌟1 STAR | +400 Max Level",
+          reward: "🌟1 STAR | +400 Max Level | Unlock new feature",
           status: false,
           type: "boss"
         },
